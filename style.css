@@ -570,3 +570,11 @@ a{
 .privacy-card p:last-child{
   margin-bottom:0;
 }
+
+.site-footer a{
+  color:#f1df9b;
+}
+
+.site-footer a:hover{
+  color:white;
+}
