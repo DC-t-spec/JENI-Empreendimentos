@@ -1,144 +1,209 @@
 <!DOCTYPE html>
 <html lang="pt">
 <head>
-
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>JENI Informa | JENI Empreendimentos</title>
-
-<meta name="description" content="Notícias, actualizações e actividades da JENI Empreendimentos.">
-
-<link rel="stylesheet" href="style.css">
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JENI Informa | JENI Empreendimentos</title>
+  <meta name="description" content="JENI Informa: notícias, actualizações, projectos e iniciativas culturais da JENI Empreendimentos.">
+  <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
 
-<header class="site-header">
-<div class="container header-wrap">
+  <header class="site-header">
+    <div class="container header-wrap">
+      <a href="index.html" class="brand">
+        <img src="logo-jeni.png" alt="Logotipo JENI Empreendimentos" class="brand-logo">
+      </a>
 
-<a href="index.html" class="brand">
-<img src="logo-jeni.png" alt="Logotipo JENI Empreendimentos" class="brand-logo">
-</a>
+      <nav class="site-nav">
+        <a href="index.html">Início</a>
+        <a href="jeni-informa.html">JENI Informa</a>
+      </nav>
+    </div>
+  </header>
 
-<nav class="site-nav">
-<a href="index.html">Início</a>
-<a href="jeni-informa.html">JENI Informa</a>
-</nav>
+  <main>
+    <section class="jeni-news-hero">
+      <div class="container">
+        <div class="jeni-news-hero-inner">
+          <span class="section-tag">JENI Informa</span>
+          <h1>Actualizações, projectos e movimento cultural</h1>
+          <p>
+            Um espaço para acompanhar notícias, iniciativas, actividades comunitárias e projectos desenvolvidos pela JENI Empreendimentos.
+          </p>
+        </div>
+      </div>
+    </section>
 
-</div>
-</header>
+    <section class="section jeni-news-layout">
+      <div class="container">
 
+        <div id="featured-news"></div>
 
-<main>
+        <div class="jeni-news-toolbar">
+          <div>
+            <span class="jeni-news-mini-label">Secções</span>
+            <div class="jeni-news-filters">
+              <button class="news-filter-btn active" data-filter="Todos">Todos</button>
+              <button class="news-filter-btn" data-filter="Projectos">Projectos</button>
+              <button class="news-filter-btn" data-filter="Comunidade">Comunidade</button>
+              <button class="news-filter-btn" data-filter="Reconhecimento">Reconhecimento</button>
+              <button class="news-filter-btn" data-filter="Institucional">Institucional</button>
+            </div>
+          </div>
+        </div>
 
-<section class="section">
+        <div id="news-grid" class="jeni-news-grid"></div>
 
-<div class="container">
+      </div>
+    </section>
+  </main>
 
-<div class="section-head">
-<span class="section-tag">JENI Informa</span>
+  <footer class="site-footer">
+    <div class="container footer-wrap">
+      <div>
+        <strong>JENI Empreendimentos</strong>
+        <p>Produção cultural, gestão criativa e desenvolvimento de iniciativas em Moçambique.</p>
+      </div>
 
-<h1>Actualizações e iniciativas culturais</h1>
+      <div>
+        <p>Maputo, Moçambique</p>
+        <p><a href="index.html">Voltar ao site principal</a></p>
+      </div>
+    </div>
+  </footer>
 
-<p>
-Acompanhe notícias, actividades, projectos e iniciativas desenvolvidas pela JENI Empreendimentos.
-</p>
+  <script>
+    const newsData = [
+      {
+        title: "Estrelas do Meu Bairro mobiliza crianças e comunidade",
+        date: "14 Março 2026",
+        category: "Projectos",
+        image: "foto1.jpg.jpeg",
+        excerpt: "O projecto reuniu crianças, jovens e comunidade escolar em actividades culturais voltadas para participação, criatividade e expressão artística.",
+        featured: true
+      },
+      {
+        title: "Momentos de expressão artística marcam as actividades do projecto",
+        date: "14 Março 2026",
+        category: "Comunidade",
+        image: "foto2.jpg.jpeg",
+        excerpt: "As actividades promoveram dinâmicas colectivas, envolvimento comunitário e valorização de talentos em contexto escolar.",
+        featured: false
+      },
+      {
+        title: "Director da Escola Primária 4 de Outubro participa na entrega de certificados",
+        date: "14 Março 2026",
+        category: "Reconhecimento",
+        image: "foto3.jpg.jpeg",
+        excerpt: "A entrega de certificados reforçou o reconhecimento simbólico da participação dos alunos nas actividades do projecto.",
+        featured: false
+      },
+      {
+        title: "Directora da JENI Empreendimentos destaca o valor da participação juvenil",
+        date: "14 Março 2026",
+        category: "Institucional",
+        image: "foto4.jpg.jpeg",
+        excerpt: "A presença da direcção da JENI Empreendimentos reforçou o compromisso com iniciativas culturais de base comunitária.",
+        featured: false
+      },
+      {
+        title: "Entrega simbólica de certificados valoriza o percurso dos participantes",
+        date: "14 Março 2026",
+        category: "Reconhecimento",
+        image: "foto5.jpg.jpeg",
+        excerpt: "Os certificados assinalaram o empenho e a presença activa das crianças e jovens nas actividades realizadas.",
+        featured: false
+      },
+      {
+        title: "Participantes encerram actividades com momento colectivo de celebração",
+        date: "14 Março 2026",
+        category: "Comunidade",
+        image: "foto6.jpg.jpeg",
+        excerpt: "A iniciativa culminou num momento de celebração conjunta com participantes, equipa e comunidade educativa.",
+        featured: false
+      },
+      {
+        title: "Grupo de participantes reforça impacto do projecto na comunidade escolar",
+        date: "14 Março 2026",
+        category: "Projectos",
+        image: "foto7.jpg.jpeg",
+        excerpt: "O projecto mostrou o potencial da arte como espaço de integração, aprendizagem e valorização local.",
+        featured: false
+      },
+      {
+        title: "Equipa e parceiros reafirmam compromisso com iniciativas culturais comunitárias",
+        date: "14 Março 2026",
+        category: "Institucional",
+        image: "foto8.jpg.jpeg",
+        excerpt: "A realização da iniciativa contou com articulação entre equipa organizadora, escola e parceiros locais.",
+        featured: false
+      }
+    ];
 
-</div>
+    const featuredContainer = document.getElementById("featured-news");
+    const gridContainer = document.getElementById("news-grid");
+    const filterButtons = document.querySelectorAll(".news-filter-btn");
 
+    function createFeaturedArticle(article) {
+      return `
+        <article class="jeni-featured-news">
+          <div class="jeni-featured-media">
+            <img src="${article.image}" alt="${article.title}">
+          </div>
+          <div class="jeni-featured-content">
+            <span class="jeni-news-category">${article.category}</span>
+            <span class="jeni-news-date">${article.date}</span>
+            <h2>${article.title}</h2>
+            <p>${article.excerpt}</p>
+            <a href="#" class="jeni-news-link">Ler notícia</a>
+          </div>
+        </article>
+      `;
+    }
 
-<div class="news-grid">
+    function createNewsCard(article) {
+      return `
+        <article class="jeni-news-card">
+          <div class="jeni-news-card-image">
+            <img src="${article.image}" alt="${article.title}">
+          </div>
+          <div class="jeni-news-card-content">
+            <div class="jeni-news-meta">
+              <span class="jeni-news-category">${article.category}</span>
+              <span class="jeni-news-date">${article.date}</span>
+            </div>
+            <h3>${article.title}</h3>
+            <p>${article.excerpt}</p>
+            <a href="#" class="jeni-news-link">Ler notícia</a>
+          </div>
+        </article>
+      `;
+    }
 
-<article class="news-card">
+    function renderNews(filter = "Todos") {
+      const featuredArticle = newsData.find(item => item.featured) || newsData[0];
+      featuredContainer.innerHTML = createFeaturedArticle(featuredArticle);
 
-<img src="foto6.jpg.jpeg" alt="Projecto Estrelas do Meu Bairro">
+      let filtered = newsData.filter(item => !item.featured);
 
-<div class="news-content">
+      if (filter !== "Todos") {
+        filtered = filtered.filter(item => item.category === filter);
+      }
 
-<span class="news-date">Março 2026</span>
+      gridContainer.innerHTML = filtered.map(createNewsCard).join("");
+    }
 
-<h2>Estrelas do Meu Bairro mobiliza crianças e comunidade</h2>
+    filterButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        filterButtons.forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        renderNews(btn.dataset.filter);
+      });
+    });
 
-<p>
-O projecto promove participação cultural, criatividade e valorização de talentos jovens na comunidade da Matola Fomento.
-</p>
-
-<a href="#">Ler notícia</a>
-
-</div>
-
-</article>
-
-
-<article class="news-card">
-
-<img src="foto3.jpg.jpeg" alt="Entrega de certificados">
-
-<div class="news-content">
-
-<span class="news-date">Março 2026</span>
-
-<h2>Entrega de certificados marca momento de reconhecimento</h2>
-
-<p>
-Participantes receberam certificados de participação como forma de valorização do seu empenho nas actividades culturais.
-</p>
-
-<a href="#">Ler notícia</a>
-
-</div>
-
-</article>
-
-
-<article class="news-card">
-
-<img src="foto8.jpg.jpeg" alt="Equipa do projecto">
-
-<div class="news-content">
-
-<span class="news-date">Março 2026</span>
-
-<h2>Equipa e parceiros reforçam compromisso com a comunidade</h2>
-
-<p>
-A iniciativa contou com o envolvimento de parceiros locais e da equipa da JENI Empreendimentos.
-</p>
-
-<a href="#">Ler notícia</a>
-
-</div>
-
-</article>
-
-</div>
-
-</div>
-
-</section>
-
-</main>
-
-
-<footer class="site-footer">
-
-<div class="container footer-wrap">
-
-<div>
-<strong>JENI Empreendimentos</strong>
-<p>Produção cultural e gestão criativa em Moçambique.</p>
-</div>
-
-<div>
-<p>Maputo, Moçambique</p>
-<p><a href="index.html">Voltar ao site</a></p>
-</div>
-
-</div>
-
-</footer>
+    renderNews();
+  </script>
 
 </body>
 </html>
