@@ -578,3 +578,30 @@ a{
 .site-footer a:hover{
   color:white;
 }
+
+.social-links{
+  display:flex;
+  flex-wrap:wrap;
+  gap:12px;
+  margin-top:8px;
+}
+
+.social-links a{
+  width:48px;
+  height:48px;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:#d4af37;
+  color:#111;
+  font-size:1.2rem;
+  transition:0.3s ease;
+}
+
+.social-links a:hover{
+  transform:translateY(-3px);
+  background:#111;
+  color:#f1df9b;
+  box-shadow:0 10px 24px rgba(0,0,0,0.12);
+}
