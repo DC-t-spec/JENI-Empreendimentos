@@ -221,3 +221,78 @@ body {
     align-items: flex-start;
   }
 }
+.producer-header {
+  background: #000;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.producer-back-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 20px;
+  border-radius: 999px;
+  background: #fff;
+  color: #000;
+  font-weight: 700;
+  text-decoration: none;
+  transition: 0.3s ease;
+}
+
+.producer-back-link:hover {
+  opacity: 0.88;
+}
+
+.producer-hero-mini {
+  margin-bottom: 28px;
+}
+
+.producer-hero-mini h1 {
+  margin: 12px 0 10px;
+  font-size: 2.2rem;
+  line-height: 1.1;
+}
+
+.producer-hero-mini p {
+  max-width: 760px;
+  margin: 0;
+  color: #555;
+  line-height: 1.7;
+  font-size: 1rem;
+}
+
+.form-panel {
+  border: 1px solid rgba(0,0,0,0.04);
+}
+
+.form-panel h1 {
+  font-size: 2rem;
+  margin-bottom: 10px;
+}
+
+.auth-btn {
+  background: #000;
+  color: #fff;
+}
+
+.secondary-btn {
+  border: 1px solid #000;
+  color: #000;
+}
+
+.auth-field label {
+  color: #111;
+}
+
+.auth-field input,
+.auth-field textarea,
+.auth-field select {
+  background: #fff;
+}
+
+.auth-field input:focus,
+.auth-field textarea:focus,
+.auth-field select:focus {
+  border-color: #b8860b;
+  box-shadow: 0 0 0 3px rgba(184,134,11,0.12);
+}
