@@ -91,6 +91,13 @@
     </div>
   </footer>
 
+ <div class="jeni-news-modal" id="newsModal">
+  <div class="jeni-news-modal-box">
+    <button class="jeni-news-modal-close" type="button" onclick="closeNewsModal()">×</button>
+    <div id="newsModalContent"></div>
+  </div>
+</div>
+  
   <script>
     const newsData = [
       {
@@ -315,12 +322,7 @@ function closeNewsModal() {
     });
 
     renderNews();
-    <div class="jeni-news-modal" id="newsModal">
-  <div class="jeni-news-modal-box">
-    <button class="jeni-news-modal-close" type="button" onclick="closeNewsModal()">×</button>
-    <div id="newsModalContent"></div>
-  </div>
-</div>
+   
 
   </script>
 
