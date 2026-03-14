@@ -906,3 +906,24 @@ a{
 .news-highlight-box li:last-child{
   margin-bottom:0;
 }
+
+.jeni-featured-full {
+  margin-top: 14px;
+}
+
+.jeni-read-more-btn {
+  margin-top: 18px;
+  padding: 12px 22px;
+  border: none;
+  border-radius: 999px;
+  background: #000;
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.jeni-read-more-btn:hover {
+  opacity: 0.85;
+}
