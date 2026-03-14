@@ -6,12 +6,7 @@
   <title>JENI Informa | JENI Empreendimentos</title>
   <meta name="description" content="JENI Informa: notícias, actualizações, projectos e iniciativas culturais da JENI Empreendimentos.">
   <link rel="stylesheet" href="style.css">
-<div class="jeni-news-modal" id="newsModal">
-  <div class="jeni-news-modal-box">
-    <button class="jeni-news-modal-close" type="button" onclick="closeNewsModal()">×</button>
-    <div id="newsModalContent"></div>
-  </div>
-</div>
+
   
 </head>
 <body>
@@ -64,6 +59,22 @@
 
       </div>
     </section>
+    <section class="jeni-producer-invite">
+  <div class="container invite-box">
+    <span class="section-tag">Área do produtor</span>
+    <h2>É produtor, promotor ou agente cultural?</h2>
+    <p>
+      Crie a sua conta para submeter eventos, oportunidades e iniciativas
+      para publicação no <strong>JENI Informa</strong>.
+    </p>
+
+    <div class="invite-buttons">
+      <a href="jeni-informa/criar-conta.html" class="btn-primary">Criar conta</a>
+      <a href="jeni-informa/login.html" class="btn-secondary">Entrar</a>
+    </div>
+  </div>
+</section>
+
   </main>
 
   <footer class="site-footer">
@@ -304,6 +315,13 @@ function closeNewsModal() {
     });
 
     renderNews();
+    <div class="jeni-news-modal" id="newsModal">
+  <div class="jeni-news-modal-box">
+    <button class="jeni-news-modal-close" type="button" onclick="closeNewsModal()">×</button>
+    <div id="newsModalContent"></div>
+  </div>
+</div>
+
   </script>
 
 </body>
