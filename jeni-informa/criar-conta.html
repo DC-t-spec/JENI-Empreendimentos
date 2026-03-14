@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Criar conta | JENI Informa</title>
+  <link rel="stylesheet" href="auth.css" />
+</head>
+<body>
+  <main class="auth-page">
+    <section class="auth-card">
+      <h1>Criar conta</h1>
+      <p class="auth-intro">
+        Crie a sua conta para submeter eventos, oportunidades e iniciativas
+        para publicação no <strong>JENI Informa</strong>.
+      </p>
+
+      <form id="signup-form" class="auth-form">
+        <div class="auth-field">
+          <label for="full_name">Nome completo *</label>
+          <input type="text" id="full_name" required />
+        </div>
+
+        <div class="auth-field">
+          <label for="email">Email *</label>
+          <input type="email" id="email" required />
+        </div>
+
+        <div class="auth-field">
+          <label for="phone">Telefone</label>
+          <input type="text" id="phone" />
+        </div>
+
+        <div class="auth-field">
+          <label for="organization_name">Organização / projecto</label>
+          <input type="text" id="organization_name" />
+        </div>
+
+        <div class="auth-field">
+          <label for="city">Cidade</label>
+          <input type="text" id="city" />
+        </div>
+
+        <div class="auth-field">
+          <label for="password">Palavra-passe *</label>
+          <input type="password" id="password" required />
+        </div>
+
+        <div class="auth-field">
+          <label for="confirm_password">Confirmar palavra-passe *</label>
+          <input type="password" id="confirm_password" required />
+        </div>
+
+        <div id="signup-message" class="auth-message"></div>
+
+        <button type="submit" class="auth-btn">Criar conta</button>
+      </form>
+
+      <div class="auth-link-row">
+        Já tem conta? <a href="login.html">Entrar</a>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="auth.js"></script>
+  <script>
+    document.getElementById("signup-form").addEventListener("submit", handleSignUp);
+  </script>
+</body>
+</html>
