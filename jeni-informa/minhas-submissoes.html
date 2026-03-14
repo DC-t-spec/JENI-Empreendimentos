@@ -1,1 +1,94 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Minhas submissões | JENI Informa</title>
+  <link rel="stylesheet" href="auth.css" />
+  <style>
+    .list-page { min-height: 100vh; background: #f7f7f7; }
+    .list-header { background: #000; color: #fff; padding: 18px 24px; }
+    .list-header-wrap { max-width: 1100px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+    .list-header a { color: #fff; text-decoration: none; font-weight: 700; }
+    .list-main { max-width: 1100px; margin: 0 auto; padding: 32px 20px 60px; }
+    .list-panel { background: #fff; border-radius: 18px; padding: 24px; box-shadow: 0 10px 35px rgba(0,0,0,0.06); }
+    .submission-list { display: grid; gap: 16px; margin-top: 20px; }
+    .submission-card { padding: 18px; border-radius: 14px; background: #f3f3f3; }
+    .submission-meta { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 8px; font-size: 0.9rem; }
+    .submission-pill { background: #000; color: #fff; border-radius: 999px; padding: 4px 10px; font-size: 0.82rem; }
+    .submission-card h3 { margin: 8px 0 10px; }
+    .empty-state { color: #666; }
+  </style>
+</head>
+<body class="list-page">
+  <header class="list-header">
+    <div class="list-header-wrap">
+      <div>JENI Informa — Minhas submissões</div>
+      <a href="dashboard.html">Voltar</a>
+    </div>
+  </header>
 
+  <main class="list-main">
+    <section class="list-panel">
+      <h1>Minhas submissões</h1>
+      <p class="auth-intro">Aqui pode acompanhar o estado dos conteúdos que submeteu.</p>
+
+      <div id="list-message" class="auth-message"></div>
+      <div id="submission-list" class="submission-list"></div>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="auth.js"></script>
+  <script>
+    function formatDate(dateString) {
+      if (!dateString) return "Sem data";
+      return new Date(dateString).toLocaleString("pt-PT");
+    }
+
+    async function loadSubmissions() {
+      const user = await requireAuth();
+      if (!user) return;
+
+      showMessage("list-message", "A carregar submissões...", "info");
+
+      const { data, error } = await supabaseClient
+        .from("submissions")
+        .select("id, type, status, title, summary, category, start_date, created_at, published_at")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        showMessage("list-message", error.message, "error");
+        return;
+      }
+
+      clearMessage("list-message");
+
+      const container = document.getElementById("submission-list");
+
+      if (!data || data.length === 0) {
+        container.innerHTML = `<div class="empty-state">Ainda não tem submissões.</div>`;
+        return;
+      }
+
+      container.innerHTML = data.map(item => `
+        <article class="submission-card">
+          <div class="submission-meta">
+            <span class="submission-pill">${item.type}</span>
+            <span class="submission-pill">${item.status}</span>
+          </div>
+          <h3>${item.title}</h3>
+          <p>${item.summary || ""}</p>
+          <p><strong>Categoria:</strong> ${item.category || "Não definida"}</p>
+          <p><strong>Data principal:</strong> ${formatDate(item.start_date)}</p>
+          <p><strong>Criado em:</strong> ${formatDate(item.created_at)}</p>
+          <p><strong>Publicado em:</strong> ${item.published_at ? formatDate(item.published_at) : "Ainda não publicado"}</p>
+        </article>
+      `).join("");
+    }
+
+    loadSubmissions();
+  </script>
+</body>
+</html>
