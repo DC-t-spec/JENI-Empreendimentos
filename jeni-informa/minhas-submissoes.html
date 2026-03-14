@@ -5,33 +5,37 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Minhas submissões | JENI Informa</title>
   <link rel="stylesheet" href="auth.css" />
-  <style>
-    .list-page { min-height: 100vh; background: #f7f7f7; }
-    .list-header { background: #000; color: #fff; padding: 18px 24px; }
-    .list-header-wrap { max-width: 1100px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
-    .list-header a { color: #fff; text-decoration: none; font-weight: 700; }
-    .list-main { max-width: 1100px; margin: 0 auto; padding: 32px 20px 60px; }
-    .list-panel { background: #fff; border-radius: 18px; padding: 24px; box-shadow: 0 10px 35px rgba(0,0,0,0.06); }
-    .submission-list { display: grid; gap: 16px; margin-top: 20px; }
-    .submission-card { padding: 18px; border-radius: 14px; background: #f3f3f3; }
-    .submission-meta { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 8px; font-size: 0.9rem; }
-    .submission-pill { background: #000; color: #fff; border-radius: 999px; padding: 4px 10px; font-size: 0.82rem; }
-    .submission-card h3 { margin: 8px 0 10px; }
-    .empty-state { color: #666; }
-  </style>
 </head>
-<body class="list-page">
-  <header class="list-header">
-    <div class="list-header-wrap">
-      <div>JENI Informa — Minhas submissões</div>
-      <a href="dashboard.html">Voltar</a>
+<body class="dashboard-page">
+  <header class="dashboard-header">
+    <div class="dashboard-header-wrap">
+      <div>
+        <h1>JENI Informa — Minhas submissões</h1>
+      </div>
+
+      <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+        <a href="dashboard.html" class="producer-back-link">Voltar ao painel</a>
+        <a href="../jeni-informa.html" class="producer-back-link">JENI Informa</a>
+      </div>
     </div>
   </header>
 
-  <main class="list-main">
-    <section class="list-panel">
+  <main class="dashboard-main">
+    <section class="producer-hero-mini">
       <h1>Minhas submissões</h1>
-      <p class="auth-intro">Aqui pode acompanhar o estado dos conteúdos que submeteu.</p>
+      <p>
+        Aqui pode acompanhar o estado dos conteúdos que submeteu para o
+        <strong>JENI Informa</strong>, incluindo eventos, oportunidades e outras
+        iniciativas em análise editorial.
+      </p>
+    </section>
+
+    <section class="dashboard-panel">
+      <h2>Histórico de conteúdos submetidos</h2>
+      <p class="dashboard-note">
+        Os conteúdos enviados passam por verificação antes de eventual publicação.
+        O estado de cada submissão será actualizado conforme o processo editorial.
+      </p>
 
       <div id="list-message" class="auth-message"></div>
       <div id="submission-list" class="submission-list"></div>
@@ -41,9 +45,27 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="auth.js"></script>
   <script>
-    function formatDate(dateString) {
+    function formatSubmissionDate(dateString) {
       if (!dateString) return "Sem data";
-      return new Date(dateString).toLocaleString("pt-PT");
+      const date = new Date(dateString);
+      if (Number.isNaN(date.getTime())) return "Sem data";
+      return date.toLocaleString("pt-PT");
+    }
+
+    function getSubmissionStatusLabel(status) {
+      const value = (status || "pending").toLowerCase();
+
+      if (value === "approved") return "Aprovado";
+      if (value === "rejected") return "Rejeitado";
+      return "Pendente";
+    }
+
+    function getSubmissionStatusClass(status) {
+      const value = (status || "pending").toLowerCase();
+
+      if (value === "approved") return "approved";
+      if (value === "rejected") return "rejected";
+      return "pending";
     }
 
     async function loadSubmissions() {
@@ -54,12 +76,13 @@
 
       const { data, error } = await supabaseClient
         .from("submissions")
-        .select("id, type, status, title, summary, category, start_date, created_at, published_at")
+        .select("id, type, status, title, summary, category, event_date, deadline, created_at, published_at")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false });
 
       if (error) {
-        showMessage("list-message", error.message, "error");
+        showMessage("list-message", "Não foi possível carregar as submissões.", "error");
+        console.error(error);
         return;
       }
 
@@ -68,24 +91,47 @@
       const container = document.getElementById("submission-list");
 
       if (!data || data.length === 0) {
-        container.innerHTML = `<div class="empty-state">Ainda não tem submissões.</div>`;
+        container.innerHTML = `
+          <div class="empty-state">
+            Ainda não tem submissões registadas na sua conta.
+          </div>
+        `;
         return;
       }
 
-      container.innerHTML = data.map(item => `
-        <article class="submission-card">
-          <div class="submission-meta">
-            <span class="submission-pill">${item.type}</span>
-            <span class="submission-pill">${item.status}</span>
-          </div>
-          <h3>${item.title}</h3>
-          <p>${item.summary || ""}</p>
-          <p><strong>Categoria:</strong> ${item.category || "Não definida"}</p>
-          <p><strong>Data principal:</strong> ${formatDate(item.start_date)}</p>
-          <p><strong>Criado em:</strong> ${formatDate(item.created_at)}</p>
-          <p><strong>Publicado em:</strong> ${item.published_at ? formatDate(item.published_at) : "Ainda não publicado"}</p>
-        </article>
-      `).join("");
+      container.innerHTML = data.map(item => {
+        const principalDate =
+          item.type === "evento"
+            ? formatSubmissionDate(item.event_date)
+            : formatSubmissionDate(item.deadline);
+
+        const principalLabel =
+          item.type === "evento"
+            ? "Data do evento"
+            : "Prazo";
+
+        return `
+          <article class="submission-card">
+            <div class="submission-meta">
+              <span class="submission-pill">${item.type || "Submissão"}</span>
+              <span class="submission-status ${getSubmissionStatusClass(item.status)}">
+                ${getSubmissionStatusLabel(item.status)}
+              </span>
+            </div>
+
+            <h3>${item.title || "Sem título"}</h3>
+
+            <p>${item.summary || "Sem resumo disponível."}</p>
+
+            <div class="submission-details">
+              <p><strong>Categoria:</strong> ${item.category || "Não definida"}</p>
+              <p><strong>${principalLabel}:</strong> ${principalDate}</p>
+              <p><strong>Criado em:</strong> ${formatSubmissionDate(item.created_at)}</p>
+              <p><strong>Publicado em:</strong> ${item.published_at ? formatSubmissionDate(item.published_at) : "Ainda não publicado"}</p>
+            </div>
+          </article>
+        `;
+      }).join("");
     }
 
     loadSubmissions();
