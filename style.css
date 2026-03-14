@@ -927,3 +927,58 @@ a{
 .jeni-read-more-btn:hover {
   opacity: 0.85;
 }
+
+
+.jeni-news-link {
+  margin-top: 14px;
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  color: #000;
+}
+
+.jeni-news-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  z-index: 9999;
+}
+
+.jeni-news-modal.active {
+  display: flex;
+}
+
+.jeni-news-modal-box {
+  background: #fff;
+  width: 100%;
+  max-width: 850px;
+  max-height: 90vh;
+  overflow-y: auto;
+  border-radius: 24px;
+  padding: 24px;
+  position: relative;
+}
+
+.jeni-news-modal-close {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  border: none;
+  background: none;
+  font-size: 2rem;
+  cursor: pointer;
+}
+
+.jeni-news-modal-image img {
+  width: 100%;
+  border-radius: 18px;
+  margin-bottom: 18px;
+  display: block;
+}
