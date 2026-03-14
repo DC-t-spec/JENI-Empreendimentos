@@ -387,3 +387,16 @@ body {
     font-size: 1.8rem;
   }
 }
+
+.auth-card.form-panel {
+  max-width: 560px;
+}
+
+.auth-intro strong {
+  color: var(--jeni-black);
+}
+
+.producer-header .dashboard-header-wrap {
+  padding: 14px 20px;
+}
+
