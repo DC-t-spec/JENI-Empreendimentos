@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Submeter oportunidade | JENI Informa</title>
+  <link rel="stylesheet" href="auth.css" />
+  <style>
+    .form-page { min-height: 100vh; background: #f7f7f7; }
+    .form-header { background: #000; color: #fff; padding: 18px 24px; }
+    .form-header-wrap { max-width: 1100px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+    .form-header a { color: #fff; text-decoration: none; font-weight: 700; }
+    .form-main { max-width: 900px; margin: 0 auto; padding: 32px 20px 60px; }
+    .form-panel { background: #fff; border-radius: 18px; padding: 24px; box-shadow: 0 10px 35px rgba(0,0,0,0.06); }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .form-grid .full { grid-column: 1 / -1; }
+    .form-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 20px; }
+    .secondary-btn { border: 1px solid #000; background: transparent; color: #000; padding: 14px 20px; border-radius: 999px; font-size: 1rem; font-weight: 700; cursor: pointer; }
+    @media (max-width: 760px) { .form-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body class="form-page">
+  <header class="form-header">
+    <div class="form-header-wrap">
+      <div>JENI Informa — Submeter oportunidade</div>
+      <a href="dashboard.html">Voltar</a>
+    </div>
+  </header>
+
+  <main class="form-main">
+    <section class="form-panel">
+      <h1>Submeter oportunidade</h1>
+      <p class="auth-intro">Envie uma call, bolsa, residência, concurso ou outra oportunidade para revisão.</p>
+
+      <form id="opportunity-form" class="auth-form">
+        <div class="form-grid">
+          <div class="auth-field full">
+            <label for="title">Título *</label>
+            <input type="text" id="title" required />
+          </div>
+
+          <div class="auth-field full">
+            <label for="summary">Resumo curto *</label>
+            <textarea id="summary" rows="3" required></textarea>
+          </div>
+
+          <div class="auth-field full">
+            <label for="description">Descrição completa *</label>
+            <textarea id="description" rows="8" required></textarea>
+          </div>
+
+          <div class="auth-field">
+            <label for="category">Categoria</label>
+            <input type="text" id="category" placeholder="Bolsa, residência, call..." />
+          </div>
+
+          <div class="auth-field">
+            <label for="start_date">Prazo / data principal</label>
+            <input type="datetime-local" id="start_date" />
+          </div>
+
+          <div class="auth-field full">
+            <label for="external_link">Link oficial</label>
+            <input type="url" id="external_link" placeholder="https://..." />
+          </div>
+
+          <div class="auth-field full">
+            <label for="video_url">Link de vídeo</label>
+            <input type="url" id="video_url" placeholder="Opcional" />
+          </div>
+
+          <div class="auth-field">
+            <label for="contact_email">Email de contacto</label>
+            <input type="email" id="contact_email" />
+          </div>
+
+          <div class="auth-field">
+            <label for="contact_phone">Telefone de contacto</label>
+            <input type="text" id="contact_phone" />
+          </div>
+
+          <div class="auth-field full">
+            <label for="image_file">Imagem de capa</label>
+            <input type="file" id="image_file" accept="image/*" />
+          </div>
+        </div>
+
+        <div id="opportunity-message" class="auth-message"></div>
+
+        <div class="form-actions">
+          <button type="button" class="secondary-btn" id="save-draft-btn">Guardar rascunho</button>
+          <button type="submit" class="auth-btn" id="send-review-btn">Enviar para aprovação</button>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="auth.js"></script>
+  <script>
+    let desiredStatus = "draft";
+
+    document.getElementById("save-draft-btn").addEventListener("click", () => {
+      desiredStatus = "draft";
+      document.getElementById("opportunity-form").requestSubmit();
+    });
+
+    document.getElementById("send-review-btn").addEventListener("click", () => {
+      desiredStatus = "pending";
+    });
+
+    function toISO(value) {
+      return value ? new Date(value).toISOString() : null;
+    }
+
+    function safeFileName(name) {
+      return name.toLowerCase().replace(/[^a-z0-9.\-_]/g, "-");
+    }
+
+    async function uploadImage(userId, file) {
+      if (!file) return null;
+
+      const filePath = `${userId}/${Date.now()}-${safeFileName(file.name)}`;
+
+      const { error: uploadError } = await supabaseClient
+        .storage
+        .from("jeni-informa")
+        .upload(filePath, file);
+
+      if (uploadError) throw new Error(uploadError.message);
+
+      const { data } = supabaseClient
+        .storage
+        .from("jeni-informa")
+        .getPublicUrl(filePath);
+
+      return data.publicUrl;
+    }
+
+    document.getElementById("opportunity-form").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      clearMessage("opportunity-message");
+
+      const user = await requireAuth();
+      if (!user) return;
+
+      try {
+        showMessage("opportunity-message", "A guardar submissão...", "info");
+
+        const imageFile = document.getElementById("image_file").files[0];
+        const imageUrl = await uploadImage(user.id, imageFile);
+
+        const payload = {
+          user_id: user.id,
+          type: "opportunity",
+          status: desiredStatus,
+          title: document.getElementById("title").value.trim(),
+          summary: document.getElementById("summary").value.trim(),
+          description: document.getElementById("description").value.trim(),
+          category: document.getElementById("category").value.trim() || "Oportunidade",
+          start_date: toISO(document.getElementById("start_date").value),
+          image_url: imageUrl,
+          external_link: document.getElementById("external_link").value.trim(),
+          video_url: document.getElementById("video_url").value.trim(),
+          contact_email: document.getElementById("contact_email").value.trim(),
+          contact_phone: document.getElementById("contact_phone").value.trim()
+        };
+
+        const { error } = await supabaseClient
+          .from("submissions")
+          .insert(payload);
+
+        if (error) throw new Error(error.message);
+
+        showMessage(
+          "opportunity-message",
+          desiredStatus === "pending"
+            ? "Oportunidade enviada para aprovação com sucesso."
+            : "Rascunho guardado com sucesso.",
+          "success"
+        );
+
+        document.getElementById("opportunity-form").reset();
+        desiredStatus = "draft";
+      } catch (err) {
+        showMessage("opportunity-message", err.message || "Erro ao guardar submissão.", "error");
+      }
+    });
+  </script>
+</body>
+</html>
