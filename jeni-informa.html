@@ -161,22 +161,21 @@
     const gridContainer = document.getElementById("news-grid");
     const filterButtons = document.querySelectorAll(".news-filter-btn");
 
-    function createFeaturedArticle(article) {
-      return `
-        <article class="jeni-featured-news">
-          <div class="jeni-featured-media">
-            <img src="${article.image}" alt="${article.title}">
-          </div>
-          <div class="jeni-featured-content">
-            <span class="jeni-news-category">${article.category}</span>
-            <span class="jeni-news-date">${article.date}</span>
-            <h2>${article.title}</h2>
-            <p>${article.excerpt}</p>
-            <a href="#" class="jeni-news-link">Ler notícia</a>
-          </div>
-        </article>
-      `;
-    }
+   function createFeaturedArticle(article) {
+  return `
+    <article class="jeni-featured-news">
+      <div class="jeni-featured-media">
+        <img src="${article.image}" alt="${article.title}">
+      </div>
+      <div class="jeni-featured-content">
+        <span class="jeni-news-category">${article.category}</span>
+        <span class="jeni-news-date">${article.date}</span>
+        <h2>${article.title}</h2>
+        ${article.content}
+      </div>
+    </article>
+  `;
+}
 
     function createNewsCard(article) {
       return `
