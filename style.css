@@ -694,7 +694,7 @@ a{
 
 .jeni-featured-news{
   display:grid;
-  grid-template-columns:1.3fr 1fr;
+  grid-template-columns:1.1fr 1fr;
   gap:28px;
   background:#fff;
   border-radius:28px;
@@ -727,8 +727,9 @@ a{
 
 .jeni-featured-content p{
   color:#5f5a53;
-  margin-bottom:20px;
+  margin-bottom:18px;
   font-size:1rem;
+  line-height:1.8;
 }
 
 .jeni-news-toolbar{
@@ -876,4 +877,32 @@ a{
   .jeni-featured-media img{
     min-height:260px;
   }
+}
+
+.news-highlight-box{
+  background:#f3ecdf;
+  border-left:4px solid #b8872d;
+  border-radius:16px;
+  padding:20px 22px;
+  margin:22px 0;
+}
+
+.news-highlight-box h4{
+  margin:0 0 12px;
+  font-size:1rem;
+  color:#111;
+}
+
+.news-highlight-box ul{
+  margin:0;
+  padding-left:18px;
+}
+
+.news-highlight-box li{
+  margin-bottom:8px;
+  color:#4f4a43;
+}
+
+.news-highlight-box li:last-child{
+  margin-bottom:0;
 }
