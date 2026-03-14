@@ -6,6 +6,13 @@
   <title>JENI Informa | JENI Empreendimentos</title>
   <meta name="description" content="JENI Informa: notícias, actualizações, projectos e iniciativas culturais da JENI Empreendimentos.">
   <link rel="stylesheet" href="style.css">
+<div class="jeni-news-modal" id="newsModal">
+  <div class="jeni-news-modal-box">
+    <button class="jeni-news-modal-close" type="button" onclick="closeNewsModal()">×</button>
+    <div id="newsModalContent"></div>
+  </div>
+</div>
+  
 </head>
 <body>
 
@@ -188,24 +195,24 @@
       `;
     }
 
-    function createNewsCard(article) {
-      return `
-        <article class="jeni-news-card">
-          <div class="jeni-news-card-image">
-            <img src="${article.image}" alt="${article.title}">
-          </div>
-          <div class="jeni-news-card-content">
-            <div class="jeni-news-meta">
-              <span class="jeni-news-category">${article.category}</span>
-              <span class="jeni-news-date">${article.date}</span>
-            </div>
-            <h3>${article.title}</h3>
-            <p>${article.excerpt}</p>
-           <button class="jeni-news-link" type="button">Ler notícia</button>
-          </div>
-        </article>
-      `;
-    }
+   function createNewsCard(article, index) {
+  return `
+    <article class="jeni-news-card">
+      <div class="jeni-news-card-image">
+        <img src="${article.image}" alt="${article.title}">
+      </div>
+      <div class="jeni-news-card-content">
+        <div class="jeni-news-meta">
+          <span class="jeni-news-category">${article.category}</span>
+          <span class="jeni-news-date">${article.date}</span>
+        </div>
+        <h3>${article.title}</h3>
+        <p>${article.excerpt}</p>
+        <button class="jeni-news-link" type="button" onclick="openNewsModal(${index})">Ler notícia</button>
+      </div>
+    </article>
+  `;
+}
 
     function setupFeaturedToggle() {
       const btn = document.getElementById("toggle-featured-btn");
@@ -238,8 +245,38 @@
         filtered = filtered.filter(item => item.category === filter);
       }
 
-      gridContainer.innerHTML = filtered.map(createNewsCard).join("");
+     gridContainer.innerHTML = filtered
+  .map(article => {
+    const originalIndex = newsData.indexOf(article);
+    return createNewsCard(article, originalIndex);
+  })
+  .join("");
     }
+
+    function openNewsModal(index) {
+  const article = newsData[index];
+  const modal = document.getElementById("newsModal");
+  const modalContent = document.getElementById("newsModalContent");
+
+  modalContent.innerHTML = `
+    <div class="jeni-news-modal-image">
+      <img src="${article.image}" alt="${article.title}">
+    </div>
+    <div class="jeni-news-meta">
+      <span class="jeni-news-category">${article.category}</span>
+      <span class="jeni-news-date">${article.date}</span>
+    </div>
+    <h2>${article.title}</h2>
+    <p>${article.excerpt}</p>
+    ${article.content ? article.content : ""}
+  `;
+
+  modal.classList.add("active");
+}
+
+function closeNewsModal() {
+  document.getElementById("newsModal").classList.remove("active");
+}
 
     filterButtons.forEach(btn => {
       btn.addEventListener("click", () => {
