@@ -3,83 +3,76 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Criar conta | JENI Informa</title>
+  <title>Área do Produtor | JENI Informa</title>
   <link rel="stylesheet" href="auth.css" />
 </head>
-<body>
-  <header class="producer-header">
+<body class="dashboard-page">
+  <header class="dashboard-header">
     <div class="dashboard-header-wrap">
-      <a href="../jeni-informa.html" class="producer-back-link">← Voltar ao JENI Informa</a>
+      <div>
+        <h1>JENI Informa — Área do Produtor</h1>
+      </div>
+
+      <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+        <a href="../jeni-informa.html" class="producer-back-link">Voltar ao JENI Informa</a>
+        <button id="logout-btn" type="button">Sair</button>
+      </div>
     </div>
   </header>
 
-  <main class="auth-page">
-    <section class="auth-card form-panel">
-      <div class="producer-hero-mini">
-        <p class="auth-intro" style="margin-bottom: 10px; font-weight: 700; color: #b68d49;">
-          Área do Produtor
-        </p>
-
-        <h1>Criar conta</h1>
-
-        <p class="auth-intro">
-          Crie a sua conta para submeter <strong>eventos</strong>,
-          <strong>oportunidades</strong> e outras iniciativas para publicação no
-          <strong>JENI Informa</strong>.
-        </p>
-      </div>
-
-      <form id="signup-form" class="auth-form">
-        <div class="auth-field">
-          <label for="full_name">Nome completo *</label>
-          <input type="text" id="full_name" required placeholder="Ex.: Júlia Novela" />
-        </div>
-
-        <div class="auth-field">
-          <label for="email">Email *</label>
-          <input type="email" id="email" required placeholder="seuemail@exemplo.com" />
-        </div>
-
-        <div class="auth-field">
-          <label for="phone">Telefone</label>
-          <input type="text" id="phone" placeholder="Ex.: +258 84 000 0000" />
-        </div>
-
-        <div class="auth-field">
-          <label for="organization_name">Organização / projecto</label>
-          <input type="text" id="organization_name" placeholder="Ex.: JENI Empreendimentos" />
-        </div>
-
-        <div class="auth-field">
-          <label for="city">Cidade</label>
-          <input type="text" id="city" placeholder="Ex.: Maputo" />
-        </div>
-
-        <div class="auth-field">
-          <label for="password">Palavra-passe *</label>
-          <input type="password" id="password" required placeholder="Mínimo de 6 caracteres" />
-        </div>
-
-        <div class="auth-field">
-          <label for="confirm_password">Confirmar palavra-passe *</label>
-          <input type="password" id="confirm_password" required placeholder="Repita a palavra-passe" />
-        </div>
-
-        <div id="signup-message" class="auth-message"></div>
-
-        <button type="submit" class="auth-btn">Criar conta</button>
-      </form>
-
-      <div class="auth-link-row">
-        Já tem conta? <a href="login.html">Entrar</a>
-      </div>
+  <main class="dashboard-main">
+    <section class="producer-hero-mini">
+      <h1>Painel do produtor</h1>
+      <p>
+        Bem-vindo à área reservada do <strong>JENI Informa</strong>. Aqui poderá
+        gerir os seus dados, submeter conteúdos culturais e acompanhar o estado
+        das suas submissões para análise e possível publicação.
+      </p>
     </section>
+
+    <div class="dashboard-grid">
+      <section class="dashboard-panel">
+        <h2>Dados da conta</h2>
+
+        <div class="dashboard-list">
+          <div><strong>Nome:</strong> <span id="dashboard-name">-</span></div>
+          <div><strong>Email:</strong> <span id="dashboard-email">-</span></div>
+          <div><strong>Organização:</strong> <span id="dashboard-organization">-</span></div>
+          <div><strong>Cidade:</strong> <span id="dashboard-city">-</span></div>
+          <div><strong>Perfil:</strong> <span id="dashboard-role">-</span></div>
+        </div>
+
+        <p class="dashboard-note">
+          Estes dados identificam a sua conta dentro da plataforma. A conta é
+          usada para gerir submissões de eventos, oportunidades e outras
+          iniciativas culturais no ecossistema do JENI Informa.
+        </p>
+      </section>
+
+      <section class="dashboard-panel">
+        <h2>Acções disponíveis</h2>
+
+        <div class="dashboard-actions">
+          <a href="submeter-evento.html">Submeter evento</a>
+          <a href="submeter-oportunidade.html" class="secondary">Submeter oportunidade</a>
+          <a href="minhas-submissoes.html" class="secondary">Minhas submissões</a>
+          <a href="../jeni-informa.html" class="secondary">Página pública do JENI Informa</a>
+        </div>
+
+        <p class="dashboard-note">
+          A Área do Produtor foi criada para facilitar o envio organizado de
+          conteúdos culturais, reforçando a circulação de informação, a
+          visibilidade de iniciativas e a ligação entre agentes, produtores,
+          promotores e público.
+        </p>
+      </section>
+    </div>
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="auth.js"></script>
   <script>
-    document.getElementById("signup-form").addEventListener("submit", handleSignUp);
+    initDashboard();
   </script>
 </body>
 </html>
