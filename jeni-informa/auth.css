@@ -400,3 +400,23 @@ body {
   padding: 14px 20px;
 }
 
+
+.dashboard-header-wrap .producer-back-link {
+  padding: 10px 16px;
+  font-size: 0.95rem;
+}
+
+.dashboard-header-wrap button#logout-btn {
+  border: none;
+  background: #fff;
+  color: #000;
+  padding: 10px 16px;
+  border-radius: 999px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.25s ease;
+}
+
+.dashboard-header-wrap button#logout-btn:hover {
+  background: var(--jeni-gold);
+}
