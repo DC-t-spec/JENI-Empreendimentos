@@ -55,6 +55,13 @@ function getFile(id) {
   const el = document.getElementById(id);
   return el && el.files ? el.files[0] : null;
 }
+function formatDateTime(dateString) {
+  if (!dateString) return "Sem data";
+  const date = new Date(dateString);
+  if (Number.isNaN(date.getTime())) return "Sem data";
+  return date.toLocaleString("pt-PT");
+}
+
 
 /* =====================================================
 AUTH
@@ -190,6 +197,190 @@ async function loadProfile() {
 
   return data;
 }
+async function requireAdmin() {
+  const user = await requireAuth();
+  if (!user) return null;
+
+  const profile = await loadProfile();
+
+  if (!profile || profile.role !== "admin") {
+    window.location.href = "dashboard.html";
+    return null;
+  }
+
+  return { user, profile };
+}
+async function loadAdminSubmissions() {
+  return await supabaseClient
+    .from("submissions")
+    .select("*")
+    .order("status", { ascending: true })
+    .order("created_at", { ascending: false });
+}
+
+async function updateSubmissionStatus(submissionId, newStatus) {
+  const updateData = {
+    status: newStatus,
+    reviewed_at: new Date().toISOString()
+  };
+
+  if (newStatus === "approved") {
+    updateData.published_at = new Date().toISOString();
+  }
+
+  return await supabaseClient
+    .from("submissions")
+    .update(updateData)
+    .eq("id", submissionId)
+    .select()
+    .single();
+}
+async function initAdminPage() {
+  const adminAccess = await requireAdmin();
+  if (!adminAccess) return;
+
+  const logoutBtn = document.getElementById("logout-btn");
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", handleLogout);
+  }
+
+  showMessage("admin-message", "A carregar submissões...", "info");
+
+  const { data, error } = await loadAdminSubmissions();
+
+  if (error) {
+    console.error("ADMIN LOAD ERROR:", error);
+    showMessage("admin-message", error.message || "Erro ao carregar submissões.", "error");
+    return;
+  }
+
+  clearMessage("admin-message");
+
+  const listEl = document.getElementById("admin-submissions-list");
+  const statPending = document.getElementById("stat-pending");
+  const statApproved = document.getElementById("stat-approved");
+  const statRejected = document.getElementById("stat-rejected");
+  const statArchived = document.getElementById("stat-archived");
+
+  const pendingCount = data.filter(item => item.status === "pending").length;
+  const approvedCount = data.filter(item => item.status === "approved").length;
+  const rejectedCount = data.filter(item => item.status === "rejected").length;
+  const archivedCount = data.filter(item => item.status === "archived").length;
+
+  statPending.textContent = pendingCount;
+  statApproved.textContent = approvedCount;
+  statRejected.textContent = rejectedCount;
+  statArchived.textContent = archivedCount;
+
+  if (!data || data.length === 0) {
+    listEl.innerHTML = `
+      <div class="empty-state">
+        Ainda não existem submissões registadas.
+      </div>
+    `;
+    return;
+  }
+
+  const sortedData = [...data].sort((a, b) => {
+    const statusOrder = {
+      pending: 1,
+      approved: 2,
+      rejected: 3,
+      archived: 4,
+      draft: 5
+    };
+
+    const aOrder = statusOrder[a.status] || 99;
+    const bOrder = statusOrder[b.status] || 99;
+
+    if (aOrder !== bOrder) return aOrder - bOrder;
+
+    return new Date(b.created_at) - new Date(a.created_at);
+  });
+
+  listEl.innerHTML = sortedData.map(item => {
+    const typeLabel =
+      item.type === "event" ? "Evento" :
+      item.type === "opportunity" ? "Oportunidade" :
+      item.type === "news" ? "Notícia" :
+      item.type || "Submissão";
+
+    const statusLabel =
+      item.status === "pending" ? "Pendente" :
+      item.status === "approved" ? "Aprovado" :
+      item.status === "rejected" ? "Rejeitado" :
+      item.status === "archived" ? "Arquivado" :
+      item.status || "Sem estado";
+
+    const principalDate =
+      item.type === "event"
+        ? formatDateTime(item.start_date || item.event_date)
+        : item.type === "opportunity"
+          ? (item.deadline || "Sem prazo")
+          : "—";
+
+    const principalLabel =
+      item.type === "event"
+        ? "Data principal"
+        : item.type === "opportunity"
+          ? "Prazo"
+          : "Referência";
+
+    return `
+      <article class="admin-card">
+        <div class="admin-card-top">
+          <div class="admin-card-meta">
+            <span class="admin-type-pill">${typeLabel}</span>
+            <span class="admin-status-pill ${item.status}">${statusLabel}</span>
+          </div>
+        </div>
+
+        <h3>${item.title || "Sem título"}</h3>
+
+        <p>${item.summary || "Sem resumo disponível."}</p>
+
+        <div class="admin-details">
+          <p><strong>Categoria:</strong> ${item.category || "Não definida"}</p>
+          <p><strong>${principalLabel}:</strong> ${principalDate}</p>
+          <p><strong>Local:</strong> ${item.location || "Não definido"}</p>
+          <p><strong>Criado em:</strong> ${formatDateTime(item.created_at)}</p>
+          <p><strong>Publicado em:</strong> ${item.published_at ? formatDateTime(item.published_at) : "Ainda não publicado"}</p>
+        </div>
+
+        <div class="admin-actions">
+          <button class="admin-btn admin-btn-approve" data-id="${item.id}" data-action="approved">Aprovar</button>
+          <button class="admin-btn admin-btn-reject" data-id="${item.id}" data-action="rejected">Rejeitar</button>
+          <button class="admin-btn admin-btn-archive" data-id="${item.id}" data-action="archived">Arquivar</button>
+        </div>
+      </article>
+    `;
+  }).join("");
+
+  listEl.querySelectorAll(".admin-btn").forEach((button) => {
+    button.addEventListener("click", async () => {
+      const submissionId = button.dataset.id;
+      const action = button.dataset.action;
+
+      showMessage("admin-message", "A actualizar submissão...", "info");
+
+      const { error: updateError } = await updateSubmissionStatus(submissionId, action);
+
+      if (updateError) {
+        console.error("ADMIN UPDATE ERROR:", updateError);
+        showMessage("admin-message", updateError.message || "Erro ao actualizar submissão.", "error");
+        return;
+      }
+
+      showMessage("admin-message", "Submissão actualizada com sucesso.", "success");
+
+      setTimeout(() => {
+        initAdminPage();
+      }, 500);
+    });
+  });
+}
+
+
 
 /* =====================================================
 DASHBOARD
