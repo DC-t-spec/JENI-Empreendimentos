@@ -5,17 +5,404 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Administração | JENI Informa</title>
   <link rel="stylesheet" href="auth.css" />
+
+  <style>
+    :root {
+      --jeni-black: #0b0b0b;
+      --jeni-black-soft: #141414;
+      --jeni-panel: #181818;
+      --jeni-panel-2: #1f1f1f;
+      --jeni-line: rgba(212, 175, 55, 0.18);
+      --jeni-gold: #d4af37;
+      --jeni-gold-soft: #f1d77a;
+      --jeni-text: #f5f2e8;
+      --jeni-muted: #b8b0a0;
+      --jeni-danger: #b64545;
+      --jeni-success: #2f8a57;
+      --jeni-warning: #b8860b;
+      --jeni-radius: 18px;
+      --jeni-shadow: 0 18px 45px rgba(0, 0, 0, 0.28);
+    }
+
+    body.dashboard-page {
+      background:
+        radial-gradient(circle at top right, rgba(212, 175, 55, 0.08), transparent 22%),
+        linear-gradient(180deg, #090909 0%, #101010 100%);
+      color: var(--jeni-text);
+    }
+
+    .dashboard-header {
+      background: linear-gradient(180deg, rgba(0,0,0,0.95) 0%, rgba(16,16,16,0.95) 100%);
+      border-bottom: 1px solid var(--jeni-line);
+      backdrop-filter: blur(8px);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .dashboard-header-wrap {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 18px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .dashboard-header h1 {
+      margin: 0;
+      font-size: 1.4rem;
+      color: var(--jeni-gold-soft);
+      letter-spacing: 0.3px;
+    }
+
+    .dashboard-header-subtitle {
+      margin: 4px 0 0;
+      color: var(--jeni-muted);
+      font-size: 0.95rem;
+    }
+
+    .dashboard-main {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 28px 20px 40px;
+    }
+
+    .producer-hero-mini {
+      background:
+        linear-gradient(135deg, rgba(212,175,55,0.12), rgba(212,175,55,0.03)),
+        linear-gradient(180deg, #141414 0%, #1b1b1b 100%);
+      border: 1px solid var(--jeni-line);
+      border-radius: 24px;
+      padding: 28px;
+      margin-bottom: 24px;
+      box-shadow: var(--jeni-shadow);
+    }
+
+    .producer-hero-mini h1 {
+      margin: 0 0 10px;
+      color: var(--jeni-gold-soft);
+      font-size: 2rem;
+    }
+
+    .producer-hero-mini p {
+      margin: 0;
+      color: var(--jeni-text);
+      max-width: 900px;
+      line-height: 1.65;
+    }
+
+    .dashboard-panel {
+      background: linear-gradient(180deg, var(--jeni-panel) 0%, var(--jeni-panel-2) 100%);
+      border: 1px solid var(--jeni-line);
+      border-radius: var(--jeni-radius);
+      padding: 24px;
+      margin-bottom: 22px;
+      box-shadow: var(--jeni-shadow);
+    }
+
+    .dashboard-panel h2 {
+      margin: 0 0 8px;
+      color: var(--jeni-gold-soft);
+      font-size: 1.35rem;
+    }
+
+    .dashboard-note,
+    .admin-section-note {
+      color: var(--jeni-muted);
+      line-height: 1.6;
+      margin-top: 0;
+    }
+
+    .admin-stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(180px, 1fr));
+      gap: 16px;
+      margin-top: 20px;
+    }
+
+    .admin-stat-card {
+      background: linear-gradient(180deg, #111 0%, #1b1b1b 100%);
+      border: 1px solid var(--jeni-line);
+      border-radius: 18px;
+      padding: 18px;
+      min-height: 110px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .admin-stat-label {
+      color: var(--jeni-muted);
+      font-size: 0.95rem;
+      margin-bottom: 8px;
+    }
+
+    .admin-stat-card strong {
+      color: var(--jeni-gold-soft);
+      font-size: 2rem;
+      line-height: 1;
+    }
+
+    .admin-toolbar {
+      display: grid;
+      grid-template-columns: 1.4fr 0.8fr 0.8fr auto auto;
+      gap: 14px;
+      margin-top: 18px;
+      align-items: end;
+    }
+
+    .admin-field {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .admin-field label {
+      font-size: 0.92rem;
+      color: var(--jeni-muted);
+      font-weight: 600;
+    }
+
+    .admin-field input,
+    .admin-field select,
+    .admin-field textarea {
+      width: 100%;
+      background: #101010;
+      color: var(--jeni-text);
+      border: 1px solid rgba(212, 175, 55, 0.16);
+      border-radius: 14px;
+      padding: 13px 14px;
+      outline: none;
+      transition: 0.2s ease;
+      font: inherit;
+    }
+
+    .admin-field textarea {
+      min-height: 130px;
+      resize: vertical;
+    }
+
+    .admin-field input:focus,
+    .admin-field select:focus,
+    .admin-field textarea:focus {
+      border-color: rgba(212, 175, 55, 0.45);
+      box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.10);
+    }
+
+    .admin-actions-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .jeni-btn,
+    .producer-back-link,
+    #logout-btn {
+      appearance: none;
+      border: none;
+      text-decoration: none;
+      cursor: pointer;
+      border-radius: 14px;
+      padding: 12px 16px;
+      font-weight: 700;
+      transition: 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .jeni-btn:hover,
+    .producer-back-link:hover,
+    #logout-btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .jeni-btn-primary {
+      background: linear-gradient(135deg, var(--jeni-gold), var(--jeni-gold-soft));
+      color: #111;
+    }
+
+    .jeni-btn-secondary,
+    .producer-back-link {
+      background: #141414;
+      color: var(--jeni-text);
+      border: 1px solid rgba(212,175,55,0.18);
+    }
+
+    .jeni-btn-outline {
+      background: transparent;
+      color: var(--jeni-gold-soft);
+      border: 1px solid rgba(212,175,55,0.35);
+    }
+
+    #logout-btn {
+      background: rgba(182, 69, 69, 0.12);
+      color: #ffd0d0;
+      border: 1px solid rgba(182, 69, 69, 0.35);
+    }
+
+    .admin-editor {
+      display: none;
+      margin-top: 22px;
+      padding-top: 22px;
+      border-top: 1px solid var(--jeni-line);
+    }
+
+    .admin-editor.active {
+      display: block;
+    }
+
+    .admin-form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(240px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .admin-form-grid .full {
+      grid-column: 1 / -1;
+    }
+
+    .admin-check-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 8px;
+      color: var(--jeni-text);
+    }
+
+    .admin-check-row input {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--jeni-gold);
+    }
+
+    .auth-message {
+      margin-top: 18px;
+    }
+
+    .admin-submissions-list {
+      display: grid;
+      gap: 16px;
+      margin-top: 18px;
+    }
+
+    .admin-empty-state {
+      border: 1px dashed rgba(212,175,55,0.22);
+      border-radius: 18px;
+      padding: 28px;
+      text-align: center;
+      color: var(--jeni-muted);
+      background: rgba(255,255,255,0.01);
+    }
+
+    .admin-legend {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    .admin-chip {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 7px 12px;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      border: 1px solid transparent;
+    }
+
+    .chip-pending {
+      background: rgba(184, 134, 11, 0.14);
+      color: #ffd679;
+      border-color: rgba(184, 134, 11, 0.35);
+    }
+
+    .chip-approved {
+      background: rgba(47, 138, 87, 0.14);
+      color: #98f0ba;
+      border-color: rgba(47, 138, 87, 0.35);
+    }
+
+    .chip-rejected {
+      background: rgba(182, 69, 69, 0.14);
+      color: #ffb4b4;
+      border-color: rgba(182, 69, 69, 0.35);
+    }
+
+    .chip-archived {
+      background: rgba(255,255,255,0.08);
+      color: #d6d6d6;
+      border-color: rgba(255,255,255,0.14);
+    }
+
+    .chip-featured {
+      background: rgba(212,175,55,0.16);
+      color: var(--jeni-gold-soft);
+      border-color: rgba(212,175,55,0.38);
+    }
+
+    .admin-helper {
+      margin-top: 10px;
+      font-size: 0.92rem;
+      color: var(--jeni-muted);
+      line-height: 1.6;
+    }
+
+    @media (max-width: 980px) {
+      .admin-stats {
+        grid-template-columns: repeat(2, minmax(180px, 1fr));
+      }
+
+      .admin-toolbar {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .admin-form-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .dashboard-header-wrap {
+        align-items: flex-start;
+      }
+
+      .producer-hero-mini h1 {
+        font-size: 1.6rem;
+      }
+
+      .admin-stats {
+        grid-template-columns: 1fr;
+      }
+
+      .admin-toolbar {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
 </head>
 <body class="dashboard-page">
   <header class="dashboard-header">
     <div class="dashboard-header-wrap">
       <div>
         <h1>JENI Informa — Administração</h1>
+        <p class="dashboard-header-subtitle">
+          Gestão editorial, curadoria e controlo dos conteúdos públicos
+        </p>
       </div>
 
       <div style="display: flex; gap: 12px; flex-wrap: wrap;">
         <a href="dashboard.html" class="producer-back-link">Área do Produtor</a>
         <a href="../jeni-informa.html" class="producer-back-link">JENI Informa</a>
+        <a href="../jeni-informa-arquivo.html" class="producer-back-link">Arquivo Público</a>
         <button id="logout-btn" type="button">Sair</button>
       </div>
     </div>
@@ -25,9 +412,18 @@
     <section class="producer-hero-mini">
       <h1>Painel de Administração</h1>
       <p>
-        Nesta área poderá rever, aprovar, rejeitar e arquivar conteúdos
-        submetidos à plataforma <strong>JENI Informa</strong>.
+        Nesta área poderá rever, aprovar, rejeitar, destacar, editar e arquivar conteúdos
+        submetidos à plataforma <strong>JENI Informa</strong>. A estrutura abaixo já está
+        preparada para notícias, agenda e oportunidades.
       </p>
+
+      <div class="admin-legend">
+        <span class="admin-chip chip-pending">Pendente</span>
+        <span class="admin-chip chip-approved">Aprovado</span>
+        <span class="admin-chip chip-rejected">Rejeitado</span>
+        <span class="admin-chip chip-archived">Arquivado</span>
+        <span class="admin-chip chip-featured">Destaque</span>
+      </div>
     </section>
 
     <section class="dashboard-panel">
@@ -57,14 +453,206 @@
     </section>
 
     <section class="dashboard-panel">
+      <h2>Ferramentas de gestão</h2>
+      <p class="admin-section-note">
+        Esta secção deixa o admin preparado para gerir tudo sem precisar mexer no HTML depois.
+      </p>
+
+      <div class="admin-toolbar">
+        <div class="admin-field">
+          <label for="admin-search">Pesquisar</label>
+          <input
+            type="text"
+            id="admin-search"
+            placeholder="Pesquisar por título, resumo ou descrição"
+          />
+        </div>
+
+        <div class="admin-field">
+          <label for="admin-filter-type">Tipo</label>
+          <select id="admin-filter-type">
+            <option value="">Todos</option>
+            <option value="news">Notícias</option>
+            <option value="event">Eventos</option>
+            <option value="opportunity">Oportunidades</option>
+          </select>
+        </div>
+
+        <div class="admin-field">
+          <label for="admin-filter-status">Estado</label>
+          <select id="admin-filter-status">
+            <option value="">Todos</option>
+            <option value="pending">Pendentes</option>
+            <option value="approved">Aprovados</option>
+            <option value="rejected">Rejeitados</option>
+            <option value="archived">Arquivados</option>
+          </select>
+        </div>
+
+        <button type="button" id="admin-apply-filters" class="jeni-btn jeni-btn-secondary">
+          Aplicar filtros
+        </button>
+
+        <button type="button" id="admin-toggle-editor" class="jeni-btn jeni-btn-primary">
+          + Criar notícia
+        </button>
+      </div>
+
+      <div class="admin-helper">
+        Sugestão de lógica final: notícias podem ser mantidas activas ou arquivadas manualmente;
+        eventos devem sair da principal após a data; oportunidades devem sair após o prazo.
+      </div>
+
+      <div id="admin-editor" class="admin-editor">
+        <h2 id="admin-editor-title">Criar / editar conteúdo</h2>
+        <p class="admin-section-note">
+          Este formulário foi pensado para permitir criação de notícia pelo admin e edição de conteúdos.
+        </p>
+
+        <form id="admin-content-form">
+          <input type="hidden" id="admin-edit-id" />
+
+          <div class="admin-form-grid">
+            <div class="admin-field">
+              <label for="admin-content-type">Tipo</label>
+              <select id="admin-content-type" required>
+                <option value="news">Notícia</option>
+                <option value="event">Evento</option>
+                <option value="opportunity">Oportunidade</option>
+              </select>
+            </div>
+
+            <div class="admin-field">
+              <label for="admin-content-status">Estado</label>
+              <select id="admin-content-status" required>
+                <option value="pending">Pendente</option>
+                <option value="approved">Aprovado</option>
+                <option value="rejected">Rejeitado</option>
+                <option value="archived">Arquivado</option>
+              </select>
+            </div>
+
+            <div class="admin-field full">
+              <label for="admin-content-title">Título</label>
+              <input
+                type="text"
+                id="admin-content-title"
+                placeholder="Título do conteúdo"
+                required
+              />
+            </div>
+
+            <div class="admin-field full">
+              <label for="admin-content-summary">Resumo</label>
+              <textarea
+                id="admin-content-summary"
+                placeholder="Resumo curto para cards e destaques"
+              ></textarea>
+            </div>
+
+            <div class="admin-field full">
+              <label for="admin-content-description">Descrição completa</label>
+              <textarea
+                id="admin-content-description"
+                placeholder="Descrição completa / corpo da notícia / detalhes do evento ou oportunidade"
+              ></textarea>
+            </div>
+
+            <div class="admin-field">
+              <label for="admin-content-image">Imagem (URL)</label>
+              <input
+                type="url"
+                id="admin-content-image"
+                placeholder="https://..."
+              />
+            </div>
+
+            <div class="admin-field">
+              <label for="admin-content-link">Link externo</label>
+              <input
+                type="url"
+                id="admin-content-link"
+                placeholder="https://..."
+              />
+            </div>
+
+            <div class="admin-field">
+              <label for="admin-content-location">Local</label>
+              <input
+                type="text"
+                id="admin-content-location"
+                placeholder="Ex.: Maputo, Matola Fomento"
+              />
+            </div>
+
+            <div class="admin-field">
+              <label for="admin-content-slug">Slug</label>
+              <input
+                type="text"
+                id="admin-content-slug"
+                placeholder="titulo-do-conteudo"
+              />
+            </div>
+
+            <div class="admin-field">
+              <label for="admin-content-start-date">Data de início</label>
+              <input type="date" id="admin-content-start-date" />
+            </div>
+
+            <div class="admin-field">
+              <label for="admin-content-end-date">Data de fim</label>
+              <input type="date" id="admin-content-end-date" />
+            </div>
+
+            <div class="admin-field">
+              <label for="admin-content-deadline">Prazo / deadline</label>
+              <input type="date" id="admin-content-deadline" />
+            </div>
+
+            <div class="admin-field">
+              <label for="admin-content-author">Autor / author_id</label>
+              <input
+                type="text"
+                id="admin-content-author"
+                placeholder="Preenchimento opcional"
+              />
+            </div>
+
+            <div class="admin-field full">
+              <div class="admin-check-row">
+                <input type="checkbox" id="admin-content-featured" />
+                <label for="admin-content-featured">Marcar como destaque</label>
+              </div>
+            </div>
+          </div>
+
+          <div class="admin-actions-row">
+            <button type="submit" class="jeni-btn jeni-btn-primary">Guardar conteúdo</button>
+            <button type="button" id="admin-cancel-editor" class="jeni-btn jeni-btn-secondary">
+              Cancelar
+            </button>
+            <button type="button" id="admin-reset-editor" class="jeni-btn jeni-btn-outline">
+              Limpar formulário
+            </button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <section class="dashboard-panel">
       <h2>Submissões</h2>
       <p class="dashboard-note">
-        As submissões pendentes aparecem primeiro. Ao aprovar um conteúdo, o
-        sistema regista automaticamente a data de publicação.
+        As submissões pendentes devem aparecer primeiro. Ao aprovar um conteúdo,
+        o sistema pode registar automaticamente a data de publicação.
       </p>
 
       <div id="admin-message" class="auth-message"></div>
-      <div id="admin-submissions-list" class="admin-submissions-list"></div>
+
+      <div id="admin-submissions-list" class="admin-submissions-list">
+        <div class="admin-empty-state">
+          A carregar conteúdos da administração...
+        </div>
+      </div>
     </section>
   </main>
 
@@ -72,6 +660,32 @@
   <script src="auth.js"></script>
   <script>
     initAdminPage();
+
+    const adminToggleEditorBtn = document.getElementById("admin-toggle-editor");
+    const adminEditor = document.getElementById("admin-editor");
+    const adminCancelEditorBtn = document.getElementById("admin-cancel-editor");
+    const adminResetEditorBtn = document.getElementById("admin-reset-editor");
+
+    if (adminToggleEditorBtn && adminEditor) {
+      adminToggleEditorBtn.addEventListener("click", function () {
+        adminEditor.classList.toggle("active");
+      });
+    }
+
+    if (adminCancelEditorBtn && adminEditor) {
+      adminCancelEditorBtn.addEventListener("click", function () {
+        adminEditor.classList.remove("active");
+      });
+    }
+
+    if (adminResetEditorBtn) {
+      adminResetEditorBtn.addEventListener("click", function () {
+        const form = document.getElementById("admin-content-form");
+        if (form) form.reset();
+        const editId = document.getElementById("admin-edit-id");
+        if (editId) editId.value = "";
+      });
+    }
   </script>
 </body>
 </html>
