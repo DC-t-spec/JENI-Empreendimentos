@@ -387,6 +387,11 @@
         grid-template-columns: 1fr;
       }
     }
+    .admin-type-block {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(212,175,55,0.14);
+}
   </style>
 </head>
 <body class="dashboard-page">
@@ -509,133 +514,218 @@
           Este formulário foi pensado para permitir criação de notícia pelo admin e edição de conteúdos.
         </p>
 
-        <form id="admin-content-form">
-          <input type="hidden" id="admin-edit-id" />
+ <form id="admin-content-form">
+  <input type="hidden" id="admin-edit-id" />
 
-          <div class="admin-form-grid">
-            <div class="admin-field">
-              <label for="admin-content-type">Tipo</label>
-              <select id="admin-content-type" required>
-                <option value="news">Notícia</option>
-                <option value="event">Evento</option>
-                <option value="opportunity">Oportunidade</option>
-              </select>
-            </div>
+  <div class="admin-form-grid">
+    <div class="admin-field">
+      <label for="admin-content-type">Tipo</label>
+      <select id="admin-content-type" required>
+        <option value="news">Notícia</option>
+        <option value="event">Evento</option>
+        <option value="opportunity">Oportunidade</option>
+      </select>
+    </div>
 
-            <div class="admin-field">
-              <label for="admin-content-status">Estado</label>
-              <select id="admin-content-status" required>
-                <option value="pending">Pendente</option>
-                <option value="approved">Aprovado</option>
-                <option value="rejected">Rejeitado</option>
-                <option value="archived">Arquivado</option>
-              </select>
-            </div>
+    <div class="admin-field">
+      <label for="admin-content-status">Estado</label>
+      <select id="admin-content-status" required>
+        <option value="pending">Pendente</option>
+        <option value="approved">Aprovado</option>
+        <option value="rejected">Rejeitado</option>
+        <option value="archived">Arquivado</option>
+      </select>
+    </div>
 
-            <div class="admin-field full">
-              <label for="admin-content-title">Título</label>
-              <input
-                type="text"
-                id="admin-content-title"
-                placeholder="Título do conteúdo"
-                required
-              />
-            </div>
+    <div class="admin-field full">
+      <label for="admin-content-title">Título</label>
+      <input
+        type="text"
+        id="admin-content-title"
+        placeholder="Título do conteúdo"
+        required
+      />
+    </div>
 
-            <div class="admin-field full">
-              <label for="admin-content-summary">Resumo</label>
-              <textarea
-                id="admin-content-summary"
-                placeholder="Resumo curto para cards e destaques"
-              ></textarea>
-            </div>
+    <div class="admin-field full">
+      <label for="admin-content-summary">Resumo</label>
+      <textarea
+        id="admin-content-summary"
+        placeholder="Resumo curto para cards e destaque"
+      ></textarea>
+    </div>
 
-            <div class="admin-field full">
-              <label for="admin-content-description">Descrição completa</label>
-              <textarea
-                id="admin-content-description"
-                placeholder="Descrição completa / corpo da notícia / detalhes do evento ou oportunidade"
-              ></textarea>
-            </div>
+    <div class="admin-field full">
+      <label for="admin-content-image-upload">Carregar imagem</label>
+      <input
+        type="file"
+        id="admin-content-image-upload"
+        accept="image/*"
+      />
+    </div>
 
-            <div class="admin-field">
-              <label for="admin-content-image">Imagem (URL)</label>
-              <input
-                type="url"
-                id="admin-content-image"
-                placeholder="https://..."
-              />
-            </div>
+    <div class="admin-field full">
+      <label for="admin-content-image">Ou usar URL de imagem já existente</label>
+      <input
+        type="url"
+        id="admin-content-image"
+        placeholder="https://..."
+      />
+    </div>
 
-            <div class="admin-field">
-              <label for="admin-content-link">Link externo</label>
-              <input
-                type="url"
-                id="admin-content-link"
-                placeholder="https://..."
-              />
-            </div>
+    <div class="admin-field full">
+      <div class="admin-check-row">
+        <input type="checkbox" id="admin-content-featured" />
+        <label for="admin-content-featured">Marcar como destaque</label>
+      </div>
+    </div>
+  </div>
 
-            <div class="admin-field">
-              <label for="admin-content-location">Local</label>
-              <input
-                type="text"
-                id="admin-content-location"
-                placeholder="Ex.: Maputo, Matola Fomento"
-              />
-            </div>
+  <!-- BLOCO NOTÍCIA -->
+  <div id="admin-fields-news" class="admin-type-block">
+    <div class="admin-form-grid">
+      <div class="admin-field full">
+        <label for="admin-news-description">Texto completo da notícia</label>
+        <textarea
+          id="admin-news-description"
+          placeholder="Corpo completo da notícia"
+        ></textarea>
+      </div>
 
-            <div class="admin-field">
-              <label for="admin-content-slug">Slug</label>
-              <input
-                type="text"
-                id="admin-content-slug"
-                placeholder="titulo-do-conteudo"
-              />
-            </div>
+      <div class="admin-field">
+        <label for="admin-news-slug">Slug</label>
+        <input
+          type="text"
+          id="admin-news-slug"
+          placeholder="titulo-da-noticia"
+        />
+      </div>
+    </div>
+  </div>
 
-            <div class="admin-field">
-              <label for="admin-content-start-date">Data de início</label>
-              <input type="date" id="admin-content-start-date" />
-            </div>
+  <!-- BLOCO EVENTO -->
+  <div id="admin-fields-event" class="admin-type-block" style="display:none;">
+    <div class="admin-form-grid">
+      <div class="admin-field">
+        <label for="admin-event-category">Categoria</label>
+        <input
+          type="text"
+          id="admin-event-category"
+          placeholder="Ex.: Música, Teatro, Dança"
+        />
+      </div>
 
-            <div class="admin-field">
-              <label for="admin-content-end-date">Data de fim</label>
-              <input type="date" id="admin-content-end-date" />
-            </div>
+      <div class="admin-field">
+        <label for="admin-event-location">Local</label>
+        <input
+          type="text"
+          id="admin-event-location"
+          placeholder="Ex.: Maputo, Matola"
+        />
+      </div>
 
-            <div class="admin-field">
-              <label for="admin-content-deadline">Prazo / deadline</label>
-              <input type="date" id="admin-content-deadline" />
-            </div>
+      <div class="admin-field">
+        <label for="admin-event-date">Data do evento</label>
+        <input type="date" id="admin-event-date" />
+      </div>
 
-            <div class="admin-field">
-              <label for="admin-content-author">Autor / author_id</label>
-              <input
-                type="text"
-                id="admin-content-author"
-                placeholder="Preenchimento opcional"
-              />
-            </div>
+      <div class="admin-field">
+        <label for="admin-event-time">Hora</label>
+        <input type="time" id="admin-event-time" />
+      </div>
 
-            <div class="admin-field full">
-              <div class="admin-check-row">
-                <input type="checkbox" id="admin-content-featured" />
-                <label for="admin-content-featured">Marcar como destaque</label>
-              </div>
-            </div>
-          </div>
+      <div class="admin-field">
+        <label for="admin-event-ticket-price">Preço do bilhete</label>
+        <input
+          type="text"
+          id="admin-event-ticket-price"
+          placeholder="Ex.: 500 MZN"
+        />
+      </div>
 
-          <div class="admin-actions-row">
-            <button type="submit" class="jeni-btn jeni-btn-primary">Guardar conteúdo</button>
-            <button type="button" id="admin-cancel-editor" class="jeni-btn jeni-btn-secondary">
-              Cancelar
-            </button>
-            <button type="button" id="admin-reset-editor" class="jeni-btn jeni-btn-outline">
-              Limpar formulário
-            </button>
-          </div>
-        </form>
+      <div class="admin-field">
+        <label for="admin-event-ticket-info">Informação do bilhete</label>
+        <input
+          type="text"
+          id="admin-event-ticket-info"
+          placeholder="Ex.: Bilhetes no local / online"
+        />
+      </div>
+
+      <div class="admin-field full">
+        <label for="admin-event-description">Descrição do evento</label>
+        <textarea
+          id="admin-event-description"
+          placeholder="Descrição completa do evento"
+        ></textarea>
+      </div>
+
+      <div class="admin-field">
+        <label for="admin-event-video-url">Link de vídeo</label>
+        <input
+          type="url"
+          id="admin-event-video-url"
+          placeholder="https://..."
+        />
+      </div>
+    </div>
+  </div>
+
+  <!-- BLOCO OPORTUNIDADE -->
+  <div id="admin-fields-opportunity" class="admin-type-block" style="display:none;">
+    <div class="admin-form-grid">
+      <div class="admin-field">
+        <label for="admin-opportunity-category">Categoria</label>
+        <input
+          type="text"
+          id="admin-opportunity-category"
+          placeholder="Ex.: Bolsa, concurso, chamada"
+        />
+      </div>
+
+      <div class="admin-field">
+        <label for="admin-opportunity-location">Local</label>
+        <input
+          type="text"
+          id="admin-opportunity-location"
+          placeholder="Ex.: Maputo / Online / Internacional"
+        />
+      </div>
+
+      <div class="admin-field">
+        <label for="admin-opportunity-deadline">Prazo / deadline</label>
+        <input type="date" id="admin-opportunity-deadline" />
+      </div>
+
+      <div class="admin-field">
+        <label for="admin-opportunity-link">Link externo</label>
+        <input
+          type="url"
+          id="admin-opportunity-link"
+          placeholder="https://..."
+        />
+      </div>
+
+      <div class="admin-field full">
+        <label for="admin-opportunity-description">Descrição da oportunidade</label>
+        <textarea
+          id="admin-opportunity-description"
+          placeholder="Descrição completa da oportunidade"
+        ></textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="admin-actions-row">
+    <button type="submit" class="jeni-btn jeni-btn-primary">Guardar conteúdo</button>
+    <button type="button" id="admin-cancel-editor" class="jeni-btn jeni-btn-secondary">
+      Cancelar
+    </button>
+    <button type="button" id="admin-reset-editor" class="jeni-btn jeni-btn-outline">
+      Limpar formulário
+    </button>
+  </div>
+</form>
       </div>
     </section>
 
