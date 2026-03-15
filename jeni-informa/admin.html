@@ -585,16 +585,6 @@
     </div>
 
     <div class="admin-field full">
-      <label for="admin-content-summary">Resumo</label>
-      <textarea
-        id="admin-content-summary"
-        placeholder="Resumo curto para cards e destaque"
-      ></textarea>
-    </div>
-
-    <div class="admin-field full">
-      <label for="admin-content-image-upload">Carregar imagem</label>
-     <div class="admin-field full">
   <label for="admin-content-image-upload">Carregar imagem principal</label>
   <input
     type="file"
@@ -612,7 +602,6 @@
     multiple
   />
 </div>
-    </div>
 
     <div class="admin-field full">
       <label for="admin-content-image">Ou usar URL de imagem já existente</label>
@@ -799,7 +788,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="auth.js"></script>
   <script>
-    initAdminPage();
+  
 
     const adminToggleEditorBtn = document.getElementById("admin-toggle-editor");
     const adminEditor = document.getElementById("admin-editor");
