@@ -305,6 +305,57 @@ async function uploadImage(file, folder) {
 
   return data.publicUrl;
 }
+async function uploadMultipleImages(files, folder) {
+  if (!files || !files.length) return [];
+
+  const user = await getCurrentUser();
+  if (!user) return [];
+
+  const uploadedUrls = [];
+
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+    const cleanName = file.name.replace(/\s+/g, "-");
+    const fileName = `${user.id}/${folder}/${Date.now()}-${i}-${cleanName}`;
+
+    const { error } = await supabaseClient
+      .storage
+      .from("jeni-informa")
+      .upload(fileName, file);
+
+    if (error) throw error;
+
+    const { data } = supabaseClient
+      .storage
+      .from("jeni-informa")
+      .getPublicUrl(fileName);
+
+    uploadedUrls.push(data.publicUrl);
+  }
+
+  return uploadedUrls;
+}
+
+function getFiles(id) {
+  const el = document.getElementById(id);
+  return el && el.files ? Array.from(el.files) : [];
+}
+
+async function saveSubmissionGallery(submissionId, imageUrls = []) {
+  if (!submissionId || !imageUrls.length) return;
+
+  const rows = imageUrls.map((url, index) => ({
+    submission_id: submissionId,
+    image_url: url,
+    position: index + 1
+  }));
+
+  const { error } = await supabaseClient
+    .from("submission_images")
+    .insert(rows);
+
+  if (error) throw error;
+}
 
 /* =====================================================
 EVENT SUBMISSION
@@ -977,14 +1028,21 @@ async function saveAdminContent() {
 
   try {
     const imageUrl = await uploadAdminImageIfNeeded();
+    const galleryFiles = getFiles("admin-content-gallery-upload");
+    const galleryUrls = await uploadMultipleImages(galleryFiles, "gallery");
+
     const payload = getAdminFormDataByType(imageUrl);
 
     if (editId) {
-      const { error } = await updateSubmissionById(editId, payload);
+      const { data, error } = await updateSubmissionById(editId, payload);
 
       if (error) {
         showMessage("admin-message", error.message || "Erro ao actualizar conteúdo.", "error");
         return;
+      }
+
+      if (galleryUrls.length) {
+        await saveSubmissionGallery(editId, galleryUrls);
       }
 
       showMessage("admin-message", "Conteúdo actualizado com sucesso.", "success");
@@ -1001,11 +1059,15 @@ async function saveAdminContent() {
         createPayload.published_at = new Date().toISOString();
       }
 
-      const { error } = await createSubmissionByAdmin(createPayload);
+      const { data, error } = await createSubmissionByAdmin(createPayload);
 
       if (error) {
         showMessage("admin-message", error.message || "Erro ao criar conteúdo.", "error");
         return;
+      }
+
+      if (galleryUrls.length && data?.id) {
+        await saveSubmissionGallery(data.id, galleryUrls);
       }
 
       showMessage("admin-message", "Conteúdo criado com sucesso.", "success");
@@ -1066,7 +1128,80 @@ function initAdminEditor() {
 
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
-      await saveAdminContent();
+      await async function saveAdminContent() {
+  const editId = getValue("admin-edit-id");
+  const type = getValue("admin-content-type");
+  const title = getValue("admin-content-title");
+
+  if (!title) {
+    showMessage("admin-message", "Preencha o título do conteúdo.", "error");
+    return;
+  }
+
+  if (type === "event" && !getValue("admin-event-date")) {
+    showMessage("admin-message", "Evento precisa de data do evento.", "error");
+    return;
+  }
+
+  showMessage("admin-message", "A guardar conteúdo...", "info");
+
+  try {
+    const imageUrl = await uploadAdminImageIfNeeded();
+    const galleryFiles = getFiles("admin-content-gallery-upload");
+    const galleryUrls = await uploadMultipleImages(galleryFiles, "gallery");
+
+    const payload = getAdminFormDataByType(imageUrl);
+
+    if (editId) {
+      const { data, error } = await updateSubmissionById(editId, payload);
+
+      if (error) {
+        showMessage("admin-message", error.message || "Erro ao actualizar conteúdo.", "error");
+        return;
+      }
+
+      if (galleryUrls.length) {
+        await saveSubmissionGallery(editId, galleryUrls);
+      }
+
+      showMessage("admin-message", "Conteúdo actualizado com sucesso.", "success");
+    } else {
+      const adminAccess = await requireAdmin();
+      if (!adminAccess) return;
+
+      const createPayload = {
+        ...payload,
+        user_id: adminAccess.user.id
+      };
+
+      if (createPayload.status === "approved") {
+        createPayload.published_at = new Date().toISOString();
+      }
+
+      const { data, error } = await createSubmissionByAdmin(createPayload);
+
+      if (error) {
+        showMessage("admin-message", error.message || "Erro ao criar conteúdo.", "error");
+        return;
+      }
+
+      if (galleryUrls.length && data?.id) {
+        await saveSubmissionGallery(data.id, galleryUrls);
+      }
+
+      showMessage("admin-message", "Conteúdo criado com sucesso.", "success");
+    }
+
+    resetAdminEditor();
+
+    setTimeout(() => {
+      initAdminPage();
+    }, 400);
+  } catch (err) {
+    console.error("ADMIN SAVE ERROR:", err);
+    showMessage("admin-message", err.message || "Erro ao guardar conteúdo.", "error");
+  }
+});
     });
   }
 }
