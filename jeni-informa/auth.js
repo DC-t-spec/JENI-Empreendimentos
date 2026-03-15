@@ -1140,7 +1140,7 @@ function initAdminEditor() {
   const resetBtn = document.getElementById("admin-reset-editor");
   const cancelBtn = document.getElementById("admin-cancel-editor");
   const logoutBtn = document.getElementById("logout-btn");
-    const typeSelect = document.getElementById("admin-content-type");
+  const typeSelect = document.getElementById("admin-content-type");
 
   if (typeSelect && !typeSelect.dataset.bound) {
     typeSelect.dataset.bound = "true";
@@ -1178,83 +1178,11 @@ function initAdminEditor() {
 
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
-      await async function saveAdminContent() {
-  const editId = getValue("admin-edit-id");
-  const type = getValue("admin-content-type");
-  const title = getValue("admin-content-title");
-
-  if (!title) {
-    showMessage("admin-message", "Preencha o título do conteúdo.", "error");
-    return;
-  }
-
-  if (type === "event" && !getValue("admin-event-date")) {
-    showMessage("admin-message", "Evento precisa de data do evento.", "error");
-    return;
-  }
-
-  showMessage("admin-message", "A guardar conteúdo...", "info");
-
-  try {
-    const imageUrl = await uploadAdminImageIfNeeded();
-    const galleryFiles = getFiles("admin-content-gallery-upload");
-    const galleryUrls = await uploadMultipleImages(galleryFiles, "gallery");
-
-    const payload = getAdminFormDataByType(imageUrl);
-
-    if (editId) {
-      const { data, error } = await updateSubmissionById(editId, payload);
-
-      if (error) {
-        showMessage("admin-message", error.message || "Erro ao actualizar conteúdo.", "error");
-        return;
-      }
-
-      if (galleryUrls.length) {
-        await saveSubmissionGallery(editId, galleryUrls);
-      }
-
-      showMessage("admin-message", "Conteúdo actualizado com sucesso.", "success");
-    } else {
-      const adminAccess = await requireAdmin();
-      if (!adminAccess) return;
-
-      const createPayload = {
-        ...payload,
-        user_id: adminAccess.user.id
-      };
-
-      if (createPayload.status === "approved") {
-        createPayload.published_at = new Date().toISOString();
-      }
-
-      const { data, error } = await createSubmissionByAdmin(createPayload);
-
-      if (error) {
-        showMessage("admin-message", error.message || "Erro ao criar conteúdo.", "error");
-        return;
-      }
-
-      if (galleryUrls.length && data?.id) {
-        await saveSubmissionGallery(data.id, galleryUrls);
-      }
-
-      showMessage("admin-message", "Conteúdo criado com sucesso.", "success");
-    }
-
-    resetAdminEditor();
-
-    setTimeout(() => {
-      initAdminPage();
-    }, 400);
-  } catch (err) {
-    console.error("ADMIN SAVE ERROR:", err);
-    showMessage("admin-message", err.message || "Erro ao guardar conteúdo.", "error");
-  }
-});
+      await saveAdminContent();
     });
   }
 }
+
 
 /* =====================================================
 ADMIN INIT
