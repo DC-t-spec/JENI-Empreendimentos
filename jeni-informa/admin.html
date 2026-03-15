@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin | JENI Informa</title>
+  <link rel="stylesheet" href="auth.css" />
+</head>
+<body class="dashboard-page">
+  <header class="dashboard-header">
+    <div class="dashboard-header-wrap">
+      <div>
+        <h1>JENI Informa — Administração</h1>
+      </div>
+
+      <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+        <a href="dashboard.html" class="producer-back-link">Área do Produtor</a>
+        <a href="../jeni-informa.html" class="producer-back-link">JENI Informa</a>
+        <button id="logout-btn" type="button">Sair</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="dashboard-main">
+    <section class="producer-hero-mini">
+      <h1>Painel de Administração</h1>
+      <p>
+        Nesta área poderá rever, aprovar, rejeitar e arquivar conteúdos
+        submetidos à plataforma <strong>JENI Informa</strong>, incluindo
+        eventos, oportunidades e outros conteúdos editoriais.
+      </p>
+    </section>
+
+    <section class="dashboard-panel">
+      <h2>Resumo da administração</h2>
+
+      <div class="admin-stats">
+        <div class="admin-stat-card">
+          <span class="admin-stat-label">Pendentes</span>
+          <strong id="stat-pending">0</strong>
+        </div>
+
+        <div class="admin-stat-card">
+          <span class="admin-stat-label">Aprovados</span>
+          <strong id="stat-approved">0</strong>
+        </div>
+
+        <div class="admin-stat-card">
+          <span class="admin-stat-label">Rejeitados</span>
+          <strong id="stat-rejected">0</strong>
+        </div>
+
+        <div class="admin-stat-card">
+          <span class="admin-stat-label">Arquivados</span>
+          <strong id="stat-archived">0</strong>
+        </div>
+      </div>
+    </section>
+
+    <section class="dashboard-panel">
+      <h2>Submissões</h2>
+      <p class="dashboard-note">
+        As submissões pendentes aparecem primeiro. Ao aprovar um conteúdo, o
+        sistema regista automaticamente a data de publicação.
+      </p>
+
+      <div id="admin-message" class="auth-message"></div>
+      <div id="admin-submissions-list" class="admin-submissions-list"></div>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="auth.js"></script>
+  <script>
+    initAdminPage();
+  </script>
+</body>
+</html>
