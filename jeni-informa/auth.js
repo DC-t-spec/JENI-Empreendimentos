@@ -1,11 +1,21 @@
+/* =====================================================
+JENI INFORMA — AUTH & SUBMISSIONS
+Supabase client + auth + forms
+===================================================== */
+
 const SUPABASE_URL = "https://qkwusyhkycthottckzww.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrd3VzeWhreWN0aG90dGNrend3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1MTM2OTIsImV4cCI6MjA4OTA4OTY5Mn0.ycIm_1lZlGNApILY1OReDQmp4Qv4n1Rw7iTAbFq7rdA";
 
-const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const SUPABASE_ANON_KEY =
+"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrd3VzeWhreWN0aG90dGNrend3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1MTM2OTIsImV4cCI6MjA4OTA4OTY5Mn0.ycIm_1lZlGNApILY1OReDQmp4Qv4n1Rw7iTAbFq7rdA";
 
-/* =========================
-   HELPERS GERAIS
-========================= */
+const supabaseClient = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_ANON_KEY
+);
+
+/* =====================================================
+HELPERS
+===================================================== */
 
 function showMessage(targetId, message, type = "info") {
   const el = document.getElementById(targetId);
@@ -33,70 +43,14 @@ function getFile(id) {
   return el && el.files ? el.files[0] : null;
 }
 
-function safeText(value, fallback = "-") {
-  return value && String(value).trim() ? value : fallback;
-}
-
-function formatDate(dateString) {
-  if (!dateString) return "-";
-
-  const date = new Date(dateString);
-
-  if (Number.isNaN(date.getTime())) return "-";
-
-  return date.toLocaleDateString("pt-PT", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric"
-  });
-}
-
-function formatDateTime(dateString) {
-  if (!dateString) return "-";
-
-  const date = new Date(dateString);
-
-  if (Number.isNaN(date.getTime())) return "-";
-
-  return date.toLocaleString("pt-PT", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit"
-  });
-}
-
-function getStatusLabel(status) {
-  const value = (status || "pending").toLowerCase();
-
-  if (value === "approved") return "Aprovado";
-  if (value === "rejected") return "Rejeitado";
-  return "Pendente";
-}
-
-function getStatusClass(status) {
-  const value = (status || "pending").toLowerCase();
-
-  if (value === "approved") return "success";
-  if (value === "rejected") return "error";
-  return "info";
-}
-
-/* =========================
-   AUTH / SESSÃO
-========================= */
+/* =====================================================
+AUTH
+===================================================== */
 
 async function getCurrentUser() {
   const {
     data: { user },
-    error
   } = await supabaseClient.auth.getUser();
-
-  if (error) {
-    console.error("Erro ao obter utilizador:", error.message);
-    return null;
-  }
 
   return user;
 }
@@ -112,42 +66,9 @@ async function requireAuth() {
   return user;
 }
 
-async function handleLogout() {
-  const { error } = await supabaseClient.auth.signOut();
-
-  if (error) {
-    alert("Erro ao terminar sessão: " + error.message);
-    return;
-  }
-
-  window.location.href = "login.html";
-}
-
-/* =========================
-   PERFIL
-========================= */
-
-async function loadProfile() {
-  const user = await getCurrentUser();
-  if (!user) return null;
-
-  const { data, error } = await supabaseClient
-    .from("profiles")
-    .select("*")
-    .eq("id", user.id)
-    .single();
-
-  if (error) {
-    console.error("Erro ao carregar perfil:", error.message);
-    return null;
-  }
-
-  return data;
-}
-
-/* =========================
-   REGISTO
-========================= */
+/* =====================================================
+SIGNUP
+===================================================== */
 
 async function handleSignUp(event) {
   event.preventDefault();
@@ -157,22 +78,18 @@ async function handleSignUp(event) {
   const fullName = getValue("full_name");
   const email = getValue("email");
   const phone = getValue("phone");
-  const organizationName = getValue("organization_name");
+  const organization = getValue("organization_name");
   const city = getValue("city");
-  const password = document.getElementById("password")?.value || "";
-  const confirmPassword = document.getElementById("confirm_password")?.value || "";
 
-  if (!fullName || !email || !password || !confirmPassword) {
-    showMessage("signup-message", "Preencha os campos obrigatórios.", "error");
+  const password = document.getElementById("password").value;
+  const confirm = document.getElementById("confirm_password").value;
+
+  if (!email || !password) {
+    showMessage("signup-message", "Preencha email e palavra-passe.", "error");
     return;
   }
 
-  if (password.length < 6) {
-    showMessage("signup-message", "A palavra-passe deve ter pelo menos 6 caracteres.", "error");
-    return;
-  }
-
-  if (password !== confirmPassword) {
+  if (password !== confirm) {
     showMessage("signup-message", "As palavras-passe não coincidem.", "error");
     return;
   }
@@ -183,9 +100,7 @@ async function handleSignUp(event) {
     email,
     password,
     options: {
-      data: {
-        full_name: fullName
-      }
+      data: { full_name: fullName }
     }
   });
 
@@ -195,38 +110,28 @@ async function handleSignUp(event) {
   }
 
   if (data?.user) {
-    const { error: profileError } = await supabaseClient
-      .from("profiles")
-      .update({
-        full_name: fullName,
-        phone,
-        organization_name: organizationName,
-        city
-      })
-      .eq("id", data.user.id);
-
-    if (profileError) {
-      console.error("Erro ao completar perfil:", profileError.message);
-    }
+    await supabaseClient.from("profiles").update({
+      full_name: fullName,
+      phone,
+      organization_name: organization,
+      city
+    }).eq("id", data.user.id);
   }
 
   showMessage(
     "signup-message",
-    "Conta criada com sucesso. Verifique o seu email para confirmar a conta, caso a confirmação esteja activa no Supabase.",
+    "Conta criada com sucesso.",
     "success"
   );
 
-  const form = document.getElementById("signup-form");
-  if (form) form.reset();
-
   setTimeout(() => {
     window.location.href = "login.html";
-  }, 2200);
+  }, 1500);
 }
 
-/* =========================
-   LOGIN
-========================= */
+/* =====================================================
+LOGIN
+===================================================== */
 
 async function handleLogin(event) {
   event.preventDefault();
@@ -234,12 +139,7 @@ async function handleLogin(event) {
   clearMessage("login-message");
 
   const email = getValue("email");
-  const password = document.getElementById("password")?.value || "";
-
-  if (!email || !password) {
-    showMessage("login-message", "Preencha email e palavra-passe.", "error");
-    return;
-  }
+  const password = document.getElementById("password").value;
 
   showMessage("login-message", "A entrar...", "info");
 
@@ -253,16 +153,34 @@ async function handleLogin(event) {
     return;
   }
 
-  showMessage("login-message", "Login efectuado com sucesso.", "success");
-
-  setTimeout(() => {
-    window.location.href = "dashboard.html";
-  }, 800);
+  window.location.href = "dashboard.html";
 }
 
-/* =========================
-   DASHBOARD
-========================= */
+async function handleLogout() {
+  await supabaseClient.auth.signOut();
+  window.location.href = "login.html";
+}
+
+/* =====================================================
+PROFILE
+===================================================== */
+
+async function loadProfile() {
+  const user = await getCurrentUser();
+  if (!user) return null;
+
+  const { data } = await supabaseClient
+    .from("profiles")
+    .select("*")
+    .eq("id", user.id)
+    .single();
+
+  return data;
+}
+
+/* =====================================================
+DASHBOARD
+===================================================== */
 
 async function initDashboard() {
   const user = await requireAuth();
@@ -270,267 +188,190 @@ async function initDashboard() {
 
   const profile = await loadProfile();
 
-  const nameEl = document.getElementById("dashboard-name");
-  const emailEl = document.getElementById("dashboard-email");
-  const orgEl = document.getElementById("dashboard-organization");
-  const cityEl = document.getElementById("dashboard-city");
-  const roleEl = document.getElementById("dashboard-role");
+  document.getElementById("dashboard-name").textContent =
+    profile?.full_name || "-";
 
-  if (nameEl) {
-    nameEl.textContent = safeText(profile?.full_name, "Utilizador");
-  }
+  document.getElementById("dashboard-email").textContent =
+    user.email || "-";
 
-  if (emailEl) {
-    emailEl.textContent = safeText(profile?.email || user.email);
-  }
+  document.getElementById("dashboard-organization").textContent =
+    profile?.organization_name || "-";
 
-  if (orgEl) {
-    orgEl.textContent = safeText(profile?.organization_name, "Não informado");
-  }
+  document.getElementById("dashboard-city").textContent =
+    profile?.city || "-";
 
-  if (cityEl) {
-    cityEl.textContent = safeText(profile?.city, "Não informado");
-  }
-
-  if (roleEl) {
-    roleEl.textContent = safeText(profile?.role, "producer");
-  }
+  document.getElementById("dashboard-role").textContent =
+    profile?.role || "produtor";
 
   const logoutBtn = document.getElementById("logout-btn");
+
   if (logoutBtn) {
     logoutBtn.addEventListener("click", handleLogout);
   }
 }
 
-/* =========================
-   STORAGE
-========================= */
+/* =====================================================
+STORAGE
+===================================================== */
 
-async function uploadImageToBucket(file, folder = "submissions") {
+async function uploadImage(file, folder) {
+  if (!file) return null;
+
   const user = await getCurrentUser();
-  if (!user || !file) return null;
+  if (!user) return null;
 
-  const extension = file.name.split(".").pop()?.toLowerCase() || "jpg";
-  const fileName = `${folder}/${user.id}-${Date.now()}.${extension}`;
+  const fileName = `${folder}/${user.id}-${Date.now()}-${file.name}`;
 
-  const { error } = await supabaseClient.storage
+  const { error } = await supabaseClient
+    .storage
     .from("jeni-informa")
-    .upload(fileName, file, {
-      cacheControl: "3600",
-      upsert: false
-    });
+    .upload(fileName, file);
 
-  if (error) {
-    throw error;
-  }
+  if (error) throw error;
 
-  const { data } = supabaseClient.storage
+  const { data } = supabaseClient
+    .storage
     .from("jeni-informa")
     .getPublicUrl(fileName);
 
-  return data?.publicUrl || null;
+  return data.publicUrl;
 }
 
-/* =========================
-   SUBMISSÕES
-========================= */
+/* =====================================================
+EVENT SUBMISSION
+===================================================== */
 
-async function insertSubmission(payload) {
-  return await supabaseClient
-    .from("submissions")
-    .insert([payload])
-    .select()
-    .single();
-}
-
-async function getMySubmissions() {
-  const user = await requireAuth();
-  if (!user) return { data: null, error: new Error("Utilizador não autenticado.") };
-
-  return await supabaseClient
-    .from("submissions")
-    .select("*")
-    .eq("user_id", user.id)
-    .order("created_at", { ascending: false });
-}
-
-async function handleEventSubmission(event) {
-  event.preventDefault();
+async function submitEventForm(status = "pending") {
 
   clearMessage("event-message");
 
   const user = await requireAuth();
   if (!user) return;
 
-  const title = getValue("title");
-  const category = getValue("category");
-  const eventDate = getValue("event_date");
-  const eventTime = getValue("event_time");
-  const location = getValue("location");
-  const summary = getValue("summary");
-  const description = getValue("description");
-  const ticketPrice = getValue("ticket_price");
-  const ticketInfo = getValue("ticket_info");
-  const videoUrl = getValue("video_url");
-  const imageFile = getFile("image");
+  const payload = {
+    user_id: user.id,
+    type: "evento",
+    status,
+    title: getValue("title"),
+    category: getValue("category"),
+    event_date: getValue("event_date"),
+    event_time: getValue("event_time"),
+    location: getValue("location"),
+    summary: getValue("summary"),
+    description: getValue("description"),
+    ticket_price: getValue("ticket_price"),
+    ticket_info: getValue("ticket_info"),
+    video_url: getValue("video_url")
+  };
 
-  if (!title || !category || !summary || !description) {
-    showMessage("event-message", "Preencha os campos obrigatórios do evento.", "error");
+  const image = getFile("image");
+
+  if (image) {
+    payload.image_url = await uploadImage(image, "events");
+  }
+
+  const { error } = await supabaseClient
+    .from("submissions")
+    .insert(payload);
+
+  if (error) {
+    showMessage("event-message", error.message, "error");
     return;
   }
 
-  try {
-    showMessage("event-message", "A enviar evento...", "info");
+  showMessage(
+    "event-message",
+    status === "draft"
+      ? "Rascunho guardado."
+      : "Evento enviado para aprovação.",
+    "success"
+  );
+}
 
-    let imageUrl = null;
+function initEventFormPage() {
 
-    if (imageFile) {
-      imageUrl = await uploadImageToBucket(imageFile, "events");
-    }
+  const form = document.getElementById("event-form");
 
-    const payload = {
-      user_id: user.id,
-      type: "evento",
-      title,
-      category,
-      event_date: eventDate || null,
-      event_time: eventTime || null,
-      location: location || null,
-      summary,
-      description,
-      ticket_price: ticketPrice || null,
-      ticket_info: ticketInfo || null,
-      video_url: videoUrl || null,
-      image_url: imageUrl,
-      status: "pending"
-    };
+  const draftBtn = document.getElementById("save-draft-btn");
 
-    const { error } = await insertSubmission(payload);
+  if (!form) return;
 
-    if (error) {
-      console.error("Erro ao submeter evento:", error.message);
-      showMessage("event-message", "Não foi possível submeter o evento.", "error");
-      return;
-    }
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    await submitEventForm("pending");
+  });
 
-    showMessage("event-message", "Evento submetido com sucesso para análise.", "success");
-
-    const form = document.getElementById("event-form");
-    if (form) form.reset();
-  } catch (error) {
-    console.error("Erro inesperado ao submeter evento:", error);
-    showMessage("event-message", "Ocorreu um erro ao enviar o evento.", "error");
+  if (draftBtn) {
+    draftBtn.addEventListener("click", async () => {
+      await submitEventForm("draft");
+    });
   }
 }
 
-async function handleOpportunitySubmission(event) {
-  event.preventDefault();
+/* =====================================================
+OPPORTUNITY SUBMISSION
+===================================================== */
+
+async function submitOpportunityForm(status = "pending") {
 
   clearMessage("opportunity-message");
 
   const user = await requireAuth();
   if (!user) return;
 
-  const title = getValue("title");
-  const category = getValue("category");
-  const summary = getValue("summary");
-  const description = getValue("description");
-  const deadline = getValue("deadline");
-  const location = getValue("location");
-  const externalUrl = getValue("external_url");
-  const imageFile = getFile("image");
+  const payload = {
+    user_id: user.id,
+    type: "oportunidade",
+    status,
+    title: getValue("title"),
+    category: getValue("category"),
+    summary: getValue("summary"),
+    description: getValue("description"),
+    deadline: getValue("deadline"),
+    location: getValue("location"),
+    external_url: getValue("external_url")
+  };
 
-  if (!title || !category || !summary || !description) {
-    showMessage("opportunity-message", "Preencha os campos obrigatórios da oportunidade.", "error");
-    return;
+  const image = getFile("image");
+
+  if (image) {
+    payload.image_url = await uploadImage(image, "opportunities");
   }
 
-  try {
-    showMessage("opportunity-message", "A enviar oportunidade...", "info");
-
-    let imageUrl = null;
-
-    if (imageFile) {
-      imageUrl = await uploadImageToBucket(imageFile, "opportunities");
-    }
-
-    const payload = {
-      user_id: user.id,
-      type: "oportunidade",
-      title,
-      category,
-      summary,
-      description,
-      deadline: deadline || null,
-      location: location || null,
-      external_url: externalUrl || null,
-      image_url: imageUrl,
-      status: "pending"
-    };
-
-    const { error } = await insertSubmission(payload);
-
-    if (error) {
-      console.error("Erro ao submeter oportunidade:", error.message);
-      showMessage("opportunity-message", "Não foi possível submeter a oportunidade.", "error");
-      return;
-    }
-
-    showMessage("opportunity-message", "Oportunidade submetida com sucesso para análise.", "success");
-
-    const form = document.getElementById("opportunity-form");
-    if (form) form.reset();
-  } catch (error) {
-    console.error("Erro inesperado ao submeter oportunidade:", error);
-    showMessage("opportunity-message", "Ocorreu um erro ao enviar a oportunidade.", "error");
-  }
-}
-
-/* =========================
-   MINHAS SUBMISSÕES
-========================= */
-
-async function initMySubmissions() {
-  const tableBody = document.getElementById("submissions-table-body");
-  const emptyState = document.getElementById("submissions-empty");
-  const messageId = "submissions-message";
-
-  if (!tableBody) return;
-
-  clearMessage(messageId);
-
-  const { data, error } = await getMySubmissions();
+  const { error } = await supabaseClient
+    .from("submissions")
+    .insert(payload);
 
   if (error) {
-    console.error("Erro ao carregar submissões:", error.message);
-    showMessage(messageId, "Não foi possível carregar as submissões.", "error");
+    showMessage("opportunity-message", error.message, "error");
     return;
   }
 
-  tableBody.innerHTML = "";
+  showMessage(
+    "opportunity-message",
+    status === "draft"
+      ? "Rascunho guardado."
+      : "Oportunidade enviada para aprovação.",
+    "success"
+  );
+}
 
-  if (!data || !data.length) {
-    if (emptyState) {
-      emptyState.hidden = false;
-    }
-    return;
-  }
+function initOpportunityFormPage() {
 
-  if (emptyState) {
-    emptyState.hidden = true;
-  }
+  const form = document.getElementById("opportunity-form");
 
-  data.forEach((item) => {
-    const tr = document.createElement("tr");
+  const draftBtn = document.getElementById("save-draft-btn");
 
-    tr.innerHTML = `
-      <td>${safeText(item.title)}</td>
-      <td>${safeText(item.type)}</td>
-      <td>${safeText(item.category)}</td>
-      <td>${formatDate(item.created_at)}</td>
-      <td><span class="auth-message ${getStatusClass(item.status)}">${getStatusLabel(item.status)}</span></td>
-    `;
+  if (!form) return;
 
-    tableBody.appendChild(tr);
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    await submitOpportunityForm("pending");
   });
+
+  if (draftBtn) {
+    draftBtn.addEventListener("click", async () => {
+      await submitOpportunityForm("draft");
+    });
+  }
 }
