@@ -726,8 +726,16 @@ function buildAdminCard(item) {
         ? "Prazo"
         : "Referência";
 
+  const coverImage = item.image_url
+    ? `<div class="admin-card-cover">
+         <img src="${escapeHtml(item.image_url)}" alt="${escapeHtml(item.title || "Imagem")}">
+       </div>`
+    : "";
+
   return `
     <article class="admin-card">
+      ${coverImage}
+
       <div class="admin-card-top">
         <div class="admin-card-meta">
           <span class="admin-type-pill">${escapeHtml(getTypeLabel(item.type))}</span>
@@ -756,8 +764,32 @@ function buildAdminCard(item) {
         <button class="admin-btn admin-btn-archive" data-id="${item.id}" data-action="archived">Arquivar</button>
         <button class="admin-btn admin-btn-edit" data-id="${item.id}" data-action="edit">Editar</button>
       </div>
+
+      <div id="admin-gallery-${item.id}" class="admin-gallery-preview"></div>
     </article>
   `;
+}
+async function renderAdminGalleryPreviews(items = []) {
+  for (const item of items) {
+    const container = document.getElementById(`admin-gallery-${item.id}`);
+    if (!container) continue;
+
+    const gallery = await loadSubmissionGallery(item.id);
+
+    if (!gallery.length) {
+      container.innerHTML = "";
+      continue;
+    }
+
+    container.innerHTML = `
+      <div class="admin-gallery-title">Galeria (${gallery.length})</div>
+      <div class="admin-gallery-grid">
+        ${gallery.map(img => `
+          <img src="${escapeHtml(img.image_url)}" alt="Galeria" class="admin-gallery-thumb">
+        `).join("")}
+      </div>
+    `;
+  }
 }
 
 function fillAdminEditor(item) {
@@ -863,10 +895,27 @@ function getAdminFormData() {
     featured: document.getElementById("admin-content-featured")?.checked || false
   };
 }
+async function loadSubmissionGallery(submissionId) {
+  if (!submissionId) return [];
 
+  const { data, error } = await supabaseClient
+    .from("submission_images")
+    .select("*")
+    .eq("submission_id", submissionId)
+    .order("position", { ascending: true })
+    .order("created_at", { ascending: true });
+
+  if (error) {
+    console.error("GALLERY LOAD ERROR:", error);
+    return [];
+  }
+
+  return data || [];
+}
 /* =====================================================
 ADMIN — RENDER
 ===================================================== */
+
 
 let adminSubmissionsCache = [];
 
@@ -921,6 +970,7 @@ function renderAdminList(data = []) {
 
   listEl.innerHTML = data.map(buildAdminCard).join("");
   bindAdminActionButtons();
+  renderAdminGalleryPreviews(data);
 }
 
 
