@@ -412,6 +412,12 @@ async function initDashboard() {
   if (logoutBtn) {
     logoutBtn.addEventListener("click", handleLogout);
   }
+  const adminLink = document.getElementById("admin-link");
+
+if (adminLink && profile?.role === "admin") {
+  adminLink.style.display = "inline-flex";
+}
+
 }
 
 /* =====================================================
