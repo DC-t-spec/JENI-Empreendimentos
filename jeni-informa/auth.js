@@ -717,29 +717,63 @@ function fillAdminEditor(item) {
   if (editId) editId.value = item.id || "";
   if (editorTitle) editorTitle.textContent = "Editar conteúdo";
 
-  const map = {
-    "admin-content-type": item.type || "news",
-    "admin-content-status": item.status || "pending",
-    "admin-content-title": item.title || "",
-    "admin-content-summary": item.summary || "",
-    "admin-content-description": item.description || item.content || "",
-    "admin-content-image": item.image_url || "",
-    "admin-content-link": item.external_url || item.external_link || "",
-    "admin-content-location": item.location || "",
-    "admin-content-slug": item.slug || "",
-    "admin-content-start-date": item.start_date ? String(item.start_date).slice(0, 10) : "",
-    "admin-content-end-date": item.end_date ? String(item.end_date).slice(0, 10) : "",
-    "admin-content-deadline": item.deadline ? String(item.deadline).slice(0, 10) : "",
-    "admin-content-author": item.author_id || item.user_id || ""
-  };
-
-  Object.entries(map).forEach(([id, value]) => {
-    const el = document.getElementById(id);
-    if (el) el.value = value;
-  });
-
+  const typeEl = document.getElementById("admin-content-type");
+  const statusEl = document.getElementById("admin-content-status");
+  const titleEl = document.getElementById("admin-content-title");
+  const summaryEl = document.getElementById("admin-content-summary");
+  const imageEl = document.getElementById("admin-content-image");
   const featuredEl = document.getElementById("admin-content-featured");
+
+  if (typeEl) typeEl.value = item.type || "news";
+  if (statusEl) statusEl.value = item.status || "pending";
+  if (titleEl) titleEl.value = item.title || "";
+  if (summaryEl) summaryEl.value = item.summary || "";
+  if (imageEl) imageEl.value = item.image_url || "";
   if (featuredEl) featuredEl.checked = !!item.featured;
+
+  toggleAdminTypeFields();
+
+  if (item.type === "news") {
+    const slugEl = document.getElementById("admin-news-slug");
+    const descEl = document.getElementById("admin-news-description");
+
+    if (slugEl) slugEl.value = item.slug || "";
+    if (descEl) descEl.value = item.description || item.content || "";
+  }
+
+  if (item.type === "event") {
+    const categoryEl = document.getElementById("admin-event-category");
+    const locationEl = document.getElementById("admin-event-location");
+    const dateEl = document.getElementById("admin-event-date");
+    const timeEl = document.getElementById("admin-event-time");
+    const ticketPriceEl = document.getElementById("admin-event-ticket-price");
+    const ticketInfoEl = document.getElementById("admin-event-ticket-info");
+    const descEl = document.getElementById("admin-event-description");
+    const videoEl = document.getElementById("admin-event-video-url");
+
+    if (categoryEl) categoryEl.value = item.category || "";
+    if (locationEl) locationEl.value = item.location || "";
+    if (dateEl) dateEl.value = item.event_date || (item.start_date ? String(item.start_date).slice(0, 10) : "");
+    if (timeEl) timeEl.value = item.event_time || "";
+    if (ticketPriceEl) ticketPriceEl.value = item.ticket_price || "";
+    if (ticketInfoEl) ticketInfoEl.value = item.ticket_info || "";
+    if (descEl) descEl.value = item.description || "";
+    if (videoEl) videoEl.value = item.video_url || "";
+  }
+
+  if (item.type === "opportunity") {
+    const categoryEl = document.getElementById("admin-opportunity-category");
+    const locationEl = document.getElementById("admin-opportunity-location");
+    const deadlineEl = document.getElementById("admin-opportunity-deadline");
+    const linkEl = document.getElementById("admin-opportunity-link");
+    const descEl = document.getElementById("admin-opportunity-description");
+
+    if (categoryEl) categoryEl.value = item.category || "";
+    if (locationEl) locationEl.value = item.location || "";
+    if (deadlineEl) deadlineEl.value = item.deadline ? String(item.deadline).slice(0, 10) : "";
+    if (linkEl) linkEl.value = item.external_url || item.external_link || "";
+    if (descEl) descEl.value = item.description || "";
+  }
 
   if (editor) editor.classList.add("active");
   editor?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -753,6 +787,8 @@ function resetAdminEditor() {
   if (form) form.reset();
   if (editId) editId.value = "";
   if (editorTitle) editorTitle.textContent = "Criar / editar conteúdo";
+
+  toggleAdminTypeFields();
 }
 
 function getAdminFormData() {
@@ -836,61 +872,154 @@ function renderAdminList(data = []) {
   bindAdminActionButtons();
 }
 
+
+
+
+
+
+
+function toggleAdminTypeFields() {
+  const type = getValue("admin-content-type");
+
+  const newsBlock = document.getElementById("admin-fields-news");
+  const eventBlock = document.getElementById("admin-fields-event");
+  const opportunityBlock = document.getElementById("admin-fields-opportunity");
+
+  if (newsBlock) newsBlock.style.display = type === "news" ? "block" : "none";
+  if (eventBlock) eventBlock.style.display = type === "event" ? "block" : "none";
+  if (opportunityBlock) opportunityBlock.style.display = type === "opportunity" ? "block" : "none";
+}
+
+async function uploadAdminImageIfNeeded() {
+  const file = getFile("admin-content-image-upload");
+  const existingUrl = getValue("admin-content-image");
+
+  if (file) {
+    return await uploadImage(file, "admin");
+  }
+
+  return existingUrl || null;
+}
+
+function getAdminFormDataByType(imageUrl = null) {
+  const type = getValue("admin-content-type") || "news";
+  const title = getValue("admin-content-title");
+
+  const baseData = {
+    type,
+    status: getValue("admin-content-status") || "pending",
+    title,
+    summary: getValue("admin-content-summary"),
+    image_url: imageUrl,
+    featured: document.getElementById("admin-content-featured")?.checked || false
+  };
+
+  if (type === "news") {
+    return {
+      ...baseData,
+      slug: getValue("admin-news-slug") || `${slugify(title)}-${Date.now()}`,
+      description: getValue("admin-news-description")
+    };
+  }
+
+  if (type === "event") {
+    const eventDate = getValue("admin-event-date");
+
+    return {
+      ...baseData,
+      slug: `${slugify(title)}-${Date.now()}`,
+      category: getValue("admin-event-category") || null,
+      location: getValue("admin-event-location") || null,
+      event_date: eventDate || null,
+      start_date: eventDate ? `${eventDate}T00:00:00+02:00` : null,
+      event_time: getValue("admin-event-time") || null,
+      description: getValue("admin-event-description"),
+      ticket_price: getValue("admin-event-ticket-price") || null,
+      ticket_info: getValue("admin-event-ticket-info") || null,
+      video_url: getValue("admin-event-video-url") || null
+    };
+  }
+
+  if (type === "opportunity") {
+    return {
+      ...baseData,
+      slug: `${slugify(title)}-${Date.now()}`,
+      category: getValue("admin-opportunity-category") || null,
+      location: getValue("admin-opportunity-location") || null,
+      deadline: getValue("admin-opportunity-deadline") || null,
+      external_url: getValue("admin-opportunity-link") || null,
+      description: getValue("admin-opportunity-description")
+    };
+  }
+
+  return baseData;
+}
 /* =====================================================
 ADMIN — FORM
 ===================================================== */
 
 async function saveAdminContent() {
-  const payload = getAdminFormData();
   const editId = getValue("admin-edit-id");
+  const type = getValue("admin-content-type");
+  const title = getValue("admin-content-title");
 
-  if (!payload.title) {
+  if (!title) {
     showMessage("admin-message", "Preencha o título do conteúdo.", "error");
     return;
   }
 
-  if (payload.type === "event" && !payload.start_date) {
-    showMessage("admin-message", "Evento precisa de data de início.", "error");
+  if (type === "event" && !getValue("admin-event-date")) {
+    showMessage("admin-message", "Evento precisa de data do evento.", "error");
     return;
   }
 
-  if (editId) {
-    const { error } = await updateSubmissionById(editId, payload);
+  showMessage("admin-message", "A guardar conteúdo...", "info");
 
-    if (error) {
-      showMessage("admin-message", error.message || "Erro ao actualizar conteúdo.", "error");
-      return;
+  try {
+    const imageUrl = await uploadAdminImageIfNeeded();
+    const payload = getAdminFormDataByType(imageUrl);
+
+    if (editId) {
+      const { error } = await updateSubmissionById(editId, payload);
+
+      if (error) {
+        showMessage("admin-message", error.message || "Erro ao actualizar conteúdo.", "error");
+        return;
+      }
+
+      showMessage("admin-message", "Conteúdo actualizado com sucesso.", "success");
+    } else {
+      const adminAccess = await requireAdmin();
+      if (!adminAccess) return;
+
+      const createPayload = {
+        ...payload,
+        user_id: adminAccess.user.id
+      };
+
+      if (createPayload.status === "approved") {
+        createPayload.published_at = new Date().toISOString();
+      }
+
+      const { error } = await createSubmissionByAdmin(createPayload);
+
+      if (error) {
+        showMessage("admin-message", error.message || "Erro ao criar conteúdo.", "error");
+        return;
+      }
+
+      showMessage("admin-message", "Conteúdo criado com sucesso.", "success");
     }
 
-    showMessage("admin-message", "Conteúdo actualizado com sucesso.", "success");
-  } else {
-    const adminAccess = await requireAdmin();
-    if (!adminAccess) return;
+    resetAdminEditor();
 
-    const createPayload = {
-      ...payload,
-      user_id: adminAccess.user.id
-    };
-
-    if (createPayload.status === "approved") {
-      createPayload.published_at = new Date().toISOString();
-    }
-
-    const { error } = await createSubmissionByAdmin(createPayload);
-
-    if (error) {
-      showMessage("admin-message", error.message || "Erro ao criar conteúdo.", "error");
-      return;
-    }
-
-    showMessage("admin-message", "Conteúdo criado com sucesso.", "success");
+    setTimeout(() => {
+      initAdminPage();
+    }, 400);
+  } catch (err) {
+    console.error("ADMIN SAVE ERROR:", err);
+    showMessage("admin-message", err.message || "Erro ao guardar conteúdo.", "error");
   }
-
-  resetAdminEditor();
-
-  setTimeout(() => {
-    initAdminPage();
-  }, 400);
 }
 
 function initAdminEditor() {
@@ -899,6 +1028,14 @@ function initAdminEditor() {
   const resetBtn = document.getElementById("admin-reset-editor");
   const cancelBtn = document.getElementById("admin-cancel-editor");
   const logoutBtn = document.getElementById("logout-btn");
+    const typeSelect = document.getElementById("admin-content-type");
+
+  if (typeSelect && !typeSelect.dataset.bound) {
+    typeSelect.dataset.bound = "true";
+    typeSelect.addEventListener("change", toggleAdminTypeFields);
+  }
+
+  toggleAdminTypeFields();
 
   if (logoutBtn) {
     logoutBtn.addEventListener("click", handleLogout);
