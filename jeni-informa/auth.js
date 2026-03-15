@@ -322,7 +322,6 @@ async function submitOpportunityForm(status = "pending") {
 
   const payload = {
     user_id: user.id,
-    type: "opportunity"
 type: "opportunity",
     status,
     title: getValue("title"),
