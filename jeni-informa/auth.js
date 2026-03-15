@@ -251,7 +251,7 @@ async function submitEventForm(status = "pending") {
 
   const payload = {
     user_id: user.id,
-    type: "evento",
+    type: "event",
     status,
     title: getValue("title"),
     category: getValue("category"),
@@ -322,7 +322,8 @@ async function submitOpportunityForm(status = "pending") {
 
   const payload = {
     user_id: user.id,
-    type: "oportunidade",
+    type: "opportunity"
+type: "opportunity",
     status,
     title: getValue("title"),
     category: getValue("category"),
