@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Arquivo | JENI Informa</title>
+  <meta name="description" content="Arquivo editorial do JENI Informa com pesquisa de notícias, agenda e oportunidades.">
+  <link rel="stylesheet" href="style.css">
+
+  <style>
+    .section-tag {
+      display: inline-flex;
+      align-items: center;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: rgba(200, 169, 107, 0.14);
+      color: #8a6728;
+      font-weight: 700;
+      font-size: 0.85rem;
+    }
+
+    .archive-hero {
+      padding: 76px 0 28px;
+      background: linear-gradient(rgba(248,245,239,0.96), rgba(248,245,239,0.99));
+    }
+
+    .archive-hero h1 {
+      font-size: clamp(2rem, 4vw, 3.4rem);
+      margin: 14px 0 16px;
+      color: #111;
+    }
+
+    .archive-hero p {
+      max-width: 820px;
+      line-height: 1.8;
+      color: #5f5f5f;
+      margin: 0;
+    }
+
+    .archive-main {
+      padding: 22px 0 70px;
+      background: #f8f5ef;
+    }
+
+    .archive-toolbar {
+      background: #fff;
+      border: 1px solid rgba(200, 169, 107, 0.28);
+      border-radius: 24px;
+      padding: 22px;
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.05);
+      margin-bottom: 26px;
+    }
+
+    .archive-search-row {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+
+    .archive-search-row input,
+    .archive-search-row select {
+      width: 100%;
+      padding: 14px 15px;
+      border-radius: 14px;
+      border: 1px solid rgba(17, 17, 17, 0.12);
+      background: #fff;
+      font-size: 1rem;
+      outline: none;
+    }
+
+    .archive-search-row input:focus,
+    .archive-search-row select:focus {
+      border-color: #b68d49;
+      box-shadow: 0 0 0 3px rgba(200, 169, 107, 0.12);
+    }
+
+    .archive-filter-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .archive-filter-chip {
+      border: 1px solid rgba(200, 169, 107, 0.38);
+      background: #fff;
+      color: #111;
+      padding: 10px 14px;
+      border-radius: 999px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.25s ease;
+    }
+
+    .archive-filter-chip.active,
+    .archive-filter-chip:hover {
+      background: #111;
+      color: #fff;
+    }
+
+    .archive-results-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .archive-results-head h2 {
+      margin: 0;
+      color: #111;
+    }
+
+    .archive-results-head p {
+      margin: 0;
+      color: #666;
+    }
+
+    .archive-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 22px;
+    }
+
+    .archive-card {
+      background: #fff;
+      border: 1px solid rgba(200, 169, 107, 0.28);
+      border-radius: 22px;
+      overflow: hidden;
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.05);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .archive-card img,
+    .archive-card-placeholder {
+      width: 100%;
+      height: 220px;
+      object-fit: cover;
+      display: block;
+      background: #ece8df;
+    }
+
+    .archive-card-placeholder {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #777;
+      font-weight: 700;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .archive-card-content {
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    .archive-meta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .archive-pill-type,
+    .archive-pill-category,
+    .archive-pill-date {
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 11px;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+
+    .archive-pill-type {
+      background: #111;
+      color: #fff;
+    }
+
+    .archive-pill-category {
+      background: rgba(200, 169, 107, 0.14);
+      color: #8a6728;
+    }
+
+    .archive-pill-date {
+      background: rgba(17, 17, 17, 0.06);
+      color: #555;
+    }
+
+    .archive-card h3 {
+      margin: 0 0 10px;
+      font-size: 1.15rem;
+      line-height: 1.35;
+      color: #111;
+    }
+
+    .archive-card p {
+      margin: 0 0 12px;
+      color: #666;
+      line-height: 1.65;
+    }
+
+    .archive-card-meta {
+      display: grid;
+      gap: 6px;
+      color: #444;
+      font-size: 0.94rem;
+      margin-top: 4px;
+    }
+
+    .archive-card-link {
+      margin-top: auto;
+      border: none;
+      background: transparent;
+      color: #111;
+      font-weight: 700;
+      cursor: pointer;
+      text-align: left;
+      padding: 0;
+    }
+
+    .archive-card-link:hover {
+      color: #b68d49;
+    }
+
+    .archive-empty {
+      background: #fff;
+      border: 1px dashed rgba(200, 169, 107, 0.42);
+      border-radius: 20px;
+      padding: 26px;
+      color: #666;
+      text-align: center;
+    }
+
+    .archive-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 9999;
+    }
+
+    .archive-modal.active {
+      display: flex;
+    }
+
+    .archive-modal-box {
+      background: #fff;
+      width: min(980px, 100%);
+      max-height: 90vh;
+      overflow-y: auto;
+      border-radius: 24px;
+      padding: 26px;
+      position: relative;
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.22);
+    }
+
+    .archive-modal-close {
+      position: absolute;
+      top: 14px;
+      right: 16px;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      border: none;
+      background: #111;
+      color: #fff;
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+
+    .archive-modal-image img,
+    .archive-modal-image .archive-card-placeholder {
+      width: 100%;
+      max-height: 420px;
+      object-fit: cover;
+      border-radius: 18px;
+      margin-bottom: 18px;
+      background: #ece8df;
+    }
+
+    .archive-modal-box h2 {
+      margin: 0 0 12px;
+      color: #111;
+      font-size: clamp(1.6rem, 3vw, 2.4rem);
+      line-height: 1.2;
+    }
+
+    .archive-modal-box p {
+      color: #5f5f5f;
+      line-height: 1.75;
+      margin: 0 0 12px;
+    }
+
+    .archive-modal-extra {
+      display: grid;
+      gap: 8px;
+      margin: 16px 0 18px;
+      padding-top: 14px;
+      border-top: 1px solid rgba(0, 0, 0, 0.08);
+    }
+
+    .archive-modal-extra strong {
+      color: #111;
+    }
+
+    @media (max-width: 980px) {
+      .archive-grid,
+      .archive-search-row {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="container header-wrap">
+      <a href="index.html" class="brand">
+        <img src="logo-jeni.png" alt="Logotipo JENI Empreendimentos" class="brand-logo">
+      </a>
+
+      <nav class="site-nav">
+        <a href="index.html">Início</a>
+        <a href="jeni-informa.html">Notícias</a>
+        <a href="jeni-informa/login.html">Área do Produtor</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="archive-hero">
+      <div class="container">
+        <span class="section-tag">Arquivo JENI Informa</span>
+        <h1>Arquivo editorial com pesquisa</h1>
+        <p>
+          Consulte conteúdos anteriores do JENI Informa, incluindo notícias antigas,
+          eventos já realizados, oportunidades expiradas e conteúdos arquivados pela administração.
+        </p>
+      </div>
+    </section>
+
+    <section class="archive-main">
+      <div class="container">
+
+        <section class="archive-toolbar">
+          <div class="archive-search-row">
+            <input type="text" id="archive-search" placeholder="Pesquisar por título, resumo, categoria, local ou descrição...">
+            <select id="archive-sort">
+              <option value="recent">Mais recentes</option>
+              <option value="oldest">Mais antigos</option>
+              <option value="title">Título A-Z</option>
+            </select>
+          </div>
+
+          <div class="archive-filter-row">
+            <button class="archive-filter-chip active" data-type="all">Todos</button>
+            <button class="archive-filter-chip" data-type="news">Notícias</button>
+            <button class="archive-filter-chip" data-type="event">Agenda</button>
+            <button class="archive-filter-chip" data-type="opportunity">Oportunidades</button>
+          </div>
+        </section>
+
+        <section>
+          <div class="archive-results-head">
+            <div>
+              <h2>Resultados do arquivo</h2>
+              <p id="archive-count">A carregar arquivo...</p>
+            </div>
+
+            <div>
+              <a href="jeni-informa.html" class="jeni-btn-light">Voltar ao JENI Informa</a>
+            </div>
+          </div>
+
+          <div id="archive-grid" class="archive-grid"></div>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-wrap">
+      <div>
+        <strong>JENI Empreendimentos</strong>
+        <p>Produção cultural, gestão criativa e desenvolvimento de iniciativas em Moçambique.</p>
+      </div>
+
+      <div>
+        <p>Maputo, Moçambique</p>
+        <p><a href="index.html">Voltar ao site principal</a></p>
+      </div>
+    </div>
+  </footer>
+
+  <div class="archive-modal" id="archiveModal">
+    <div class="archive-modal-box">
+      <button class="archive-modal-close" type="button" onclick="closeArchiveModal()">×</button>
+      <div id="archiveModalBody"></div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL = "https://qkwusyhkycthottckzww.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrd3VzeWhreWN0aG90dGNrend3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1MTM2OTIsImV4cCI6MjA4OTA4OTY5Mn0.ycIm_1lZlGNApILY1OReDQmp4Qv4n1Rw7iTAbFq7rdA";
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const NEWS_DAYS_ON_HOME = 120;
+    let archiveItems = [];
+    let filteredItems = [];
+    let currentType = "all";
+
+    function escapeHTML(value) {
+      return String(value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function nl2br(value) {
+      return escapeHTML(value || "").replace(/\n/g, "<br>");
+    }
+
+    function formatDate(dateString) {
+      if (!dateString) return "Sem data";
+      const date = new Date(dateString);
+      if (Number.isNaN(date.getTime())) return "Sem data";
+      return date.toLocaleDateString("pt-PT", {
+        day: "2-digit",
+        month: "long",
+        year: "numeric"
+      });
+    }
+
+    function formatDateTime(dateString) {
+      if (!dateString) return "Sem data";
+      const date = new Date(dateString);
+      if (Number.isNaN(date.getTime())) return "Sem data";
+      return date.toLocaleString("pt-PT");
+    }
+
+    function createImageHTML(src, alt) {
+      if (!src) {
+        return `<div class="archive-card-placeholder">Sem imagem disponível</div>`;
+      }
+      return `<img src="${src}" alt="${escapeHTML(alt || "")}">`;
+    }
+
+    function labelType(type) {
+      if (type === "event") return "Agenda";
+      if (type === "opportunity") return "Oportunidade";
+      return "Notícia";
+    }
+
+    function startOfToday() {
+      const now = new Date();
+      now.setHours(0, 0, 0, 0);
+      return now;
+    }
+
+    function isNewsCurrent(item) {
+      const reference = new Date(item.published_at || item.created_at || Date.now());
+      const limit = new Date();
+      limit.setDate(limit.getDate() - NEWS_DAYS_ON_HOME);
+      return reference >= limit;
+    }
+
+    function isEventCurrent(item) {
+      const date = item.start_date ? new Date(item.start_date) : null;
+      if (!date || Number.isNaN(date.getTime())) return false;
+      return date >= startOfToday();
+    }
+
+    function isOpportunityCurrent(item) {
+      if (!item.deadline) return true;
+      const deadline = new Date(item.deadline);
+      if (Number.isNaN(deadline.getTime())) return true;
+      deadline.setHours(23, 59, 59, 999);
+      return deadline >= new Date();
+    }
+
+    function normaliseItem(item) {
+      return {
+        id: item.id,
+        type: item.type,
+        status: item.status,
+        featured: !!item.featured,
+        title: item.title || "Sem título",
+        slug: item.slug || "",
+        summary: item.summary || "Sem resumo disponível.",
+        description: item.description || "",
+        category: item.category || (
+          item.type === "event" ? "Agenda Cultural" :
+          item.type === "opportunity" ? "Oportunidade" :
+          "Notícia"
+        ),
+        image_url: item.image_url || "",
+        location: item.location || "",
+        event_time: item.event_time || "",
+        ticket_price: item.ticket_price || "",
+        ticket_info: item.ticket_info || "",
+        deadline: item.deadline || "",
+        start_date: item.start_date || item.event_date || "",
+        end_date: item.end_date || "",
+        external_url: item.external_url || item.external_link || "",
+        video_url: item.video_url || "",
+        published_at: item.published_at || item.created_at || "",
+        created_at: item.created_at || ""
+      };
+    }
+
+    function shouldBeInArchive(item) {
+      if (item.status === "archived") return true;
+
+      if (item.type === "news") return !isNewsCurrent(item);
+      if (item.type === "event") return !isEventCurrent(item);
+      if (item.type === "opportunity") return !isOpportunityCurrent(item);
+
+      return false;
+    }
+
+    function getComparableDate(item) {
+      return item.published_at || item.created_at || item.start_date || item.deadline || "";
+    }
+
+    function createArchiveCard(item, index) {
+      const extraMeta =
+        item.type === "event"
+          ? `
+            <div class="archive-card-meta">
+              <span><strong>Data:</strong> ${escapeHTML(formatDate(item.start_date))}</span>
+              <span><strong>Local:</strong> ${escapeHTML(item.location || "Não definido")}</span>
+              <span><strong>Hora:</strong> ${escapeHTML(item.event_time || "—")}</span>
+            </div>
+          `
+          : item.type === "opportunity"
+            ? `
+              <div class="archive-card-meta">
+                <span><strong>Prazo:</strong> ${escapeHTML(item.deadline ? formatDate(item.deadline) : "Sem prazo definido")}</span>
+                <span><strong>Local:</strong> ${escapeHTML(item.location || "Não definido")}</span>
+              </div>
+            `
+            : `
+              <div class="archive-card-meta">
+                <span><strong>Categoria:</strong> ${escapeHTML(item.category)}</span>
+                <span><strong>Publicado em:</strong> ${escapeHTML(formatDate(item.published_at || item.created_at))}</span>
+              </div>
+            `;
+
+      return `
+        <article class="archive-card">
+          <div>
+            ${createImageHTML(item.image_url, item.title)}
+          </div>
+
+          <div class="archive-card-content">
+            <div class="archive-meta-row">
+              <span class="archive-pill-type">${labelType(item.type)}</span>
+              <span class="archive-pill-category">${escapeHTML(item.category)}</span>
+              <span class="archive-pill-date">${escapeHTML(formatDate(getComparableDate(item)))}</span>
+            </div>
+
+            <h3>${escapeHTML(item.title)}</h3>
+            <p>${escapeHTML(item.summary)}</p>
+
+            ${extraMeta}
+
+            <button class="archive-card-link" type="button" onclick="openArchiveModal(${index})">Ver detalhes</button>
+          </div>
+        </article>
+      `;
+    }
+
+    function openArchiveModal(index) {
+      const item = filteredItems[index];
+      if (!item) return;
+
+      const extraBlock =
+        item.type === "event"
+          ? `
+            <div class="archive-modal-extra">
+              <p><strong>Data:</strong> ${escapeHTML(formatDate(item.start_date))}</p>
+              <p><strong>Hora:</strong> ${escapeHTML(item.event_time || "Não informada")}</p>
+              <p><strong>Local:</strong> ${escapeHTML(item.location || "Não definido")}</p>
+              <p><strong>Bilhete:</strong> ${escapeHTML(item.ticket_price || "Não informado")}</p>
+              ${item.ticket_info ? `<p><strong>Informação adicional:</strong> ${escapeHTML(item.ticket_info)}</p>` : ""}
+            </div>
+          `
+          : item.type === "opportunity"
+            ? `
+              <div class="archive-modal-extra">
+                <p><strong>Prazo:</strong> ${escapeHTML(item.deadline ? formatDate(item.deadline) : "Sem prazo definido")}</p>
+                <p><strong>Local:</strong> ${escapeHTML(item.location || "Não definido")}</p>
+                ${item.external_url ? `<p><strong>Link oficial:</strong> <a href="${item.external_url}" target="_blank" rel="noopener noreferrer">${escapeHTML(item.external_url)}</a></p>` : ""}
+              </div>
+            `
+            : `
+              <div class="archive-modal-extra">
+                <p><strong>Categoria:</strong> ${escapeHTML(item.category)}</p>
+                <p><strong>Publicado em:</strong> ${escapeHTML(formatDateTime(item.published_at || item.created_at))}</p>
+              </div>
+            `;
+
+      document.getElementById("archiveModalBody").innerHTML = `
+        <div class="archive-modal-image">
+          ${createImageHTML(item.image_url, item.title)}
+        </div>
+
+        <div class="archive-meta-row">
+          <span class="archive-pill-type">${labelType(item.type)}</span>
+          <span class="archive-pill-category">${escapeHTML(item.category)}</span>
+          <span class="archive-pill-date">${escapeHTML(formatDate(getComparableDate(item)))}</span>
+        </div>
+
+        <h2>${escapeHTML(item.title)}</h2>
+        <p>${escapeHTML(item.summary)}</p>
+
+        ${extraBlock}
+
+        <p>${nl2br(item.description || "")}</p>
+      `;
+
+      document.getElementById("archiveModal").classList.add("active");
+    }
+
+    function closeArchiveModal() {
+      document.getElementById("archiveModal").classList.remove("active");
+    }
+
+    function applyArchiveFilters() {
+      const searchTerm = document.getElementById("archive-search").value.trim().toLowerCase();
+      const sortMode = document.getElementById("archive-sort").value;
+
+      let items = [...archiveItems];
+
+      if (currentType !== "all") {
+        items = items.filter(item => item.type === currentType);
+      }
+
+      if (searchTerm) {
+        items = items.filter(item => {
+          const haystack = [
+            item.title,
+            item.summary,
+            item.description,
+            item.category,
+            item.location
+          ].join(" ").toLowerCase();
+
+          return haystack.includes(searchTerm);
+        });
+      }
+
+      if (sortMode === "oldest") {
+        items.sort((a, b) => new Date(getComparableDate(a) || 0) - new Date(getComparableDate(b) || 0));
+      } else if (sortMode === "title") {
+        items.sort((a, b) => a.title.localeCompare(b.title, "pt"));
+      } else {
+        items.sort((a, b) => new Date(getComparableDate(b) || 0) - new Date(getComparableDate(a) || 0));
+      }
+
+      filteredItems = items;
+
+      document.getElementById("archive-count").textContent =
+        `${items.length} conteúdo(s) encontrado(s) no arquivo.`;
+
+      const grid = document.getElementById("archive-grid");
+
+      if (!items.length) {
+        grid.innerHTML = `
+          <div class="archive-empty">
+            Nenhum conteúdo encontrado com os filtros actuais.
+          </div>
+        `;
+        return;
+      }
+
+      grid.innerHTML = items.map((item, index) => createArchiveCard(item, index)).join("");
+    }
+
+    function applyURLTypeFilter() {
+      const params = new URLSearchParams(window.location.search);
+      const type = params.get("type");
+
+      if (!type) return;
+
+      const validTypes = ["news", "event", "opportunity"];
+      if (!validTypes.includes(type)) return;
+
+      currentType = type;
+
+      document.querySelectorAll(".archive-filter-chip").forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.type === type);
+      });
+    }
+
+    async function loadArchiveContent() {
+      const { data, error } = await supabaseClient
+        .from("submissions")
+        .select("*")
+        .in("status", ["approved", "archived"])
+        .in("type", ["news", "event", "opportunity"])
+        .order("published_at", { ascending: false });
+
+      if (error) {
+        console.error("ARCHIVE LOAD ERROR:", error);
+        archiveItems = [];
+      } else {
+        archiveItems = (data || [])
+          .map(normaliseItem)
+          .filter(shouldBeInArchive);
+      }
+
+      applyURLTypeFilter();
+      applyArchiveFilters();
+    }
+
+    document.querySelectorAll(".archive-filter-chip").forEach((button) => {
+      button.addEventListener("click", () => {
+        document.querySelectorAll(".archive-filter-chip").forEach(btn => btn.classList.remove("active"));
+        button.classList.add("active");
+        currentType = button.dataset.type;
+        applyArchiveFilters();
+      });
+    });
+
+    document.getElementById("archive-search").addEventListener("input", applyArchiveFilters);
+    document.getElementById("archive-sort").addEventListener("change", applyArchiveFilters);
+
+    document.getElementById("archiveModal").addEventListener("click", (e) => {
+      if (e.target.id === "archiveModal") {
+        closeArchiveModal();
+      }
+    });
+
+    loadArchiveContent();
+  </script>
+</body>
+</html>
