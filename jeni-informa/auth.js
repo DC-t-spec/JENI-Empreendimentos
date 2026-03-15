@@ -260,21 +260,25 @@ async function submitEventForm(status = "pending") {
   const user = await requireAuth();
   if (!user) return;
 
-  const payload = {
-    user_id: user.id,
-    type: "event",
-    status: status || "pending",
-    title: getValue("title"),
-    category: getValue("category") || null,
-    event_date: getValue("event_date") || null,
-    event_time: getValue("event_time") || null,
-    location: getValue("location") || null,
-    summary: getValue("summary"),
-    description: getValue("description"),
-    ticket_price: getValue("ticket_price") || null,
-    ticket_info: getValue("ticket_info") || null,
-    video_url: getValue("video_url") || null
-  };
+ const title = getValue("title");
+
+const payload = {
+  user_id: user.id,
+  type: "event",
+  status: status || "pending",
+  title: title,
+  slug: `${slugify(title)}-${Date.now()}`,
+  category: getValue("category") || null,
+  event_date: getValue("event_date") || null,
+  event_time: getValue("event_time") || null,
+  location: getValue("location") || null,
+  summary: getValue("summary"),
+  description: getValue("description"),
+  ticket_price: getValue("ticket_price") || null,
+  ticket_info: getValue("ticket_info") || null,
+  video_url: getValue("video_url") || null
+};
+
 
   const image = getFile("image");
 
@@ -343,18 +347,22 @@ async function submitOpportunityForm(status = "pending") {
   const user = await requireAuth();
   if (!user) return;
 
-  const payload = {
-    user_id: user.id,
-    type: "opportunity",
-    status: status || "pending",
-    title: getValue("title"),
-    category: getValue("category") || null,
-    summary: getValue("summary"),
-    description: getValue("description"),
-    deadline: getValue("deadline") || null,
-    location: getValue("location") || null,
-    external_url: getValue("external_url") || null
-  };
+const title = getValue("title");
+
+const payload = {
+  user_id: user.id,
+  type: "opportunity",
+  status: status || "pending",
+  title: title,
+  slug: `${slugify(title)}-${Date.now()}`,
+  category: getValue("category") || null,
+  summary: getValue("summary"),
+  description: getValue("description"),
+  deadline: getValue("deadline") || null,
+  location: getValue("location") || null,
+  external_url: getValue("external_url") || null
+};
+
 
   const image = getFile("image");
 
