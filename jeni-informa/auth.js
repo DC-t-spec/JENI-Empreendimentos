@@ -243,7 +243,6 @@ EVENT SUBMISSION
 ===================================================== */
 
 async function submitEventForm(status = "pending") {
-
   clearMessage("event-message");
 
   const user = await requireAuth();
@@ -252,42 +251,55 @@ async function submitEventForm(status = "pending") {
   const payload = {
     user_id: user.id,
     type: "event",
-    status,
+    status: status || "pending",
     title: getValue("title"),
-    category: getValue("category"),
-    event_date: getValue("event_date"),
-    event_time: getValue("event_time"),
-    location: getValue("location"),
+    category: getValue("category") || null,
+    event_date: getValue("event_date") || null,
+    event_time: getValue("event_time") || null,
+    location: getValue("location") || null,
     summary: getValue("summary"),
     description: getValue("description"),
-    ticket_price: getValue("ticket_price"),
-    ticket_info: getValue("ticket_info"),
-    video_url: getValue("video_url")
+    ticket_price: getValue("ticket_price") || null,
+    ticket_info: getValue("ticket_info") || null,
+    video_url: getValue("video_url") || null
   };
 
   const image = getFile("image");
 
-  if (image) {
-    payload.image_url = await uploadImage(image, "events");
+  try {
+    if (image) {
+      payload.image_url = await uploadImage(image, "events");
+    } else {
+      payload.image_url = null;
+    }
+
+    const { data, error } = await supabaseClient
+      .from("submissions")
+      .insert([payload])
+      .select();
+
+    console.log("EVENT PAYLOAD:", payload);
+    console.log("EVENT RESULT:", data);
+    console.error("EVENT ERROR:", error);
+
+    if (error) {
+      showMessage("event-message", error.message, "error");
+      return;
+    }
+
+    showMessage(
+      "event-message",
+      status === "draft"
+        ? "Rascunho guardado."
+        : "Evento enviado para aprovação.",
+      "success"
+    );
+  } catch (err) {
+    console.error("EVENT CATCH ERROR:", err);
+    showMessage("event-message", err.message || "Erro ao submeter evento.", "error");
   }
-
-  const { error } = await supabaseClient
-    .from("submissions")
-    .insert(payload);
-
-  if (error) {
-    showMessage("event-message", error.message, "error");
-    return;
-  }
-
-  showMessage(
-    "event-message",
-    status === "draft"
-      ? "Rascunho guardado."
-      : "Evento enviado para aprovação.",
-    "success"
-  );
 }
+
 
 function initEventFormPage() {
 
@@ -314,7 +326,6 @@ OPPORTUNITY SUBMISSION
 ===================================================== */
 
 async function submitOpportunityForm(status = "pending") {
-
   clearMessage("opportunity-message");
 
   const user = await requireAuth();
@@ -322,40 +333,53 @@ async function submitOpportunityForm(status = "pending") {
 
   const payload = {
     user_id: user.id,
-type: "opportunity",
-    status,
+    type: "opportunity",
+    status: status || "pending",
     title: getValue("title"),
-    category: getValue("category"),
+    category: getValue("category") || null,
     summary: getValue("summary"),
     description: getValue("description"),
-    deadline: getValue("deadline"),
-    location: getValue("location"),
-    external_url: getValue("external_url")
+    deadline: getValue("deadline") || null,
+    location: getValue("location") || null,
+    external_url: getValue("external_url") || null
   };
 
   const image = getFile("image");
 
-  if (image) {
-    payload.image_url = await uploadImage(image, "opportunities");
+  try {
+    if (image) {
+      payload.image_url = await uploadImage(image, "opportunities");
+    } else {
+      payload.image_url = null;
+    }
+
+    const { data, error } = await supabaseClient
+      .from("submissions")
+      .insert([payload])
+      .select();
+
+    console.log("OPPORTUNITY PAYLOAD:", payload);
+    console.log("OPPORTUNITY RESULT:", data);
+    console.error("OPPORTUNITY ERROR:", error);
+
+    if (error) {
+      showMessage("opportunity-message", error.message, "error");
+      return;
+    }
+
+    showMessage(
+      "opportunity-message",
+      status === "draft"
+        ? "Rascunho guardado."
+        : "Oportunidade enviada para aprovação.",
+      "success"
+    );
+  } catch (err) {
+    console.error("OPPORTUNITY CATCH ERROR:", err);
+    showMessage("opportunity-message", err.message || "Erro ao submeter oportunidade.", "error");
   }
-
-  const { error } = await supabaseClient
-    .from("submissions")
-    .insert(payload);
-
-  if (error) {
-    showMessage("opportunity-message", error.message, "error");
-    return;
-  }
-
-  showMessage(
-    "opportunity-message",
-    status === "draft"
-      ? "Rascunho guardado."
-      : "Oportunidade enviada para aprovação.",
-    "success"
-  );
 }
+
 
 function initOpportunityFormPage() {
 
