@@ -4,10 +4,523 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>JENI Informa | JENI Empreendimentos</title>
-  <meta name="description" content="JENI Informa: notícias, actualizações, projectos e iniciativas culturais da JENI Empreendimentos.">
+  <meta name="description" content="JENI Informa: notícias, agenda cultural, oportunidades e iniciativas da JENI Empreendimentos.">
   <link rel="stylesheet" href="style.css">
 
-  
+  <style>
+    .jeni-news-hero {
+      padding: 72px 0 34px;
+      background:
+        linear-gradient(rgba(248, 245, 239, 0.95), rgba(248, 245, 239, 0.98));
+    }
+
+    .jeni-news-hero-inner {
+      max-width: 860px;
+    }
+
+    .jeni-news-hero h1 {
+      font-size: clamp(2.2rem, 5vw, 4rem);
+      line-height: 1.06;
+      margin: 14px 0 16px;
+      color: #111;
+    }
+
+    .jeni-news-hero p {
+      font-size: 1.06rem;
+      line-height: 1.8;
+      color: #5f5f5f;
+      max-width: 760px;
+      margin: 0;
+    }
+
+    .section-tag {
+      display: inline-flex;
+      align-items: center;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: rgba(200, 169, 107, 0.14);
+      color: #8a6728;
+      font-weight: 700;
+      font-size: 0.85rem;
+      letter-spacing: 0.02em;
+    }
+
+    .jeni-informa-nav {
+      padding: 0 0 18px;
+      background: #f8f5ef;
+    }
+
+    .jeni-informa-nav-inner {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .jeni-nav-chip {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 18px;
+      border-radius: 999px;
+      border: 1px solid rgba(200, 169, 107, 0.38);
+      background: #fff;
+      color: #111;
+      font-weight: 700;
+      text-decoration: none;
+      transition: 0.25s ease;
+    }
+
+    .jeni-nav-chip:hover {
+      background: #111;
+      color: #fff;
+    }
+
+    .jeni-informa-main {
+      padding: 22px 0 72px;
+      background: #f8f5ef;
+    }
+
+    .jeni-featured-block {
+      margin-bottom: 42px;
+    }
+
+    .jeni-featured-news {
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 24px;
+      background: #fff;
+      border: 1px solid rgba(200, 169, 107, 0.32);
+      border-radius: 28px;
+      overflow: hidden;
+      box-shadow: 0 14px 38px rgba(0, 0, 0, 0.06);
+    }
+
+    .jeni-featured-media img,
+    .jeni-featured-placeholder {
+      width: 100%;
+      height: 100%;
+      min-height: 340px;
+      object-fit: cover;
+      display: block;
+      background: #ece8df;
+    }
+
+    .jeni-featured-placeholder {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #777;
+      font-weight: 700;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .jeni-featured-content {
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .jeni-featured-content h2 {
+      margin: 0 0 14px;
+      font-size: clamp(1.6rem, 3vw, 2.5rem);
+      line-height: 1.15;
+      color: #111;
+    }
+
+    .jeni-news-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .jeni-news-category,
+    .jeni-news-date,
+    .jeni-news-type {
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 11px;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+
+    .jeni-news-type {
+      background: #111;
+      color: #fff;
+    }
+
+    .jeni-news-category {
+      background: rgba(200, 169, 107, 0.14);
+      color: #8a6728;
+    }
+
+    .jeni-news-date {
+      background: rgba(17, 17, 17, 0.06);
+      color: #555;
+    }
+
+    .jeni-featured-excerpt p,
+    .jeni-featured-full p {
+      color: #5f5f5f;
+      line-height: 1.75;
+      margin: 0 0 12px;
+    }
+
+    .jeni-featured-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 10px;
+    }
+
+    .jeni-read-more-btn,
+    .jeni-view-details-btn {
+      border: none;
+      border-radius: 999px;
+      padding: 13px 18px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.25s ease;
+    }
+
+    .jeni-read-more-btn {
+      background: #111;
+      color: #fff;
+    }
+
+    .jeni-read-more-btn:hover {
+      opacity: 0.92;
+    }
+
+    .jeni-view-details-btn {
+      background: transparent;
+      color: #111;
+      border: 1px solid rgba(17, 17, 17, 0.18);
+    }
+
+    .jeni-view-details-btn:hover {
+      border-color: #111;
+    }
+
+    .jeni-section-block {
+      margin-top: 52px;
+    }
+
+    .jeni-section-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      align-items: end;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+    }
+
+    .jeni-section-head h2 {
+      margin: 0 0 6px;
+      font-size: 2rem;
+      color: #111;
+    }
+
+    .jeni-section-head p {
+      margin: 0;
+      color: #666;
+      max-width: 780px;
+      line-height: 1.7;
+    }
+
+    .jeni-news-toolbar {
+      margin-bottom: 18px;
+    }
+
+    .jeni-news-mini-label {
+      display: inline-block;
+      margin-bottom: 10px;
+      color: #666;
+      font-size: 0.92rem;
+      font-weight: 700;
+    }
+
+    .jeni-news-filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .news-filter-btn {
+      border: 1px solid rgba(200, 169, 107, 0.38);
+      background: #fff;
+      color: #111;
+      padding: 10px 16px;
+      border-radius: 999px;
+      cursor: pointer;
+      font-weight: 700;
+      transition: 0.25s ease;
+    }
+
+    .news-filter-btn.active,
+    .news-filter-btn:hover {
+      background: #111;
+      color: #fff;
+    }
+
+    .jeni-news-grid,
+    .jeni-public-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 22px;
+    }
+
+    .jeni-news-card,
+    .jeni-public-card {
+      background: #fff;
+      border: 1px solid rgba(200, 169, 107, 0.28);
+      border-radius: 22px;
+      overflow: hidden;
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.05);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .jeni-news-card-image img,
+    .jeni-public-card-image img,
+    .jeni-card-placeholder {
+      width: 100%;
+      height: 220px;
+      object-fit: cover;
+      display: block;
+      background: #ece8df;
+    }
+
+    .jeni-card-placeholder {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #777;
+      font-weight: 700;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .jeni-news-card-content,
+    .jeni-public-card-content {
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    .jeni-news-card h3,
+    .jeni-public-card h3 {
+      margin: 0 0 10px;
+      font-size: 1.15rem;
+      line-height: 1.35;
+      color: #111;
+    }
+
+    .jeni-news-card p,
+    .jeni-public-card p {
+      margin: 0 0 12px;
+      color: #666;
+      line-height: 1.65;
+    }
+
+    .jeni-card-meta-list {
+      display: grid;
+      gap: 6px;
+      margin-top: 4px;
+      color: #444;
+      font-size: 0.94rem;
+    }
+
+    .jeni-news-link {
+      margin-top: auto;
+      border: none;
+      background: transparent;
+      color: #111;
+      font-weight: 700;
+      cursor: pointer;
+      text-align: left;
+      padding: 0;
+      transition: 0.2s ease;
+    }
+
+    .jeni-news-link:hover {
+      color: #b68d49;
+    }
+
+    .jeni-empty-state {
+      background: #fff;
+      border: 1px dashed rgba(200, 169, 107, 0.42);
+      border-radius: 20px;
+      padding: 26px;
+      color: #666;
+      text-align: center;
+    }
+
+    .jeni-producer-invite {
+      padding: 58px 0 78px;
+      background: #f8f5ef;
+    }
+
+    .invite-box {
+      background: #fff;
+      border: 1px solid rgba(200, 169, 107, 0.3);
+      border-radius: 26px;
+      padding: 34px;
+      box-shadow: 0 12px 34px rgba(0, 0, 0, 0.05);
+      text-align: center;
+    }
+
+    .invite-box h2 {
+      margin: 14px 0 14px;
+      font-size: 2rem;
+      color: #111;
+    }
+
+    .invite-box p {
+      max-width: 760px;
+      margin: 0 auto;
+      color: #666;
+      line-height: 1.7;
+    }
+
+    .invite-buttons {
+      margin-top: 24px;
+      display: flex;
+      justify-content: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .btn-primary,
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      border-radius: 999px;
+      padding: 14px 20px;
+      font-weight: 700;
+      transition: 0.25s ease;
+    }
+
+    .btn-primary {
+      background: #111;
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      opacity: 0.92;
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: #111;
+      border: 1px solid rgba(17, 17, 17, 0.18);
+    }
+
+    .btn-secondary:hover {
+      border-color: #111;
+    }
+
+    .jeni-news-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 9999;
+    }
+
+    .jeni-news-modal.active {
+      display: flex;
+    }
+
+    .jeni-news-modal-box {
+      background: #fff;
+      width: min(980px, 100%);
+      max-height: 90vh;
+      overflow-y: auto;
+      border-radius: 24px;
+      padding: 26px;
+      position: relative;
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.22);
+    }
+
+    .jeni-news-modal-close {
+      position: absolute;
+      top: 14px;
+      right: 16px;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      border: none;
+      background: #111;
+      color: #fff;
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+
+    .jeni-news-modal-image img,
+    .jeni-news-modal-image .jeni-card-placeholder {
+      width: 100%;
+      max-height: 420px;
+      object-fit: cover;
+      border-radius: 18px;
+      margin-bottom: 18px;
+      background: #ece8df;
+    }
+
+    .jeni-news-modal-box h2 {
+      margin: 0 0 12px;
+      color: #111;
+      font-size: clamp(1.6rem, 3vw, 2.4rem);
+      line-height: 1.2;
+    }
+
+    .jeni-news-modal-box p {
+      color: #5f5f5f;
+      line-height: 1.75;
+      margin: 0 0 12px;
+    }
+
+    .jeni-news-modal-extra {
+      display: grid;
+      gap: 8px;
+      margin: 16px 0 18px;
+      padding-top: 14px;
+      border-top: 1px solid rgba(0, 0, 0, 0.08);
+    }
+
+    .jeni-news-modal-extra strong {
+      color: #111;
+    }
+
+    @media (max-width: 980px) {
+      .jeni-featured-news,
+      .jeni-news-grid,
+      .jeni-public-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 700px) {
+      .jeni-featured-content,
+      .invite-box,
+      .jeni-news-modal-box {
+        padding: 20px;
+      }
+
+      .jeni-news-hero {
+        padding-top: 54px;
+      }
+    }
+  </style>
 </head>
 <body>
 
@@ -17,13 +530,11 @@
         <img src="logo-jeni.png" alt="Logotipo JENI Empreendimentos" class="brand-logo">
       </a>
 
-     <nav class="site-nav">
-  <a href="index.html">Início</a>
-         <a href="jeni-informa.html">Notícias</a>
-  <a href="jeni-informa/login.html">Área do Produtor</a>
-</nav>
-
-
+      <nav class="site-nav">
+        <a href="index.html">Início</a>
+        <a href="jeni-informa.html">Notícias</a>
+        <a href="jeni-informa/login.html">Área do Produtor</a>
+      </nav>
     </div>
   </header>
 
@@ -31,55 +542,111 @@
     <section class="jeni-news-hero">
       <div class="container">
         <div class="jeni-news-hero-inner">
-         <span class="section-tag">Notícias</span>
-<h1>Notícias, projectos e movimento cultural</h1>
-<p>
-  Um espaço para acompanhar notícias, iniciativas, actividades comunitárias e projectos desenvolvidos pela JENI Empreendimentos.
-</p>
-
+          <span class="section-tag">JENI Informa</span>
+          <h1>Notícias, agenda e oportunidades do movimento cultural</h1>
+          <p>
+            Um espaço editorial da <strong>JENI Empreendimentos</strong> para acompanhar
+            notícias, projectos, eventos, oportunidades e iniciativas ligadas à criação,
+            produção e circulação cultural.
+          </p>
         </div>
       </div>
     </section>
 
-    <section class="section jeni-news-layout">
+    <section class="jeni-informa-nav">
+      <div class="container">
+        <div class="jeni-informa-nav-inner">
+          <a href="#noticias" class="jeni-nav-chip">Notícias</a>
+          <a href="#agenda" class="jeni-nav-chip">Agenda</a>
+          <a href="#oportunidades" class="jeni-nav-chip">Oportunidades</a>
+          <a href="#area-produtor" class="jeni-nav-chip">Área do Produtor</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="jeni-informa-main">
       <div class="container">
 
-        <div id="featured-news"></div>
+        <section class="jeni-featured-block">
+          <div id="featured-news"></div>
+        </section>
 
-        <div class="jeni-news-toolbar">
-          <div>
-            <span class="jeni-news-mini-label">Secções</span>
-            <div class="jeni-news-filters">
-              <button class="news-filter-btn active" data-filter="Todos">Todos</button>
-              <button class="news-filter-btn" data-filter="Projectos">Projectos</button>
-              <button class="news-filter-btn" data-filter="Comunidade">Comunidade</button>
-              <button class="news-filter-btn" data-filter="Reconhecimento">Reconhecimento</button>
-              <button class="news-filter-btn" data-filter="Institucional">Institucional</button>
+        <section class="jeni-section-block" id="noticias">
+          <div class="jeni-section-head">
+            <div>
+              <span class="section-tag">Editorial</span>
+              <h2>Notícias</h2>
+              <p>
+                Conteúdos editoriais, projectos, iniciativas comunitárias e actualizações
+                sobre o trabalho da JENI Empreendimentos e do sector cultural.
+              </p>
             </div>
           </div>
-        </div>
 
-        <div id="news-grid" class="jeni-news-grid"></div>
+          <div class="jeni-news-toolbar">
+            <div>
+              <span class="jeni-news-mini-label">Filtrar notícias</span>
+              <div class="jeni-news-filters">
+                <button class="news-filter-btn active" data-filter="Todos">Todos</button>
+                <button class="news-filter-btn" data-filter="Projectos">Projectos</button>
+                <button class="news-filter-btn" data-filter="Comunidade">Comunidade</button>
+                <button class="news-filter-btn" data-filter="Reconhecimento">Reconhecimento</button>
+                <button class="news-filter-btn" data-filter="Institucional">Institucional</button>
+              </div>
+            </div>
+          </div>
+
+          <div id="news-grid" class="jeni-news-grid"></div>
+        </section>
+
+        <section class="jeni-section-block" id="agenda">
+          <div class="jeni-section-head">
+            <div>
+              <span class="section-tag">Agenda cultural</span>
+              <h2>Agenda</h2>
+              <p>
+                Eventos culturais aprovados para publicação no JENI Informa:
+                concertos, workshops, exposições, encontros, feiras e outras actividades.
+              </p>
+            </div>
+          </div>
+
+          <div id="agenda-grid" class="jeni-public-grid"></div>
+        </section>
+
+        <section class="jeni-section-block" id="oportunidades">
+          <div class="jeni-section-head">
+            <div>
+              <span class="section-tag">Candidaturas e calls</span>
+              <h2>Oportunidades</h2>
+              <p>
+                Bolsas, concursos, residências artísticas, open calls e outras
+                oportunidades relevantes para criadores, agentes e produtores culturais.
+              </p>
+            </div>
+          </div>
+
+          <div id="opportunities-grid" class="jeni-public-grid"></div>
+        </section>
 
       </div>
     </section>
-  <section class="jeni-producer-invite">
-  <div class="container invite-box">
-    <span class="section-tag">Área do produtor</span>
-    <h2>É produtor, promotor ou agente cultural?</h2>
-    <p>
-      Crie a sua conta para submeter eventos, oportunidades e iniciativas
-      para publicação no <strong>JENI Informa</strong>.
-    </p>
 
-    <div class="invite-buttons">
-      <a href="jeni-informa/criar-conta.html" class="btn-primary">Criar conta</a>
-      <a href="jeni-informa/login.html" class="btn-secondary">Entrar</a>
-    </div>
-  </div>
-</section>
+    <section class="jeni-producer-invite" id="area-produtor">
+      <div class="container invite-box">
+        <span class="section-tag">Área do produtor</span>
+        <h2>É produtor, promotor ou agente cultural?</h2>
+        <p>
+          Crie a sua conta para submeter eventos, oportunidades e iniciativas
+          para publicação no <strong>JENI Informa</strong>.
+        </p>
 
-
+        <div class="invite-buttons">
+          <a href="jeni-informa/criar-conta.html" class="btn-primary">Criar conta</a>
+          <a href="jeni-informa/login.html" class="btn-secondary">Entrar</a>
+        </div>
+      </div>
+    </section>
   </main>
 
   <footer class="site-footer">
@@ -96,16 +663,22 @@
     </div>
   </footer>
 
- <div class="jeni-news-modal" id="newsModal">
-  <div class="jeni-news-modal-box">
-    <button class="jeni-news-modal-close" type="button" onclick="closeNewsModal()">×</button>
-    <div id="newsModalContent"></div>
+  <div class="jeni-news-modal" id="newsModal">
+    <div class="jeni-news-modal-box">
+      <button class="jeni-news-modal-close" type="button" onclick="closeNewsModal()">×</button>
+      <div id="newsModalContent"></div>
+    </div>
   </div>
-</div>
-  
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
+    const SUPABASE_URL = "https://qkwusyhkycthottckzww.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrd3VzeWhreWN0aG90dGNrend3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1MTM2OTIsImV4cCI6MjA4OTA4OTY5Mn0.ycIm_1lZlGNApILY1OReDQmp4Qv4n1Rw7iTAbFq7rdA";
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
     const newsData = [
       {
+        type: "news",
         title: "Estrelas do Meu Bairro mobiliza crianças e comunidade na sua primeira edição",
         date: "04 de Outubro de 2025",
         category: "Projectos",
@@ -114,19 +687,15 @@
         excerpt: "A Escola Primária 4 de Outubro acolheu a primeira edição do projecto Estrelas do Meu Bairro, uma iniciativa promovida pela JENI Empreendimentos com o objectivo de incentivar a criatividade, valorizar talentos emergentes e fortalecer a participação cultural entre crianças e jovens da comunidade.",
         content: `
           <p>Durante a actividade, as crianças participaram em diversas dinâmicas artísticas, incluindo teatro e desfile, transformando o espaço escolar num ambiente de expressão, aprendizagem e partilha. As apresentações revelaram o entusiasmo e o potencial criativo dos participantes, que tiveram a oportunidade de mostrar os seus talentos diante da comunidade escolar.</p>
-
           <p>A componente de desfile contou com a colaboração da modelo e embaixadora da JENI Empreendimentos, Shanaya Ferreira, que acompanhou e orientou os participantes nessa área artística, contribuindo para tornar o momento ainda mais especial.</p>
-
           <p>A edição teve também como caras da iniciativa as jovens embaixadoras Leia Nhambe e Alicia Wanga, esta última com apenas 9 anos, representando o espírito do projecto e a importância de incentivar talentos desde a infância.</p>
-
           <p>Para além das actividades culturais, a iniciativa incluiu um gesto de apoio social, com a entrega de 10 pares de uniformes escolares e material escolar destinados a crianças da escola, reforçando o compromisso da JENI Empreendimentos com o desenvolvimento educacional e cultural da comunidade.</p>
-
           <p>A jornada terminou com a entrega simbólica de certificados de participação, realizada com o apoio da direcção da escola e da equipa da JENI Empreendimentos, reconhecendo o empenho e a dedicação demonstrados pelos participantes.</p>
-
           <p>Esta primeira edição marcou o início de um projecto que pretende continuar a crescer, criando oportunidades para que mais crianças e jovens possam descobrir, desenvolver e celebrar os seus talentos através da arte e da cultura.</p>
         `
       },
       {
+        type: "news",
         title: "Momentos de expressão artística marcam as actividades do projecto",
         date: "04 de Outubro de 2025",
         category: "Comunidade",
@@ -135,6 +704,7 @@
         featured: false
       },
       {
+        type: "news",
         title: "Director da Escola Primária 4 de Outubro participa na entrega de certificados",
         date: "04 de Outubro de 2025",
         category: "Reconhecimento",
@@ -143,6 +713,7 @@
         featured: false
       },
       {
+        type: "news",
         title: "Directora da JENI Empreendimentos destaca o valor da participação juvenil",
         date: "04 de Outubro de 2025",
         category: "Institucional",
@@ -151,6 +722,7 @@
         featured: false
       },
       {
+        type: "news",
         title: "Entrega simbólica de certificados valoriza o percurso dos participantes",
         date: "04 de Outubro de 2025",
         category: "Reconhecimento",
@@ -159,6 +731,7 @@
         featured: false
       },
       {
+        type: "news",
         title: "Participantes encerram actividades com momento colectivo de celebração",
         date: "04 de Outubro de 2025",
         category: "Comunidade",
@@ -167,6 +740,7 @@
         featured: false
       },
       {
+        type: "news",
         title: "Grupo de participantes reforça impacto do projecto na comunidade escolar",
         date: "04 de Outubro de 2025",
         category: "Projectos",
@@ -175,6 +749,7 @@
         featured: false
       },
       {
+        type: "news",
         title: "Equipa e parceiros reafirmam compromisso com iniciativas culturais comunitárias",
         date: "04 de Outubro de 2025",
         category: "Institucional",
@@ -183,76 +758,227 @@
         featured: false
       },
       {
-  title: "Entrega de uniformes reforça apoio social às crianças da comunidade",
-  date: "04 de Outubro de 2025",
-  category: "Comunidade",
-  image: "foto9.jpg.jpeg",
-  excerpt: "A iniciativa incluiu a entrega simbólica de uniformes escolares, reforçando o compromisso da JENI Empreendimentos com o apoio social e educacional às crianças.",
-  content: `
-    <p>No âmbito da primeira edição do projecto Estrelas do Meu Bairro, a JENI Empreendimentos promoveu também a entrega simbólica de uniformes escolares a crianças da comunidade escolar.</p>
-
-    <p>Este gesto representou não apenas um apoio material, mas também um incentivo à permanência escolar, à autoestima e ao bem-estar das crianças beneficiadas.</p>
-
-    <p>A acção reforça a visão da JENI Empreendimentos de aliar cultura, educação e responsabilidade social, contribuindo para o desenvolvimento integral da comunidade.</p>
-
-    <p>Ao integrar actividades artísticas com apoio concreto às necessidades da escola e dos alunos, o projecto fortalece o seu impacto local e amplia o seu valor social.</p>
-  `,
-  featured: false
-}
+        type: "news",
+        title: "Entrega de uniformes reforça apoio social às crianças da comunidade",
+        date: "04 de Outubro de 2025",
+        category: "Comunidade",
+        image: "foto9.jpg.jpeg",
+        excerpt: "A iniciativa incluiu a entrega simbólica de uniformes escolares, reforçando o compromisso da JENI Empreendimentos com o apoio social e educacional às crianças.",
+        content: `
+          <p>No âmbito da primeira edição do projecto Estrelas do Meu Bairro, a JENI Empreendimentos promoveu também a entrega simbólica de uniformes escolares a crianças da comunidade escolar.</p>
+          <p>Este gesto representou não apenas um apoio material, mas também um incentivo à permanência escolar, à autoestima e ao bem-estar das crianças beneficiadas.</p>
+          <p>A acção reforça a visão da JENI Empreendimentos de aliar cultura, educação e responsabilidade social, contribuindo para o desenvolvimento integral da comunidade.</p>
+          <p>Ao integrar actividades artísticas com apoio concreto às necessidades da escola e dos alunos, o projecto fortalece o seu impacto local e amplia o seu valor social.</p>
+        `,
+        featured: false
+      }
     ];
+
+    let dbApprovedItems = [];
 
     const featuredContainer = document.getElementById("featured-news");
     const gridContainer = document.getElementById("news-grid");
     const filterButtons = document.querySelectorAll(".news-filter-btn");
+    const agendaGrid = document.getElementById("agenda-grid");
+    const opportunitiesGrid = document.getElementById("opportunities-grid");
 
-    function createFeaturedArticle(article) {
+    function escapeHTML(value) {
+      return String(value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function nl2br(value) {
+      return escapeHTML(value).replace(/\n/g, "<br>");
+    }
+
+    function formatDbDate(dateString) {
+      if (!dateString) return "Sem data";
+      const date = new Date(dateString);
+      if (Number.isNaN(date.getTime())) return "Sem data";
+      return date.toLocaleDateString("pt-PT", {
+        day: "2-digit",
+        month: "long",
+        year: "numeric"
+      });
+    }
+
+    function labelType(type) {
+      if (type === "event") return "Agenda";
+      if (type === "opportunity") return "Oportunidade";
+      return "Notícia";
+    }
+
+    function createImageHTML(src, alt) {
+      if (!src) {
+        return `<div class="jeni-card-placeholder">Sem imagem disponível</div>`;
+      }
+      return `<img src="${src}" alt="${escapeHTML(alt || "")}">`;
+    }
+
+    function normaliseDbItem(item) {
+      return {
+        source: "db",
+        id: item.id,
+        type: item.type,
+        title: item.title || "Sem título",
+        date: formatDbDate(item.published_at || item.created_at || item.start_date || item.deadline),
+        category: item.category || (item.type === "event" ? "Agenda Cultural" : item.type === "opportunity" ? "Oportunidade" : "Notícia"),
+        image: item.image_url || "",
+        featured: !!item.featured,
+        excerpt: item.summary || "Sem resumo disponível.",
+        content: item.description || "",
+        location: item.location || "",
+        event_time: item.event_time || "",
+        ticket_price: item.ticket_price || "",
+        deadline: item.deadline || "",
+        start_date: item.start_date || item.event_date || "",
+        external_url: item.external_url || item.external_link || ""
+      };
+    }
+
+    function getAllNewsItems() {
+      const dbNews = dbApprovedItems
+        .filter(item => item.type === "news")
+        .map(normaliseDbItem);
+
+      return [...newsData, ...dbNews];
+    }
+
+    function getApprovedEvents() {
+      return dbApprovedItems
+        .filter(item => item.type === "event")
+        .map(normaliseDbItem)
+        .sort((a, b) => new Date(a.start_date || 0) - new Date(b.start_date || 0));
+    }
+
+    function getApprovedOpportunities() {
+      return dbApprovedItems
+        .filter(item => item.type === "opportunity")
+        .map(normaliseDbItem)
+        .sort((a, b) => new Date(a.deadline || 0) - new Date(b.deadline || 0));
+    }
+
+    function createFeaturedArticle(article, index, sourceType) {
       return `
         <article class="jeni-featured-news">
           <div class="jeni-featured-media">
-            <img src="${article.image}" alt="${article.title}">
+            ${createImageHTML(article.image, article.title)}
           </div>
+
           <div class="jeni-featured-content">
             <div class="jeni-news-meta">
-              <span class="jeni-news-category">${article.category}</span>
-              <span class="jeni-news-date">${article.date}</span>
+              <span class="jeni-news-type">${labelType(article.type || sourceType)}</span>
+              <span class="jeni-news-category">${escapeHTML(article.category)}</span>
+              <span class="jeni-news-date">${escapeHTML(article.date)}</span>
             </div>
 
-            <h2>${article.title}</h2>
+            <h2>${escapeHTML(article.title)}</h2>
 
             <div class="jeni-featured-excerpt">
-              <p>${article.excerpt}</p>
+              <p>${escapeHTML(article.excerpt)}</p>
             </div>
 
-            <div class="jeni-featured-full" id="featured-full-text" style="display: none;">
-              ${article.content}
+            <div class="jeni-featured-full" id="featured-full-text" style="display:none;">
+              ${
+                article.source === "db"
+                  ? `<p>${nl2br(article.content || article.excerpt)}</p>`
+                  : (article.content || `<p>${escapeHTML(article.excerpt)}</p>`)
+              }
             </div>
 
-            <button class="jeni-read-more-btn" id="toggle-featured-btn" type="button">
-              Ler mais
-            </button>
+            <div class="jeni-featured-actions">
+              <button class="jeni-read-more-btn" id="toggle-featured-btn" type="button">Ler mais</button>
+              <button class="jeni-view-details-btn" type="button" onclick="openFeaturedModal(${index}, '${sourceType}')">Ver detalhes</button>
+            </div>
           </div>
         </article>
       `;
     }
 
-   function createNewsCard(article, index) {
-  return `
-    <article class="jeni-news-card">
-      <div class="jeni-news-card-image">
-        <img src="${article.image}" alt="${article.title}">
-      </div>
-      <div class="jeni-news-card-content">
-        <div class="jeni-news-meta">
-          <span class="jeni-news-category">${article.category}</span>
-          <span class="jeni-news-date">${article.date}</span>
-        </div>
-        <h3>${article.title}</h3>
-        <p>${article.excerpt}</p>
-        <button class="jeni-news-link" type="button" onclick="openNewsModal(${index})">Ler notícia</button>
-      </div>
-    </article>
-  `;
-}
+    function createNewsCard(article, index) {
+      return `
+        <article class="jeni-news-card">
+          <div class="jeni-news-card-image">
+            ${createImageHTML(article.image, article.title)}
+          </div>
+
+          <div class="jeni-news-card-content">
+            <div class="jeni-news-meta">
+              <span class="jeni-news-type">Notícia</span>
+              <span class="jeni-news-category">${escapeHTML(article.category)}</span>
+              <span class="jeni-news-date">${escapeHTML(article.date)}</span>
+            </div>
+
+            <h3>${escapeHTML(article.title)}</h3>
+            <p>${escapeHTML(article.excerpt)}</p>
+
+            <button class="jeni-news-link" type="button" onclick="openNewsModal(${index})">Ler notícia</button>
+          </div>
+        </article>
+      `;
+    }
+
+    function createEventCard(article, index) {
+      return `
+        <article class="jeni-public-card">
+          <div class="jeni-public-card-image">
+            ${createImageHTML(article.image, article.title)}
+          </div>
+
+          <div class="jeni-public-card-content">
+            <div class="jeni-news-meta">
+              <span class="jeni-news-type">Agenda</span>
+              <span class="jeni-news-category">${escapeHTML(article.category)}</span>
+              <span class="jeni-news-date">${escapeHTML(article.date)}</span>
+            </div>
+
+            <h3>${escapeHTML(article.title)}</h3>
+            <p>${escapeHTML(article.excerpt)}</p>
+
+            <div class="jeni-card-meta-list">
+              <span><strong>Data:</strong> ${escapeHTML(formatDbDate(article.start_date))}</span>
+              <span><strong>Local:</strong> ${escapeHTML(article.location || "Não definido")}</span>
+              <span><strong>Hora:</strong> ${escapeHTML(article.event_time || "—")}</span>
+              <span><strong>Bilhete:</strong> ${escapeHTML(article.ticket_price || "Não informado")}</span>
+            </div>
+
+            <button class="jeni-news-link" type="button" onclick="openEventModal(${index})">Ver detalhes</button>
+          </div>
+        </article>
+      `;
+    }
+
+    function createOpportunityCard(article, index) {
+      return `
+        <article class="jeni-public-card">
+          <div class="jeni-public-card-image">
+            ${createImageHTML(article.image, article.title)}
+          </div>
+
+          <div class="jeni-public-card-content">
+            <div class="jeni-news-meta">
+              <span class="jeni-news-type">Oportunidade</span>
+              <span class="jeni-news-category">${escapeHTML(article.category)}</span>
+              <span class="jeni-news-date">${escapeHTML(article.date)}</span>
+            </div>
+
+            <h3>${escapeHTML(article.title)}</h3>
+            <p>${escapeHTML(article.excerpt)}</p>
+
+            <div class="jeni-card-meta-list">
+              <span><strong>Prazo:</strong> ${escapeHTML(article.deadline ? formatDbDate(article.deadline) : "Sem prazo definido")}</span>
+              <span><strong>Local:</strong> ${escapeHTML(article.location || "Não definido")}</span>
+            </div>
+
+            <button class="jeni-news-link" type="button" onclick="openOpportunityModal(${index})">Ver detalhes</button>
+          </div>
+        </article>
+      `;
+    }
 
     function setupFeaturedToggle() {
       const btn = document.getElementById("toggle-featured-btn");
@@ -273,50 +999,240 @@
       });
     }
 
-    function renderNews(filter = "Todos") {
-      const featuredArticle = newsData.find(item => item.featured) || newsData[0];
-      featuredContainer.innerHTML = createFeaturedArticle(featuredArticle);
+    function renderFeatured() {
+      const allItems = [
+        ...getAllNewsItems(),
+        ...getApprovedEvents(),
+        ...getApprovedOpportunities()
+      ];
 
+      const featuredArticle = allItems.find(item => item.featured) || allItems[0];
+
+      if (!featuredArticle) {
+        featuredContainer.innerHTML = `
+          <div class="jeni-empty-state">
+            Ainda não existe conteúdo em destaque.
+          </div>
+        `;
+        return;
+      }
+
+      const sourceType = featuredArticle.type || "news";
+      const sourceList =
+        sourceType === "event"
+          ? getApprovedEvents()
+          : sourceType === "opportunity"
+            ? getApprovedOpportunities()
+            : getAllNewsItems();
+
+      const index = sourceList.findIndex(item =>
+        (item.id && featuredArticle.id && item.id === featuredArticle.id) ||
+        item.title === featuredArticle.title
+      );
+
+      featuredContainer.innerHTML = createFeaturedArticle(featuredArticle, index >= 0 ? index : 0, sourceType);
       setupFeaturedToggle();
+    }
 
-      let filtered = newsData.filter(item => !item.featured);
+    function renderNews(filter = "Todos") {
+      const allNews = getAllNewsItems();
+
+      let filtered = allNews.filter(item => !item.featured);
 
       if (filter !== "Todos") {
         filtered = filtered.filter(item => item.category === filter);
       }
 
-     gridContainer.innerHTML = filtered
-  .map(article => {
-    const originalIndex = newsData.indexOf(article);
-    return createNewsCard(article, originalIndex);
-  })
-  .join("");
+      if (!filtered.length) {
+        gridContainer.innerHTML = `
+          <div class="jeni-empty-state">
+            Não existem notícias nesta categoria neste momento.
+          </div>
+        `;
+        return;
+      }
+
+      gridContainer.innerHTML = filtered
+        .map((article) => {
+          const originalIndex = allNews.indexOf(article);
+          return createNewsCard(article, originalIndex);
+        })
+        .join("");
+    }
+
+    function renderAgenda() {
+      const items = getApprovedEvents();
+
+      if (!items.length) {
+        agendaGrid.innerHTML = `
+          <div class="jeni-empty-state">
+            Ainda não existem eventos aprovados para publicação na agenda.
+          </div>
+        `;
+        return;
+      }
+
+      agendaGrid.innerHTML = items.map((item, index) => createEventCard(item, index)).join("");
+    }
+
+    function renderOpportunities() {
+      const items = getApprovedOpportunities();
+
+      if (!items.length) {
+        opportunitiesGrid.innerHTML = `
+          <div class="jeni-empty-state">
+            Ainda não existem oportunidades aprovadas para publicação.
+          </div>
+        `;
+        return;
+      }
+
+      opportunitiesGrid.innerHTML = items.map((item, index) => createOpportunityCard(item, index)).join("");
+    }
+
+    function openFeaturedModal(index, sourceType) {
+      if (sourceType === "event") {
+        openEventModal(index);
+        return;
+      }
+
+      if (sourceType === "opportunity") {
+        openOpportunityModal(index);
+        return;
+      }
+
+      openNewsModal(index);
     }
 
     function openNewsModal(index) {
-  const article = newsData[index];
-  const modal = document.getElementById("newsModal");
-  const modalContent = document.getElementById("newsModalContent");
+      const allNews = getAllNewsItems();
+      const article = allNews[index];
+      if (!article) return;
 
-  modalContent.innerHTML = `
-    <div class="jeni-news-modal-image">
-      <img src="${article.image}" alt="${article.title}">
-    </div>
-    <div class="jeni-news-meta">
-      <span class="jeni-news-category">${article.category}</span>
-      <span class="jeni-news-date">${article.date}</span>
-    </div>
-    <h2>${article.title}</h2>
-    <p>${article.excerpt}</p>
-    ${article.content ? article.content : ""}
-  `;
+      const modal = document.getElementById("newsModal");
+      const modalContent = document.getElementById("newsModalContent");
 
-  modal.classList.add("active");
-}
+      modalContent.innerHTML = `
+        <div class="jeni-news-modal-image">
+          ${createImageHTML(article.image, article.title)}
+        </div>
 
-function closeNewsModal() {
-  document.getElementById("newsModal").classList.remove("active");
-}
+        <div class="jeni-news-meta">
+          <span class="jeni-news-type">Notícia</span>
+          <span class="jeni-news-category">${escapeHTML(article.category)}</span>
+          <span class="jeni-news-date">${escapeHTML(article.date)}</span>
+        </div>
+
+        <h2>${escapeHTML(article.title)}</h2>
+        <p>${escapeHTML(article.excerpt)}</p>
+
+        ${
+          article.source === "db"
+            ? `<p>${nl2br(article.content || "")}</p>`
+            : (article.content || "")
+        }
+      `;
+
+      modal.classList.add("active");
+    }
+
+    function openEventModal(index) {
+      const items = getApprovedEvents();
+      const article = items[index];
+      if (!article) return;
+
+      const modal = document.getElementById("newsModal");
+      const modalContent = document.getElementById("newsModalContent");
+
+      modalContent.innerHTML = `
+        <div class="jeni-news-modal-image">
+          ${createImageHTML(article.image, article.title)}
+        </div>
+
+        <div class="jeni-news-meta">
+          <span class="jeni-news-type">Agenda</span>
+          <span class="jeni-news-category">${escapeHTML(article.category)}</span>
+          <span class="jeni-news-date">${escapeHTML(article.date)}</span>
+        </div>
+
+        <h2>${escapeHTML(article.title)}</h2>
+        <p>${escapeHTML(article.excerpt)}</p>
+
+        <div class="jeni-news-modal-extra">
+          <p><strong>Data:</strong> ${escapeHTML(formatDbDate(article.start_date))}</p>
+          <p><strong>Hora:</strong> ${escapeHTML(article.event_time || "Não informada")}</p>
+          <p><strong>Local:</strong> ${escapeHTML(article.location || "Não definido")}</p>
+          <p><strong>Bilhete:</strong> ${escapeHTML(article.ticket_price || "Não informado")}</p>
+        </div>
+
+        <p>${nl2br(article.content || "")}</p>
+      `;
+
+      modal.classList.add("active");
+    }
+
+    function openOpportunityModal(index) {
+      const items = getApprovedOpportunities();
+      const article = items[index];
+      if (!article) return;
+
+      const modal = document.getElementById("newsModal");
+      const modalContent = document.getElementById("newsModalContent");
+
+      modalContent.innerHTML = `
+        <div class="jeni-news-modal-image">
+          ${createImageHTML(article.image, article.title)}
+        </div>
+
+        <div class="jeni-news-meta">
+          <span class="jeni-news-type">Oportunidade</span>
+          <span class="jeni-news-category">${escapeHTML(article.category)}</span>
+          <span class="jeni-news-date">${escapeHTML(article.date)}</span>
+        </div>
+
+        <h2>${escapeHTML(article.title)}</h2>
+        <p>${escapeHTML(article.excerpt)}</p>
+
+        <div class="jeni-news-modal-extra">
+          <p><strong>Prazo:</strong> ${escapeHTML(article.deadline ? formatDbDate(article.deadline) : "Sem prazo definido")}</p>
+          <p><strong>Local:</strong> ${escapeHTML(article.location || "Não definido")}</p>
+          ${
+            article.external_url
+              ? `<p><strong>Link oficial:</strong> <a href="${article.external_url}" target="_blank" rel="noopener noreferrer">${escapeHTML(article.external_url)}</a></p>`
+              : ""
+          }
+        </div>
+
+        <p>${nl2br(article.content || "")}</p>
+      `;
+
+      modal.classList.add("active");
+    }
+
+    function closeNewsModal() {
+      document.getElementById("newsModal").classList.remove("active");
+    }
+
+    async function loadApprovedPublicContent() {
+      const { data, error } = await supabaseClient
+        .from("submissions")
+        .select("*")
+        .eq("status", "approved")
+        .in("type", ["event", "opportunity", "news"])
+        .order("published_at", { ascending: false });
+
+      if (error) {
+        console.error("PUBLIC CONTENT ERROR:", error);
+        dbApprovedItems = [];
+      } else {
+        dbApprovedItems = data || [];
+      }
+
+      renderFeatured();
+      renderNews();
+      renderAgenda();
+      renderOpportunities();
+    }
 
     filterButtons.forEach(btn => {
       btn.addEventListener("click", () => {
@@ -326,10 +1242,13 @@ function closeNewsModal() {
       });
     });
 
-    renderNews();
-   
+    document.getElementById("newsModal").addEventListener("click", (e) => {
+      if (e.target.id === "newsModal") {
+        closeNewsModal();
+      }
+    });
 
+    loadApprovedPublicContent();
   </script>
-
 </body>
 </html>
