@@ -101,12 +101,14 @@
 
       container.innerHTML = data.map(item => {
         const principalDate =
-          item.type === "evento"
+         item.type === "event"
+
             ? formatSubmissionDate(item.event_date)
             : formatSubmissionDate(item.deadline);
 
         const principalLabel =
-          item.type === "evento"
+         item.type === "event"
+
             ? "Data do evento"
             : "Prazo";
 
