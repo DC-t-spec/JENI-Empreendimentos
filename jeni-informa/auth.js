@@ -220,7 +220,8 @@ async function uploadImage(file, folder) {
   const user = await getCurrentUser();
   if (!user) return null;
 
-  const fileName = `${folder}/${user.id}-${Date.now()}-${file.name}`;
+ const fileName = `${user.id}/${folder}/${Date.now()}-${file.name}`;
+
 
   const { error } = await supabaseClient
     .storage
