@@ -260,24 +260,31 @@ async function submitEventForm(status = "pending") {
   const user = await requireAuth();
   if (!user) return;
 
- const title = getValue("title");
+const title = getValue("title");
+const eventDate = getValue("event_date");
 
 const payload = {
   user_id: user.id,
   type: "event",
-  status: status || "pending",
+  status,
   title: title,
   slug: `${slugify(title)}-${Date.now()}`,
   category: getValue("category") || null,
-  event_date: getValue("event_date") || null,
+
+  event_date: eventDate || null,
+  start_date: eventDate ? `${eventDate}T00:00:00+02:00` : null,
+
   event_time: getValue("event_time") || null,
   location: getValue("location") || null,
+
   summary: getValue("summary"),
   description: getValue("description"),
+
   ticket_price: getValue("ticket_price") || null,
   ticket_info: getValue("ticket_info") || null,
   video_url: getValue("video_url") || null
 };
+
 
 
   const image = getFile("image");
