@@ -1674,10 +1674,11 @@ function restartFeaturedTimer() {
 
       modalItems = approvedItems;
 
-      renderFeatured(approvedItems);
-      renderNews(approvedItems);
-      renderAgenda(approvedItems);
-      renderOpportunities(approvedItems);
+     renderFeaturedSlider(approvedItems);
+renderNews(approvedItems);
+renderAgenda(approvedItems);
+renderOpportunities(approvedItems);
+startFeaturedTimer();
     }
 
     document.getElementById("contentModal").addEventListener("click", (e) => {
