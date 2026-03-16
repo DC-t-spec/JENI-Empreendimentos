@@ -1010,7 +1010,7 @@ function getAdminFormDataByType(imageUrl = null) {
     type,
     status: getValue("admin-content-status") || "pending",
     title,
-    summary: getValue("admin-content-summary"),
+    summary: getValue("admin-content-summary") || "Sem resumo",
     image_url: imageUrl,
     featured: document.getElementById("admin-content-featured")?.checked || false
   };
@@ -1110,7 +1110,6 @@ async function saveAdminContent() {
       }
 const { data, error } = await createSubmissionByAdmin(createPayload);
       
-      const { data, error } = await createSubmissionByAdmin(createPayload);
 
       if (error) {
         showMessage("admin-message", error.message || "Erro ao criar conteúdo.", "error");
