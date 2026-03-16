@@ -530,6 +530,53 @@
   display: block;
   background: #ece8df;
 }
+.jeni-modal-content-inner {
+  display: grid;
+  gap: 12px;
+}
+
+.jeni-modal-cover-wrap {
+  margin-bottom: 18px;
+}
+
+.jeni-modal-cover {
+  width: 100%;
+  max-height: 420px;
+  object-fit: cover;
+  border-radius: 18px;
+  display: block;
+  background: #ece8df;
+}
+
+.jeni-modal-summary {
+  font-size: 1.02rem;
+  color: #444;
+  font-weight: 600;
+}
+
+.jeni-modal-description {
+  color: #5f5f5f;
+  line-height: 1.8;
+}
+
+.jeni-modal-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 4px 0 6px;
+}
+
+.jeni-modal-meta span {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(17, 17, 17, 0.06);
+  color: #444;
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+    
   </style>
 </head>
 <body>
@@ -708,6 +755,7 @@
 
     let approvedItems = [];
     let modalItems = [];
+    let currentModalIndex = 0;
 
     function escapeHTML(value) {
       return String(value || "")
@@ -717,7 +765,7 @@
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
     }
-    async function loadGalleryBySubmissionId(submissionId) {
+async function loadGalleryBySubmissionId(submissionId) {
   if (!submissionId) return [];
 
   const { data, error } = await supabaseClient
@@ -770,23 +818,7 @@
       return "Notícia";
     }
 
-        async function loadGalleryBySubmissionId(submissionId) {
-      if (!submissionId) return [];
-
-      const { data, error } = await supabaseClient
-        .from("submission_images")
-        .select("*")
-        .eq("submission_id", submissionId)
-        .order("position", { ascending: true })
-        .order("created_at", { ascending: true });
-
-      if (error) {
-        console.error("GALLERY PUBLIC LOAD ERROR:", error);
-        return [];
-      }
-
-      return data || [];
-    }
+       
 
     function normaliseItem(item) {
       return {
@@ -891,13 +923,13 @@ async function openModalByIndex(index) {
     ? `<p class="jeni-modal-summary">${escapeHTML(item.summary)}</p>`
     : "";
 
-  const descriptionHTML = item.description
-    ? `
-      <div class="jeni-modal-description">
-        ${String(item.description).replace(/\n/g, "<br>")}
-      </div>
-    `
-    : "";
+const descriptionHTML = item.description
+  ? `
+    <div class="jeni-modal-description">
+      ${nl2br(item.description)}
+    </div>
+  `
+  : "";
 
   const metaParts = [];
 
@@ -951,9 +983,10 @@ async function openModalByIndex(index) {
   document.body.style.overflow = "hidden";
 }
 
-    function closeContentModal() {
-      document.getElementById("contentModal").classList.remove("active");
-    }
+   function closeContentModal() {
+  document.getElementById("contentModal").classList.remove("active");
+  document.body.style.overflow = "";
+}
 
     function renderFeatured(items) {
       const container = document.getElementById("featured-content");
