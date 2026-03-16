@@ -828,8 +828,70 @@
     height: 58px;
   }
 }
+.jeni-article-meta{
+  margin:16px 0 18px;
+  padding:14px;
+  background:#faf7f1;
+  border-left:4px solid #c8a96b;
+  border-radius:8px;
+  font-size:0.9rem;
+  color:#444;
+}
 
-  
+.jeni-article-meta p{
+  margin:4px 0;
+}
+
+
+       .jeni-featured-slider {
+      position: relative;
+    }
+
+    .jeni-featured-controls {
+      display: flex;
+      gap: 10px;
+      margin-top: 16px;
+      justify-content: flex-end;
+    }
+
+    .jeni-featured-control-btn {
+      border: none;
+      background: #111;
+      color: #fff;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: 700;
+      transition: 0.25s ease;
+    }
+
+    .jeni-featured-control-btn:hover {
+      opacity: 0.9;
+    }
+
+    .jeni-featured-dots {
+      display: flex;
+      gap: 8px;
+      margin-top: 16px;
+      flex-wrap: wrap;
+    }
+
+    .jeni-featured-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(17, 17, 17, 0.22);
+      cursor: pointer;
+      transition: 0.25s ease;
+    }
+
+    .jeni-featured-dot.active {
+      background: #c8a96b;
+      transform: scale(1.08);
+    } 
   </style>
 </head>
 <body>
@@ -1029,6 +1091,9 @@
 
  let approvedItems = [];
 let modalItems = [];
+let featuredItems = [];
+let featuredIndex = 0;
+let featuredTimer = null;
 let currentModalIndex = 0;
 let modalGalleryMap = {};
 let activeLightboxModalIndex = null;
@@ -1155,15 +1220,21 @@ let activeLightboxImageIndex = 0;
       return deadline >= new Date();
     }
 
-    function getFeaturedItem(items) {
-      const currentPool = [
-        ...items.filter(item => item.type === "news" && isNewsCurrent(item)),
-        ...items.filter(item => item.type === "event" && isEventCurrent(item)),
-        ...items.filter(item => item.type === "opportunity" && isOpportunityCurrent(item))
-      ];
+   function getFeaturedItems(items) {
+  const currentPool = [
+    ...items.filter(item => item.type === "news" && isNewsCurrent(item)),
+    ...items.filter(item => item.type === "event" && isEventCurrent(item)),
+    ...items.filter(item => item.type === "opportunity" && isOpportunityCurrent(item))
+  ];
 
-      return currentPool.find(item => item.featured) || currentPool[0] || null;
-    }
+  const selectedFeatured = currentPool.filter(item => item.featured);
+
+  if (selectedFeatured.length) {
+    return selectedFeatured;
+  }
+
+  return sortByMostRecent(currentPool).slice(0, 5);
+}
 
     function sortByMostRecent(items) {
       return [...items].sort((a, b) => new Date(b.published_at || b.created_at || 0) - new Date(a.published_at || a.created_at || 0));
@@ -1369,45 +1440,101 @@ function goToGalleryImage(index) {
   renderGalleryLightbox();
 }
 
-    function renderFeatured(items) {
-      const container = document.getElementById("featured-content");
-      const featured = getFeaturedItem(items);
+  function renderFeaturedSlider(items) {
+  const container = document.getElementById("featured-content");
+  featuredItems = getFeaturedItems(items);
 
-      if (!featured) {
-        container.innerHTML = `
-          <div class="jeni-empty-state">
-            Ainda não existe conteúdo aprovado para destaque.
+  if (!featuredItems.length) {
+    container.innerHTML = `
+      <div class="jeni-empty-state">
+        Ainda não existe conteúdo aprovado para destaque.
+      </div>
+    `;
+    return;
+  }
+
+  if (featuredIndex >= featuredItems.length) {
+    featuredIndex = 0;
+  }
+
+  const item = featuredItems[featuredIndex];
+  const modalIndex = modalItems.findIndex(entry => entry.id === item.id);
+
+  container.innerHTML = `
+    <div class="jeni-featured-slider">
+      <article class="jeni-featured-news">
+        <div class="jeni-featured-media">
+          ${createImageHTML(item.image_url, item.title)}
+        </div>
+
+        <div class="jeni-featured-content">
+          <div class="jeni-meta-row">
+            <span class="jeni-pill-type">${labelType(item.type)}</span>
+            <span class="jeni-pill-category">${escapeHTML(item.category)}</span>
+            <span class="jeni-pill-date">${escapeHTML(formatDate(item.published_at || item.created_at || item.start_date || item.deadline))}</span>
           </div>
-        `;
-        return;
-      }
 
-      const featuredIndex = modalItems.findIndex(item => item.id === featured.id);
+          <h2>${escapeHTML(item.title)}</h2>
+          <p>${escapeHTML(item.summary)}</p>
 
-      container.innerHTML = `
-        <article class="jeni-featured-news">
-          <div class="jeni-featured-media">
-            ${createImageHTML(featured.image_url, featured.title)}
+          <div class="jeni-featured-actions">
+            <button class="jeni-btn-dark" type="button" onclick="openModalByIndex(${modalIndex})">Ver detalhes</button>
+            <a class="jeni-btn-light" href="jeni-informa-arquivo.html">Abrir arquivo</a>
           </div>
 
-          <div class="jeni-featured-content">
-            <div class="jeni-meta-row">
-              <span class="jeni-pill-type">${labelType(featured.type)}</span>
-              <span class="jeni-pill-category">${escapeHTML(featured.category)}</span>
-              <span class="jeni-pill-date">${escapeHTML(formatDate(featured.published_at || featured.created_at || featured.start_date || featured.deadline))}</span>
-            </div>
-
-            <h2>${escapeHTML(featured.title)}</h2>
-            <p>${escapeHTML(featured.summary)}</p>
-
-            <div class="jeni-featured-actions">
-              <button class="jeni-btn-dark" type="button" onclick="openModalByIndex(${featuredIndex})">Ver detalhes</button>
-              <a class="jeni-btn-light" href="jeni-informa-arquivo.html">Abrir arquivo</a>
-            </div>
+          <div class="jeni-featured-controls">
+            <button class="jeni-featured-control-btn" type="button" onclick="prevFeatured()">‹</button>
+            <button class="jeni-featured-control-btn" type="button" onclick="nextFeatured()">›</button>
           </div>
-        </article>
-      `;
-    }
+
+          <div class="jeni-featured-dots">
+            ${featuredItems.map((_, index) => `
+              <button
+                class="jeni-featured-dot ${index === featuredIndex ? "active" : ""}"
+                type="button"
+                onclick="goToFeatured(${index})"
+              ></button>
+            `).join("")}
+          </div>
+        </div>
+      </article>
+    </div>
+  `;
+}
+    function nextFeatured() {
+  if (!featuredItems.length) return;
+  featuredIndex = (featuredIndex + 1) % featuredItems.length;
+  renderFeaturedSlider(approvedItems);
+  restartFeaturedTimer();
+}
+
+function prevFeatured() {
+  if (!featuredItems.length) return;
+  featuredIndex = (featuredIndex - 1 + featuredItems.length) % featuredItems.length;
+  renderFeaturedSlider(approvedItems);
+  restartFeaturedTimer();
+}
+
+function goToFeatured(index) {
+  featuredIndex = index;
+  renderFeaturedSlider(approvedItems);
+  restartFeaturedTimer();
+}
+
+function startFeaturedTimer() {
+  if (featuredTimer) clearInterval(featuredTimer);
+
+  featuredTimer = setInterval(() => {
+    if (!featuredItems.length) return;
+    featuredIndex = (featuredIndex + 1) % featuredItems.length;
+    renderFeaturedSlider(approvedItems);
+  }, 5000);
+}
+
+function restartFeaturedTimer() {
+  if (featuredTimer) clearInterval(featuredTimer);
+  startFeaturedTimer();
+}
 
     function createCard(item, index) {
       const extraMeta =
