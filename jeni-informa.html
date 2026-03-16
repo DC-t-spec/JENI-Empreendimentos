@@ -461,22 +461,8 @@
     .jeni-modal-extra strong {
       color: #111;
     }
-        .jeni-modal-gallery {
-      margin-top: 22px;
-    }
-
-    .jeni-modal-gallery h3 {
-      margin: 0 0 14px;
-      font-size: 1.1rem;
-      color: #111;
-    }
-
-    .jeni-modal-gallery-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 12px;
-    }
-
+    
+    
     .jeni-modal-gallery-grid img {
       width: 100%;
       height: 180px;
@@ -494,27 +480,6 @@
       }
     }
 
-    @media (max-width: 700px) {
-      .jeni-featured-content,
-      .invite-box,
-      .jeni-modal-box,
-      .jeni-archive-teaser {
-        padding: 20px;
-      }
-
-      .jeni-news-hero {
-        padding-top: 54px;
-      }
-    }
-    .jeni-modal-gallery {
-  margin-top: 22px;
-}
-
-.jeni-modal-gallery h3 {
-  margin: 0 0 14px;
-  font-size: 1.1rem;
-  color: #111;
-}
 
 .jeni-modal-gallery-grid {
   display: grid;
@@ -530,6 +495,8 @@
   display: block;
   background: #ece8df;
 }
+
+
 .jeni-modal-content-inner {
   display: grid;
   gap: 12px;
@@ -576,7 +543,293 @@
   font-size: 0.92rem;
   font-weight: 600;
 }
-    
+
+.jeni-modal-gallery {
+  margin-top: 28px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.jeni-modal-gallery-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.jeni-modal-gallery h3 {
+  margin: 0;
+  font-size: 1.15rem;
+  color: #111;
+}
+
+.jeni-modal-gallery-count {
+  font-size: 0.92rem;
+  color: #777;
+  font-weight: 600;
+}
+
+.jeni-modal-gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 14px;
+}
+
+.jeni-modal-gallery-item {
+  position: relative;
+  overflow: hidden;
+  border-radius: 18px;
+  background: #ece8df;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+}
+
+.jeni-modal-gallery-item img {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.35s ease, opacity 0.35s ease;
+  background: #ece8df;
+}
+
+.jeni-modal-gallery-item:hover img {
+  transform: scale(1.05);
+  opacity: 0.96;
+}
+
+.jeni-modal-gallery-item::after {
+  content: "Ampliar";
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  background: rgba(17, 17, 17, 0.78);
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 7px 10px;
+  border-radius: 999px;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: 0.25s ease;
+}
+
+.jeni-modal-gallery-item:hover::after {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* LIGHTBOX PROFISSIONAL */
+.jeni-lightbox {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.88);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  z-index: 10000;
+}
+
+.jeni-lightbox.active {
+  display: flex;
+}
+
+.jeni-lightbox-box {
+  width: min(1200px, 100%);
+  max-height: 92vh;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 18px;
+  position: relative;
+}
+
+.jeni-lightbox-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  color: #fff;
+}
+
+.jeni-lightbox-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.jeni-lightbox-counter {
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 600;
+}
+
+.jeni-lightbox-stage {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 420px;
+}
+
+.jeni-lightbox-image-wrap {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.jeni-lightbox-image {
+  max-width: 100%;
+  max-height: 70vh;
+  object-fit: contain;
+  border-radius: 18px;
+  display: block;
+  background: #111;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.35);
+}
+
+.jeni-lightbox-close {
+  position: absolute;
+  top: -8px;
+  right: 0;
+  width: 46px;
+  height: 46px;
+  border: none;
+  border-radius: 50%;
+  background: #fff;
+  color: #111;
+  font-size: 1.5rem;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.jeni-lightbox-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 52px;
+  height: 52px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.92);
+  color: #111;
+  font-size: 1.6rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.25s ease;
+  z-index: 2;
+}
+
+.jeni-lightbox-nav:hover {
+  background: #fff;
+}
+
+.jeni-lightbox-prev {
+  left: 8px;
+}
+
+.jeni-lightbox-next {
+  right: 8px;
+}
+
+.jeni-lightbox-thumbs {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.jeni-lightbox-thumbs::-webkit-scrollbar {
+  height: 8px;
+}
+
+.jeni-lightbox-thumbs::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.22);
+  border-radius: 999px;
+}
+
+.jeni-lightbox-thumb {
+  flex: 0 0 88px;
+  width: 88px;
+  height: 68px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 2px solid transparent;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.08);
+  transition: 0.25s ease;
+}
+
+.jeni-lightbox-thumb.active {
+  border-color: #d4af37;
+  transform: translateY(-2px);
+}
+
+.jeni-lightbox-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+@media (max-width: 700px) {
+  .jeni-modal-gallery-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .jeni-modal-gallery-item img {
+    height: 160px;
+  }
+
+  .jeni-lightbox-stage {
+    min-height: 300px;
+  }
+
+  .jeni-lightbox-image {
+    max-height: 58vh;
+  }
+
+  .jeni-lightbox-nav {
+    width: 44px;
+    height: 44px;
+    font-size: 1.35rem;
+  }
+
+  .jeni-lightbox-prev {
+    left: 0;
+  }
+
+  .jeni-lightbox-next {
+    right: 0;
+  }
+}
+
+@media (max-width: 520px) {
+  .jeni-modal-gallery-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .jeni-modal-gallery-item img {
+    height: 220px;
+  }
+
+  .jeni-lightbox {
+    padding: 16px;
+  }
+
+  .jeni-lightbox-thumb {
+    flex: 0 0 74px;
+    width: 74px;
+    height: 58px;
+  }
+}
+
+  
   </style>
 </head>
 <body>
@@ -742,6 +995,27 @@
     </div>
   </div>
 
+  <div class="jeni-lightbox" id="galleryLightbox">
+  <div class="jeni-lightbox-box">
+    <button class="jeni-lightbox-close" type="button" onclick="closeGalleryLightbox()">×</button>
+
+    <div class="jeni-lightbox-topbar">
+      <div class="jeni-lightbox-title" id="galleryLightboxTitle">Galeria</div>
+      <div class="jeni-lightbox-counter" id="galleryLightboxCounter">1 / 1</div>
+    </div>
+
+    <div class="jeni-lightbox-stage">
+      <button class="jeni-lightbox-nav jeni-lightbox-prev" type="button" onclick="showPrevGalleryImage()">‹</button>
+
+      <div class="jeni-lightbox-image-wrap" id="galleryLightboxBody"></div>
+
+      <button class="jeni-lightbox-nav jeni-lightbox-next" type="button" onclick="showNextGalleryImage()">›</button>
+    </div>
+
+    <div class="jeni-lightbox-thumbs" id="galleryLightboxThumbs"></div>
+  </div>
+</div>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     const SUPABASE_URL = "https://qkwusyhkycthottckzww.supabase.co";
@@ -753,9 +1027,12 @@
     const MAX_EVENTS = 6;
     const MAX_OPPORTUNITIES = 6;
 
-    let approvedItems = [];
-    let modalItems = [];
-    let currentModalIndex = 0;
+ let approvedItems = [];
+let modalItems = [];
+let currentModalIndex = 0;
+let modalGalleryMap = {};
+let activeLightboxModalIndex = null;
+let activeLightboxImageIndex = 0;
 
     function escapeHTML(value) {
       return String(value || "")
@@ -765,7 +1042,8 @@
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
     }
-async function loadGalleryBySubmissionId(submissionId) {
+
+    async function loadGalleryBySubmissionId(submissionId) {
   if (!submissionId) return [];
 
   const { data, error } = await supabaseClient
@@ -906,6 +1184,7 @@ async function openModalByIndex(index) {
   currentModalIndex = index;
 
   const galleryItems = await loadGalleryBySubmissionId(item.id);
+  modalGalleryMap[index] = galleryItems;
 
   const coverImage = item.image_url
     ? `
@@ -923,20 +1202,29 @@ async function openModalByIndex(index) {
     ? `<p class="jeni-modal-summary">${escapeHTML(item.summary)}</p>`
     : "";
 
-const descriptionHTML = item.description
-  ? `
-    <div class="jeni-modal-description">
-      ${nl2br(item.description)}
-    </div>
-  `
-  : "";
+  const descriptionHTML = item.description
+    ? `
+      <div class="jeni-modal-description">
+        ${nl2br(item.description)}
+      </div>
+    `
+    : "";
 
   const metaParts = [];
 
-  if (item.category_label) metaParts.push(item.category_label);
-  if (item.event_date_formatted) metaParts.push(item.event_date_formatted);
-  if (item.location) metaParts.push(item.location);
-  if (item.ticket_price) metaParts.push(item.ticket_price);
+  if (item.category) metaParts.push(item.category);
+
+  if (item.type === "event" && item.start_date) {
+    metaParts.push(`Data: ${formatDate(item.start_date)}`);
+  }
+
+  if (item.type === "opportunity" && item.deadline) {
+    metaParts.push(`Prazo: ${formatDate(item.deadline)}`);
+  }
+
+  if (item.location) metaParts.push(`Local: ${item.location}`);
+  if (item.event_time) metaParts.push(`Hora: ${item.event_time}`);
+  if (item.ticket_price) metaParts.push(`Bilhete: ${item.ticket_price}`);
 
   const metaHTML = metaParts.length
     ? `
@@ -949,14 +1237,23 @@ const descriptionHTML = item.description
   const galleryHTML = galleryItems.length
     ? `
       <div class="jeni-modal-gallery">
-        <h3>Galeria</h3>
+        <div class="jeni-modal-gallery-head">
+          <h3>Galeria</h3>
+          <div class="jeni-modal-gallery-count">${galleryItems.length} imagem(ns)</div>
+        </div>
+
         <div class="jeni-modal-gallery-grid">
-          ${galleryItems.map(img => `
-            <img
-              src="${img.image_url}"
-              alt="Imagem da galeria de ${escapeHTML(item.title || "publicação")}"
-              loading="lazy"
+          ${galleryItems.map((img, imgIndex) => `
+            <div
+              class="jeni-modal-gallery-item"
+              onclick="openGalleryLightbox(${index}, ${imgIndex})"
             >
+              <img
+                src="${img.image_url}"
+                alt="Imagem da galeria de ${escapeHTML(item.title || "publicação")}"
+                loading="lazy"
+              >
+            </div>
           `).join("")}
         </div>
       </div>
@@ -983,9 +1280,88 @@ const descriptionHTML = item.description
   document.body.style.overflow = "hidden";
 }
 
-   function closeContentModal() {
+ function closeContentModal() {
   document.getElementById("contentModal").classList.remove("active");
   document.body.style.overflow = "";
+}
+
+    function renderGalleryLightbox() {
+  const galleryItems = modalGalleryMap[activeLightboxModalIndex] || [];
+  const image = galleryItems[activeLightboxImageIndex];
+  const modalItem = modalItems[activeLightboxModalIndex];
+
+  if (!image) return;
+
+  document.getElementById("galleryLightboxBody").innerHTML = `
+    <img
+      src="${image.image_url}"
+      alt="Imagem ampliada de ${escapeHTML(modalItem?.title || "galeria")}"
+      class="jeni-lightbox-image"
+    >
+  `;
+
+  document.getElementById("galleryLightboxTitle").textContent =
+    modalItem?.title || "Galeria";
+
+  document.getElementById("galleryLightboxCounter").textContent =
+    `${activeLightboxImageIndex + 1} / ${galleryItems.length}`;
+
+  document.getElementById("galleryLightboxThumbs").innerHTML = galleryItems
+    .map((img, idx) => `
+      <div
+        class="jeni-lightbox-thumb ${idx === activeLightboxImageIndex ? "active" : ""}"
+        onclick="goToGalleryImage(${idx})"
+      >
+        <img src="${img.image_url}" alt="Miniatura ${idx + 1}">
+      </div>
+    `)
+    .join("");
+}
+
+function openGalleryLightbox(modalIndex, imageIndex = 0) {
+  const galleryItems = modalGalleryMap[modalIndex] || [];
+  if (!galleryItems.length) return;
+
+  activeLightboxModalIndex = modalIndex;
+  activeLightboxImageIndex = imageIndex;
+
+  renderGalleryLightbox();
+
+  document.getElementById("galleryLightbox").classList.add("active");
+}
+
+function closeGalleryLightbox() {
+  document.getElementById("galleryLightbox").classList.remove("active");
+  activeLightboxModalIndex = null;
+  activeLightboxImageIndex = 0;
+}
+
+function showPrevGalleryImage() {
+  const galleryItems = modalGalleryMap[activeLightboxModalIndex] || [];
+  if (!galleryItems.length) return;
+
+  activeLightboxImageIndex =
+    (activeLightboxImageIndex - 1 + galleryItems.length) % galleryItems.length;
+
+  renderGalleryLightbox();
+}
+
+function showNextGalleryImage() {
+  const galleryItems = modalGalleryMap[activeLightboxModalIndex] || [];
+  if (!galleryItems.length) return;
+
+  activeLightboxImageIndex =
+    (activeLightboxImageIndex + 1) % galleryItems.length;
+
+  renderGalleryLightbox();
+}
+
+function goToGalleryImage(index) {
+  const galleryItems = modalGalleryMap[activeLightboxModalIndex] || [];
+  if (!galleryItems[index]) return;
+
+  activeLightboxImageIndex = index;
+  renderGalleryLightbox();
 }
 
     function renderFeatured(items) {
@@ -1177,6 +1553,31 @@ const descriptionHTML = item.description
         closeContentModal();
       }
     });
+    document.getElementById("galleryLightbox").addEventListener("click", (e) => {
+  if (e.target.id === "galleryLightbox") {
+    closeGalleryLightbox();
+  }
+});
+
+document.addEventListener("keydown", (e) => {
+  const lightbox = document.getElementById("galleryLightbox");
+
+  if (lightbox.classList.contains("active")) {
+    if (e.key === "Escape") {
+      closeGalleryLightbox();
+    } else if (e.key === "ArrowLeft") {
+      showPrevGalleryImage();
+    } else if (e.key === "ArrowRight") {
+      showNextGalleryImage();
+    }
+    return;
+  }
+
+  const contentModal = document.getElementById("contentModal");
+  if (contentModal.classList.contains("active") && e.key === "Escape") {
+    closeContentModal();
+  }
+});
 
     loadPublicContent();
   </script>
