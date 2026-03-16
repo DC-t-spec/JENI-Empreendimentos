@@ -506,6 +506,30 @@
         padding-top: 54px;
       }
     }
+    .jeni-modal-gallery {
+  margin-top: 22px;
+}
+
+.jeni-modal-gallery h3 {
+  margin: 0 0 14px;
+  font-size: 1.1rem;
+  color: #111;
+}
+
+.jeni-modal-gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.jeni-modal-gallery-grid img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  border-radius: 14px;
+  display: block;
+  background: #ece8df;
+}
   </style>
 </head>
 <body>
@@ -693,6 +717,23 @@
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
     }
+    async function loadGalleryBySubmissionId(submissionId) {
+  if (!submissionId) return [];
+
+  const { data, error } = await supabaseClient
+    .from("submission_images")
+    .select("*")
+    .eq("submission_id", submissionId)
+    .order("position", { ascending: true })
+    .order("created_at", { ascending: true });
+
+  if (error) {
+    console.error("GALLERY PUBLIC LOAD ERROR:", error);
+    return [];
+  }
+
+  return data || [];
+}
 
     function nl2br(value) {
       return escapeHTML(value || "").replace(/\n/g, "<br>");
@@ -826,75 +867,89 @@
       return [...items].sort((a, b) => new Date(a.deadline || 0) - new Date(b.deadline || 0));
     }
 
-         async function openModalByIndex(index) {
-      const item = modalItems[index];
-      if (!item) return;
+async function openModalByIndex(index) {
+  const item = modalItems[index];
+  if (!item) return;
 
-      const galleryItems = await loadGalleryBySubmissionId(item.id);
+  currentModalIndex = index;
 
-      const galleryHTML = galleryItems.length
-        ? `
-          <div class="jeni-modal-gallery">
-            <h3>Galeria</h3>
-            <div class="jeni-modal-gallery-grid">
-              ${galleryItems.map(img => `
-                <img src="${img.image_url}" alt="Imagem da galeria de ${escapeHTML(item.title)}">
-              `).join("")}
-            </div>
-          </div>
-        `
-        : "";
+  const galleryItems = await loadGalleryBySubmissionId(item.id);
 
-      const extraBlock =
-        item.type === "event"
-          ? `
-            <div class="jeni-modal-extra">
-              <p><strong>Data:</strong> ${escapeHTML(formatDate(item.start_date))}</p>
-              <p><strong>Hora:</strong> ${escapeHTML(item.event_time || "Não informada")}</p>
-              <p><strong>Local:</strong> ${escapeHTML(item.location || "Não definido")}</p>
-              <p><strong>Bilhete:</strong> ${escapeHTML(item.ticket_price || "Não informado")}</p>
-              ${item.ticket_info ? `<p><strong>Informação adicional:</strong> ${escapeHTML(item.ticket_info)}</p>` : ""}
-              ${item.video_url ? `<p><strong>Vídeo:</strong> <a href="${item.video_url}" target="_blank" rel="noopener noreferrer">${escapeHTML(item.video_url)}</a></p>` : ""}
-            </div>
-          `
-          : item.type === "opportunity"
-            ? `
-              <div class="jeni-modal-extra">
-                <p><strong>Prazo:</strong> ${escapeHTML(item.deadline ? formatDate(item.deadline) : "Sem prazo definido")}</p>
-                <p><strong>Local:</strong> ${escapeHTML(item.location || "Não definido")}</p>
-                ${item.external_url ? `<p><strong>Link oficial:</strong> <a href="${item.external_url}" target="_blank" rel="noopener noreferrer">${escapeHTML(item.external_url)}</a></p>` : ""}
-              </div>
-            `
-            : `
-              <div class="jeni-modal-extra">
-                <p><strong>Categoria:</strong> ${escapeHTML(item.category || "Notícia")}</p>
-                <p><strong>Publicado em:</strong> ${escapeHTML(formatDateTime(item.published_at || item.created_at))}</p>
-              </div>
-            `;
+  const coverImage = item.image_url
+    ? `
+      <div class="jeni-modal-cover-wrap">
+        <img
+          src="${item.image_url}"
+          alt="${escapeHTML(item.title || "Imagem da publicação")}"
+          class="jeni-modal-cover"
+        >
+      </div>
+    `
+    : "";
 
-      document.getElementById("contentModalBody").innerHTML = `
-        <div class="jeni-modal-image">
-          ${createImageHTML(item.image_url, item.title)}
+  const summaryHTML = item.summary
+    ? `<p class="jeni-modal-summary">${escapeHTML(item.summary)}</p>`
+    : "";
+
+  const descriptionHTML = item.description
+    ? `
+      <div class="jeni-modal-description">
+        ${String(item.description).replace(/\n/g, "<br>")}
+      </div>
+    `
+    : "";
+
+  const metaParts = [];
+
+  if (item.category_label) metaParts.push(item.category_label);
+  if (item.event_date_formatted) metaParts.push(item.event_date_formatted);
+  if (item.location) metaParts.push(item.location);
+  if (item.ticket_price) metaParts.push(item.ticket_price);
+
+  const metaHTML = metaParts.length
+    ? `
+      <div class="jeni-modal-meta">
+        ${metaParts.map(meta => `<span>${escapeHTML(meta)}</span>`).join("")}
+      </div>
+    `
+    : "";
+
+  const galleryHTML = galleryItems.length
+    ? `
+      <div class="jeni-modal-gallery">
+        <h3>Galeria</h3>
+        <div class="jeni-modal-gallery-grid">
+          ${galleryItems.map(img => `
+            <img
+              src="${img.image_url}"
+              alt="Imagem da galeria de ${escapeHTML(item.title || "publicação")}"
+              loading="lazy"
+            >
+          `).join("")}
         </div>
+      </div>
+    `
+    : "";
 
-        <div class="jeni-meta-row">
-          <span class="jeni-pill-type">${labelType(item.type)}</span>
-          <span class="jeni-pill-category">${escapeHTML(item.category)}</span>
-          <span class="jeni-pill-date">${escapeHTML(formatDate(item.published_at || item.created_at || item.start_date || item.deadline))}</span>
-        </div>
+  document.getElementById("contentModalBody").innerHTML = `
+    ${coverImage}
+    <div class="jeni-modal-content-inner">
+      <h2>${escapeHTML(item.title || "")}</h2>
+      ${summaryHTML}
+      ${metaHTML}
+      ${descriptionHTML}
+      ${galleryHTML}
+    </div>
+  `;
 
-        <h2>${escapeHTML(item.title)}</h2>
-        <p>${escapeHTML(item.summary)}</p>
+  const modal = document.getElementById("contentModal");
+  if (modal) {
+    modal.classList.add("active");
+    modal.setAttribute("aria-hidden", "false");
+  }
 
-        ${extraBlock}
-
-        <p>${nl2br(item.description || "")}</p>
-
-        ${galleryHTML}
-      `;
-
-      document.getElementById("contentModal").classList.add("active");
-    } 
+  document.body.style.overflow = "hidden";
+}
 
     function closeContentModal() {
       document.getElementById("contentModal").classList.remove("active");
