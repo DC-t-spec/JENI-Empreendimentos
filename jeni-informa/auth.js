@@ -883,7 +883,7 @@ function getAdminFormData() {
     status: getValue("admin-content-status") || "pending",
     title: title,
     slug: slugValue || `${slugify(title)}-${Date.now()}`,
-    summary: getValue("admin-content-summary"),
+summary: getValue("admin-content-summary") || "Sem resumo",
     description: getValue("admin-content-description"),
     image_url: getValue("admin-content-image") || null,
     external_url: getValue("admin-content-link") || null,
@@ -1108,7 +1108,8 @@ async function saveAdminContent() {
       if (createPayload.status === "approved") {
         createPayload.published_at = new Date().toISOString();
       }
-
+const { data, error } = await createSubmissionByAdmin(createPayload);
+      
       const { data, error } = await createSubmissionByAdmin(createPayload);
 
       if (error) {
