@@ -461,6 +461,30 @@
     .jeni-modal-extra strong {
       color: #111;
     }
+        .jeni-modal-gallery {
+      margin-top: 22px;
+    }
+
+    .jeni-modal-gallery h3 {
+      margin: 0 0 14px;
+      font-size: 1.1rem;
+      color: #111;
+    }
+
+    .jeni-modal-gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+    }
+
+    .jeni-modal-gallery-grid img {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+      border-radius: 14px;
+      display: block;
+      background: #ece8df;
+    }
 
     @media (max-width: 980px) {
       .jeni-featured-news,
@@ -705,6 +729,24 @@
       return "Notícia";
     }
 
+        async function loadGalleryBySubmissionId(submissionId) {
+      if (!submissionId) return [];
+
+      const { data, error } = await supabaseClient
+        .from("submission_images")
+        .select("*")
+        .eq("submission_id", submissionId)
+        .order("position", { ascending: true })
+        .order("created_at", { ascending: true });
+
+      if (error) {
+        console.error("GALLERY PUBLIC LOAD ERROR:", error);
+        return [];
+      }
+
+      return data || [];
+    }
+
     function normaliseItem(item) {
       return {
         id: item.id,
@@ -784,9 +826,24 @@
       return [...items].sort((a, b) => new Date(a.deadline || 0) - new Date(b.deadline || 0));
     }
 
-    function openModalByIndex(index) {
+         async function openModalByIndex(index) {
       const item = modalItems[index];
       if (!item) return;
+
+      const galleryItems = await loadGalleryBySubmissionId(item.id);
+
+      const galleryHTML = galleryItems.length
+        ? `
+          <div class="jeni-modal-gallery">
+            <h3>Galeria</h3>
+            <div class="jeni-modal-gallery-grid">
+              ${galleryItems.map(img => `
+                <img src="${img.image_url}" alt="Imagem da galeria de ${escapeHTML(item.title)}">
+              `).join("")}
+            </div>
+          </div>
+        `
+        : "";
 
       const extraBlock =
         item.type === "event"
@@ -832,10 +889,12 @@
         ${extraBlock}
 
         <p>${nl2br(item.description || "")}</p>
+
+        ${galleryHTML}
       `;
 
       document.getElementById("contentModal").classList.add("active");
-    }
+    } 
 
     function closeContentModal() {
       document.getElementById("contentModal").classList.remove("active");
