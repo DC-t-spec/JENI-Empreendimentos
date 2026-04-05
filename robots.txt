@@ -1,4 +1,8 @@
 User-agent: *
-Allow: /
-
-Sitemap: https://jeniempreendimentos.co/sitemap.xml
+Disallow: /jeni-informa/login.html
+Disallow: /jeni-informa/criar-conta.html
+Disallow: /jeni-informa/dashboard.html
+Disallow: /jeni-informa/admin.html
+Disallow: /jeni-informa/minhas-submissoes.html
+Disallow: /jeni-informa/submeter-evento.html
+Disallow: /jeni-informa/submeter-oportunidade.html
