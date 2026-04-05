@@ -1169,12 +1169,13 @@ let activeLightboxImageIndex = 0;
       return `<img src="${src}" alt="${escapeHTML(alt || "")}">`;
     }
 
-    function labelType(type) {
-      if (type === "event") return "Agenda";
-      if (type === "opportunity") return "Oportunidade";
-      return "Notícia";
-    }
-
+   function labelType(type) {
+  if (type === "event") return "Agenda";
+  if (type === "call") return "Chamada";
+  if (type === "scholarship") return "Bolsa";
+  if (type === "learning") return "Aprender";
+  return "Notícia";
+}
        
 
     function normaliseItem(item) {
@@ -1676,7 +1677,7 @@ function restartFeaturedTimer() {
         .from("submissions")
         .select("*")
         .eq("status", "approved")
-        .in("type", ["news", "event", "opportunity"])
+        .in("type", ["news", "event", "call", "scholarship", "learning"])
         .order("published_at", { ascending: false });
 
       if (error) {
