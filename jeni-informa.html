@@ -945,6 +945,7 @@
           <a href="#noticias" class="jeni-nav-chip">Notícias</a>
           <a href="#agenda" class="jeni-nav-chip">Agenda</a>
           <a href="#oportunidades" class="jeni-nav-chip">Oportunidades</a>
+          <a href="#learning" class="jeni-nav-chip">Aprender</a>
           <a href="jeni-informa-arquivo.html" class="jeni-nav-chip">Arquivo</a>
           <a href="#area-produtor" class="jeni-nav-chip">Área do Produtor</a>
         </div>
@@ -1188,11 +1189,13 @@ let activeLightboxImageIndex = 0;
         slug: item.slug || "",
         summary: item.summary || "Sem resumo disponível.",
         description: item.description || "",
-        category: item.category || (
-          item.type === "event" ? "Agenda Cultural" :
-          item.type === "opportunity" ? "Oportunidade" :
-          "Notícia"
-        ),
+      category: item.category || (
+  item.type === "event" ? "Agenda Cultural" :
+  item.type === "call" ? "Chamada" :
+  item.type === "scholarship" ? "Bolsa" :
+  item.type === "learning" ? "Aprender" :
+  "Notícia"
+),
         image_url: item.image_url || "",
         location: item.location || "",
         event_time: item.event_time || "",
@@ -1235,18 +1238,20 @@ let activeLightboxImageIndex = 0;
       return deadline >= new Date();
     }
 
-   function getFeaturedItems(items) {
+ function getFeaturedItems(items) {
   const currentPool = [
     ...items.filter(item => item.type === "news" && isNewsCurrent(item)),
     ...items.filter(item => item.type === "event" && isEventCurrent(item)),
-    ...items.filter(item => item.type === "opportunity" && isOpportunityCurrent(item))
+    ...items.filter(item =>
+      (item.type === "call" || item.type === "scholarship") &&
+      isOpportunityCurrent(item)
+    ),
+    ...items.filter(item => item.type === "learning")
   ];
 
   const selectedFeatured = currentPool.filter(item => item.featured);
 
-  if (selectedFeatured.length) {
-    return selectedFeatured;
-  }
+  if (selectedFeatured.length) return selectedFeatured;
 
   return sortByMostRecent(currentPool).slice(0, 5);
 }
@@ -1553,28 +1558,28 @@ function restartFeaturedTimer() {
 
     function createCard(item, index) {
       const extraMeta =
-        item.type === "event"
-          ? `
-            <div class="jeni-card-meta-list">
-              <span><strong>Data:</strong> ${escapeHTML(formatDate(item.start_date))}</span>
-              <span><strong>Local:</strong> ${escapeHTML(item.location || "Não definido")}</span>
-              <span><strong>Hora:</strong> ${escapeHTML(item.event_time || "—")}</span>
-              <span><strong>Bilhete:</strong> ${escapeHTML(item.ticket_price || "Não informado")}</span>
-            </div>
-          `
-          : item.type === "opportunity"
-            ? `
-              <div class="jeni-card-meta-list">
-                <span><strong>Prazo:</strong> ${escapeHTML(item.deadline ? formatDate(item.deadline) : "Sem prazo definido")}</span>
-                <span><strong>Local:</strong> ${escapeHTML(item.location || "Não definido")}</span>
-              </div>
-            `
-            : `
-              <div class="jeni-card-meta-list">
-                <span><strong>Categoria:</strong> ${escapeHTML(item.category || "Notícia")}</span>
-                <span><strong>Publicado em:</strong> ${escapeHTML(formatDate(item.published_at || item.created_at))}</span>
-              </div>
-            `;
+  item.type === "event"
+    ? `...`
+    : (item.type === "call" || item.type === "scholarship")
+      ? `
+        <div class="jeni-card-meta-list">
+          <span><strong>Prazo:</strong> ${escapeHTML(item.deadline ? formatDate(item.deadline) : "Sem prazo definido")}</span>
+          <span><strong>Local:</strong> ${escapeHTML(item.location || "Não definido")}</span>
+        </div>
+      `
+      : item.type === "learning"
+        ? `
+          <div class="jeni-card-meta-list">
+            <span><strong>Tipo:</strong> Formação</span>
+            <span><strong>Publicado em:</strong> ${escapeHTML(formatDate(item.created_at))}</span>
+          </div>
+        `
+        : `
+          <div class="jeni-card-meta-list">
+            <span><strong>Categoria:</strong> ${escapeHTML(item.category || "Notícia")}</span>
+            <span><strong>Publicado em:</strong> ${escapeHTML(formatDate(item.published_at || item.created_at))}</span>
+          </div>
+        `;
 
       return `
         <article class="jeni-card">
@@ -1648,29 +1653,70 @@ function restartFeaturedTimer() {
         .join("");
     }
 
-    function renderOpportunities(items) {
-      const currentOpportunities = sortOpportunities(
-        items.filter(item => item.type === "opportunity" && isOpportunityCurrent(item))
-      ).slice(0, MAX_OPPORTUNITIES);
+function renderOpportunities(items) {
+  const currentOpportunities = sortOpportunities(
+    items.filter(item =>
+      (item.type === "call" || item.type === "scholarship") &&
+      isOpportunityCurrent(item)
+    )
+  ).slice(0, MAX_OPPORTUNITIES);
 
-      const container = document.getElementById("opportunities-grid");
+  const container = document.getElementById("opportunities-grid");
 
-      if (!currentOpportunities.length) {
-        container.innerHTML = `
-          <div class="jeni-empty-state">
-            Ainda não existem oportunidades activas disponíveis neste momento.
-          </div>
-        `;
-        return;
-      }
+  if (!currentOpportunities.length) {
+    container.innerHTML = `
+      <div class="jeni-empty-state">
+        Ainda não existem oportunidades activas disponíveis neste momento.
+      </div>
+    `;
+    return;
+  }
 
-      container.innerHTML = currentOpportunities
-        .map(item => {
-          const index = modalItems.findIndex(x => x.id === item.id);
-          return createCard(item, index);
-        })
-        .join("");
-    }
+  container.innerHTML = currentOpportunities
+    .map(item => {
+      const index = modalItems.findIndex(x => x.id === item.id);
+      return createCard(item, index);
+    })
+    .join("");
+}
+
+    <section class="jeni-section-block" id="learning">
+  <div class="jeni-section-head">
+    <div>
+      <span class="section-tag">Formação</span>
+      <h2>Aprender</h2>
+      <p>
+        Workshops, cursos, programas de formação e conteúdos educativos.
+      </p>
+    </div>
+  </div>
+
+  <div id="learning-grid" class="jeni-grid"></div>
+</section>
+
+    function renderLearning(items) {
+  const learningItems = sortByMostRecent(
+    items.filter(item => item.type === "learning")
+  ).slice(0, 6);
+
+  const container = document.getElementById("learning-grid");
+
+  if (!learningItems.length) {
+    container.innerHTML = `
+      <div class="jeni-empty-state">
+        Ainda não existem conteúdos de aprendizagem disponíveis.
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = learningItems
+    .map(item => {
+      const index = modalItems.findIndex(x => x.id === item.id);
+      return createCard(item, index);
+    })
+    .join("");
+}
 
     async function loadPublicContent() {
       const { data, error } = await supabaseClient
@@ -1694,6 +1740,7 @@ renderNews(approvedItems);
 renderAgenda(approvedItems);
 renderOpportunities(approvedItems);
 startFeaturedTimer();
+      renderLearning(approvedItems);
     }
 
     document.getElementById("contentModal").addEventListener("click", (e) => {
