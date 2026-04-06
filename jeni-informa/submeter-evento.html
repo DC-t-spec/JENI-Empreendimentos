@@ -40,17 +40,22 @@
         <div class="form-grid">
           <div class="auth-field full">
             <label for="title">Título do evento *</label>
-            <input type="text" id="title" required placeholder="Ex.: Concerto de Jazz em Maputo" />
+            <input
+              type="text"
+              id="title"
+              required
+              placeholder="Ex.: Concerto de Jazz em Maputo"
+            />
           </div>
 
           <div class="auth-field">
             <label for="category">Categoria *</label>
-            <input type="text" id="category" required placeholder="Ex.: Música, Teatro, Dança, Workshop" />
-          </div>
-
-          <div class="auth-field">
-            <label for="event_time">Hora do evento</label>
-            <input type="text" id="event_time" placeholder="Ex.: 18h00" />
+            <input
+              type="text"
+              id="category"
+              required
+              placeholder="Ex.: Música, Teatro, Dança, Workshop"
+            />
           </div>
 
           <div class="auth-field">
@@ -59,31 +64,54 @@
           </div>
 
           <div class="auth-field">
+            <label for="event_time">Hora do evento</label>
+            <input type="text" id="event_time" placeholder="Ex.: 18h00" />
+          </div>
+
+          <div class="auth-field">
             <label for="location">Local *</label>
-            <input type="text" id="location" required placeholder="Ex.: CCFM, Maputo" />
+            <input
+              type="text"
+              id="location"
+              required
+              placeholder="Ex.: CCFM, Maputo"
+            />
+          </div>
+
+          <div class="auth-field">
+            <label for="ticket_price">Preço do bilhete</label>
+            <input
+              type="text"
+              id="ticket_price"
+              placeholder="Ex.: 500 MZN / Entrada livre"
+            />
           </div>
 
           <div class="auth-field full">
             <label for="description">Descrição breve *</label>
-            <textarea id="description" rows="5" required placeholder="Descreva de forma breve e clara o evento: o que vai acontecer, quem participa, para quem é e por que vale a pena participar."></textarea>
+            <textarea
+              id="description"
+              rows="6"
+              required
+              placeholder="Descreva de forma breve e clara o evento: o que vai acontecer, quem participa, para quem é e por que vale a pena participar."
+            ></textarea>
             <div class="help-text">
               Use uma descrição directa, informativa e apelativa.
             </div>
           </div>
 
-          <div class="auth-field">
-            <label for="ticket_price">Preço do bilhete</label>
-            <input type="text" id="ticket_price" placeholder="Ex.: 500 MZN / Entrada livre" />
+          <div class="auth-field full">
+            <label for="ticket_info">Informação adicional do bilhete</label>
+            <textarea
+              id="ticket_info"
+              rows="3"
+              placeholder="Ex.: reservas por WhatsApp, venda no local, mesas VIP, desconto antecipado, etc."
+            ></textarea>
           </div>
 
           <div class="auth-field">
             <label for="video_url">Link de vídeo</label>
             <input type="url" id="video_url" placeholder="https://youtube.com/..." />
-          </div>
-
-          <div class="auth-field full">
-            <label for="ticket_info">Informação adicional do bilhete</label>
-            <textarea id="ticket_info" rows="3" placeholder="Ex.: reservas por WhatsApp, venda no local, mesas VIP, desconto antecipado, etc."></textarea>
           </div>
 
           <div class="auth-field full">
