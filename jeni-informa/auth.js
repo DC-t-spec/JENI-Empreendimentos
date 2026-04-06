@@ -83,8 +83,10 @@ function escapeHtml(text = "") {
 
 function getTypeLabel(type) {
   if (type === "event") return "Evento";
-  if (type === "opportunity") return "Oportunidade";
   if (type === "news") return "Notícia";
+  if (type === "call") return "Chamada";
+  if (type === "scholarship") return "Bolsa";
+  if (type === "learning") return "Aprender";
   return type || "Submissão";
 }
 
@@ -986,9 +988,23 @@ function toggleAdminTypeFields() {
   const eventBlock = document.getElementById("admin-fields-event");
   const opportunityBlock = document.getElementById("admin-fields-opportunity");
 
-  if (newsBlock) newsBlock.style.display = type === "news" ? "block" : "none";
-  if (eventBlock) eventBlock.style.display = type === "event" ? "block" : "none";
-  if (opportunityBlock) opportunityBlock.style.display = type === "opportunity" ? "block" : "none";
+  if (newsBlock) {
+    newsBlock.style.display =
+      type === "news" || type === "learning"
+        ? "block"
+        : "none";
+  }
+
+  if (eventBlock) {
+    eventBlock.style.display = type === "event" ? "block" : "none";
+  }
+
+  if (opportunityBlock) {
+    opportunityBlock.style.display =
+      type === "call" || type === "scholarship"
+        ? "block"
+        : "none";
+  }
 }
 
 async function uploadAdminImageIfNeeded() {
@@ -1015,6 +1031,7 @@ function getAdminFormDataByType(imageUrl = null) {
     featured: document.getElementById("admin-content-featured")?.checked || false
   };
 
+  // NOTÍCIA
   if (type === "news") {
     return {
       ...baseData,
@@ -1023,6 +1040,16 @@ function getAdminFormDataByType(imageUrl = null) {
     };
   }
 
+  // APRENDER (usa estrutura de notícia)
+  if (type === "learning") {
+    return {
+      ...baseData,
+      slug: `${slugify(title)}-${Date.now()}`,
+      description: getValue("admin-news-description")
+    };
+  }
+
+  // EVENTO
   if (type === "event") {
     const eventDate = getValue("admin-event-date");
 
@@ -1041,7 +1068,8 @@ function getAdminFormDataByType(imageUrl = null) {
     };
   }
 
-  if (type === "opportunity") {
+  // CHAMADA + BOLSA (usa estrutura de oportunidade)
+  if (type === "call" || type === "scholarship") {
     return {
       ...baseData,
       slug: `${slugify(title)}-${Date.now()}`,
@@ -1055,6 +1083,7 @@ function getAdminFormDataByType(imageUrl = null) {
 
   return baseData;
 }
+
 /* =====================================================
 ADMIN — FORM
 ===================================================== */
