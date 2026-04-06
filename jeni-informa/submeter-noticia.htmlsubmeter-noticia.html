@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Submeter notícia | JENI Informa</title>
+  <link rel="stylesheet" href="auth.css" />
+</head>
+<body class="dashboard-page">
+  <header class="dashboard-header">
+    <div class="dashboard-header-wrap">
+      <div>
+        <h1>JENI Informa — Submeter notícia</h1>
+      </div>
+
+      <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+        <a href="dashboard.html" class="producer-back-link">Voltar ao painel</a>
+        <a href="../jeni-informa.html" class="producer-back-link">JENI Informa</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="dashboard-main">
+    <section class="producer-hero-mini">
+      <h1>Submeter notícia</h1>
+      <p>
+        Envie notícias, reportagens e conteúdos editoriais para análise e eventual
+        publicação no <strong>JENI Informa</strong>.
+      </p>
+    </section>
+
+    <section class="dashboard-panel form-panel">
+      <h2>Formulário de submissão</h2>
+      <p class="auth-intro">
+        As notícias submetidas passam por verificação editorial antes de serem publicadas.
+      </p>
+
+      <form id="news-form" class="auth-form">
+        <div class="form-grid">
+          <div class="auth-field full">
+            <label for="title">Título da notícia *</label>
+            <input
+              type="text"
+              id="title"
+              required
+              placeholder="Ex.: Festival X reúne artistas emergentes em Maputo"
+            />
+          </div>
+
+          <div class="auth-field">
+            <label for="category">Categoria *</label>
+            <input
+              type="text"
+              id="category"
+              required
+              placeholder="Ex.: Música, Teatro, Dança, Artes Visuais, Comunidade"
+            />
+          </div>
+
+          <div class="auth-field">
+            <label for="incident_date">Data do ocorrido *</label>
+            <input type="date" id="incident_date" required />
+          </div>
+
+          <div class="auth-field">
+            <label for="incident_location">Local do ocorrido *</label>
+            <input
+              type="text"
+              id="incident_location"
+              required
+              placeholder="Ex.: Matola, Maputo, CCFM, Bairro X"
+            />
+          </div>
+
+          <div class="auth-field">
+            <label for="author_name">Autor da notícia *</label>
+            <input
+              type="text"
+              id="author_name"
+              required
+              placeholder="Ex.: Júlia Novela"
+            />
+          </div>
+
+          <div class="auth-field">
+            <label for="photo_credit">Crédito do fotógrafo</label>
+            <input
+              type="text"
+              id="photo_credit"
+              placeholder="Ex.: Nome do fotógrafo / arquivo da organização"
+            />
+          </div>
+
+          <div class="auth-field full">
+            <label for="description">Texto da notícia *</label>
+            <textarea
+              id="description"
+              rows="14"
+              required
+              placeholder="Escreva a notícia completa com contexto, factos principais, participantes, impacto e informação relevante."
+            ></textarea>
+            <div class="help-text">
+              Escreva o corpo da notícia de forma clara, organizada e completa.
+            </div>
+          </div>
+
+          <div class="auth-field full">
+            <label for="image">Imagem de capa</label>
+            <input type="file" id="image" accept="image/*" />
+            <div class="help-text">
+              Formatos recomendados: JPG, PNG ou WebP.
+            </div>
+          </div>
+
+          <div class="auth-field full">
+            <label for="gallery">Galeria de imagens</label>
+            <input type="file" id="gallery" accept="image/*" multiple />
+            <div class="help-text">
+              Pode adicionar várias imagens para acompanhar a notícia.
+            </div>
+          </div>
+        </div>
+
+        <div id="news-message" class="auth-message"></div>
+
+        <div class="form-actions">
+          <a href="dashboard.html" class="secondary-btn">Cancelar</a>
+          <button type="submit" class="auth-btn">Enviar para análise</button>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="auth.js"></script>
+  <script>
+    initNewsFormPage();
+  </script>
+</body>
+</html>
