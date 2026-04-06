@@ -22,10 +22,9 @@
 
   <main class="dashboard-main">
     <section class="producer-hero-mini">
-      <h1>Submeter oportunidade</h1>
+      <h1>Submeter oportunidade, bolsa ou aprendizagem</h1>
       <p>
-        Envie uma call, bolsa, concurso, residência artística ou outra
-        oportunidade cultural para análise editorial no
+        Envie uma chamada, bolsa ou conteúdo de aprendizagem para análise editorial no
         <strong>JENI Informa</strong>.
       </p>
     </section>
@@ -33,45 +32,76 @@
     <section class="dashboard-panel form-panel">
       <h2>Formulário de submissão</h2>
       <p class="auth-intro">
-        As oportunidades submetidas serão verificadas antes de eventual publicação.
+        O conteúdo submetido será verificado antes de eventual publicação.
       </p>
 
       <form id="opportunity-form" class="auth-form">
         <div class="form-grid">
+          <div class="auth-field">
+            <label for="type">Tipo *</label>
+            <select id="type" required>
+              <option value="call">Chamada</option>
+              <option value="scholarship">Bolsa</option>
+              <option value="learning">Aprender</option>
+            </select>
+          </div>
+
+          <div class="auth-field">
+            <label for="category">Categoria *</label>
+            <input type="text" id="category" required placeholder="Ex.: Bolsa, Residência, Concurso, Workshop, Curso" />
+          </div>
+
           <div class="auth-field full">
             <label for="title">Título *</label>
             <input type="text" id="title" required placeholder="Ex.: Open Call para artistas emergentes" />
           </div>
 
-          <div class="auth-field">
-            <label for="category">Categoria *</label>
-            <input type="text" id="category" required placeholder="Ex.: Bolsa, Residência, Concurso, Chamada" />
-          </div>
-
-          <div class="auth-field">
+          <div class="auth-field" id="deadline-field">
             <label for="deadline">Prazo</label>
             <input type="date" id="deadline" />
           </div>
 
-          <div class="auth-field full">
-            <label for="summary">Resumo curto *</label>
-            <textarea id="summary" rows="3" required placeholder="Escreva um resumo breve e claro da oportunidade."></textarea>
-            <div class="help-text">
-              Este texto será útil para listagens, destaques e leitura rápida.
-            </div>
-          </div>
-
-          <div class="auth-field full">
-            <label for="description">Descrição completa *</label>
-            <textarea id="description" rows="8" required placeholder="Explique a oportunidade com detalhe: quem pode candidatar-se, condições, benefícios, prazos, critérios, etc."></textarea>
-            <div class="help-text">
-              Aqui deve apresentar a informação completa para análise editorial.
-            </div>
+          <div class="auth-field" id="start-date-field">
+            <label for="start_date">Data de início</label>
+            <input type="date" id="start_date" />
           </div>
 
           <div class="auth-field">
             <label for="location">Local / abrangência</label>
             <input type="text" id="location" placeholder="Ex.: Maputo, Moçambique, Online, Internacional" />
+          </div>
+
+          <div class="auth-field" id="institution-field">
+            <label for="institution_name">Instituição / entidade</label>
+            <input type="text" id="institution_name" placeholder="Ex.: Goethe-Institut, Universidade X, Fundação Y" />
+          </div>
+
+          <div class="auth-field" id="duration-field">
+            <label for="duration">Duração</label>
+            <input type="text" id="duration" placeholder="Ex.: 3 dias, 6 semanas, 2 meses" />
+          </div>
+
+          <div class="auth-field" id="format-field">
+            <label for="learning_format">Formato</label>
+            <input type="text" id="learning_format" placeholder="Ex.: Workshop, Curso, Mentoria, Masterclass, Laboratório" />
+          </div>
+
+          <div class="auth-field full">
+            <label for="description">Descrição *</label>
+            <textarea id="description" rows="7" required placeholder="Explique o conteúdo com clareza e objectividade."></textarea>
+            <div class="help-text" id="description-help">
+              Apresente a informação principal para análise editorial.
+            </div>
+          </div>
+
+          <div class="auth-field full" id="learning-outcomes-field">
+            <label for="learning_outcomes">O que será aprendido</label>
+            <textarea id="learning_outcomes" rows="4" placeholder="Ex.: técnicas de escrita dramática, ferramentas de produção, noções de distribuição musical, etc."></textarea>
+          </div>
+
+          <div class="auth-field full" id="target-audience-field">
+            <label for="target_audience">Para quem é</label>
+            <textarea id="target_audience" rows="3" placeholder="Ex.: artistas emergentes, gestores culturais, produtores, estudantes, bailarinos, músicos..."></textarea>
           </div>
 
           <div class="auth-field">
@@ -98,11 +128,55 @@
     </section>
   </main>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="auth.js"></script>
-<script>
-initOpportunityFormPage();
-</script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="auth.js"></script>
+  <script>
+    function toggleOpportunityFields() {
+      const type = document.getElementById("type")?.value;
 
+      const deadlineField = document.getElementById("deadline-field");
+      const startDateField = document.getElementById("start-date-field");
+      const institutionField = document.getElementById("institution-field");
+      const durationField = document.getElementById("duration-field");
+      const formatField = document.getElementById("format-field");
+      const outcomesField = document.getElementById("learning-outcomes-field");
+      const audienceField = document.getElementById("target-audience-field");
+      const descriptionHelp = document.getElementById("description-help");
+
+      if (!type) return;
+
+      const isLearning = type === "learning";
+      const isScholarship = type === "scholarship";
+      const isCall = type === "call";
+
+      if (deadlineField) deadlineField.style.display = isLearning ? "none" : "";
+      if (startDateField) startDateField.style.display = isLearning ? "" : "none";
+      if (institutionField) institutionField.style.display = isScholarship || isLearning ? "" : "";
+      if (durationField) durationField.style.display = isLearning ? "" : "none";
+      if (formatField) formatField.style.display = isLearning ? "" : "none";
+      if (outcomesField) outcomesField.style.display = isLearning ? "" : "none";
+      if (audienceField) audienceField.style.display = isLearning ? "" : "none";
+
+      if (descriptionHelp) {
+        if (isLearning) {
+          descriptionHelp.textContent = "Descreva a experiência de aprendizagem de forma inspiradora e clara, sem parecer notícia.";
+        } else if (isScholarship) {
+          descriptionHelp.textContent = "Explique a bolsa com clareza: benefícios, elegibilidade, instituição e prazos.";
+        } else if (isCall) {
+          descriptionHelp.textContent = "Explique a chamada com clareza: quem pode participar, condições e prazo.";
+        }
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      initOpportunityFormPage();
+
+      const typeSelect = document.getElementById("type");
+      if (typeSelect) {
+        toggleOpportunityFields();
+        typeSelect.addEventListener("change", toggleOpportunityFields);
+      }
+    });
+  </script>
 </body>
 </html>
