@@ -54,8 +54,8 @@
           </div>
 
           <div class="auth-field">
-            <label for="event_date">Data do evento *</label>
-            <input type="date" id="event_date" required />
+            <label for="start_date">Data do evento *</label>
+            <input type="date" id="start_date" required />
           </div>
 
           <div class="auth-field">
@@ -64,18 +64,10 @@
           </div>
 
           <div class="auth-field full">
-            <label for="summary">Resumo curto *</label>
-            <textarea id="summary" rows="3" required placeholder="Escreva um resumo breve e directo do evento."></textarea>
+            <label for="description">Descrição breve *</label>
+            <textarea id="description" rows="5" required placeholder="Descreva de forma breve e clara o evento: o que vai acontecer, quem participa, para quem é e por que vale a pena participar."></textarea>
             <div class="help-text">
-              Este texto será útil para listagens, destaques e leitura rápida.
-            </div>
-          </div>
-
-          <div class="auth-field full">
-            <label for="description">Descrição completa *</label>
-            <textarea id="description" rows="8" required placeholder="Descreva o evento com mais detalhe: conceito, participantes, programação, objectivos, etc."></textarea>
-            <div class="help-text">
-              Aqui deve apresentar a informação completa para análise editorial.
+              Use uma descrição directa, informativa e apelativa.
             </div>
           </div>
 
@@ -113,11 +105,10 @@
     </section>
   </main>
 
- <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="auth.js"></script>
-<script>
-initEventFormPage();
-</script>
-
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="auth.js"></script>
+  <script>
+    initEventFormPage();
+  </script>
 </body>
 </html>
