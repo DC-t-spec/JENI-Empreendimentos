@@ -370,43 +370,47 @@ async function submitEventForm(status = "pending") {
   if (!user) return;
 
   const title = getValue("title");
-  const eventDate = getValue("event_date");
+  const startDate = getValue("start_date");
 
   const payload = {
     user_id: user.id,
     type: "event",
     status: status || "pending",
-    title: title,
+    title,
     slug: `${slugify(title)}-${Date.now()}`,
     category: getValue("category") || null,
-    event_date: eventDate || null,
-    start_date: eventDate ? `${eventDate}T00:00:00+02:00` : null,
+    description: getValue("description"),
+    start_date: startDate || null,
+    end_date: null,
     event_time: getValue("event_time") || null,
     location: getValue("location") || null,
-    summary: getValue("summary"),
-    description: getValue("description"),
     ticket_price: getValue("ticket_price") || null,
     ticket_info: getValue("ticket_info") || null,
-    video_url: getValue("video_url") || null
+    video_url: getValue("video_url") || null,
+    image_url: null,
+
+    summary: null,
+    deadline: null,
+    external_url: null,
+    institution_name: null,
+    learning_outcomes: null,
+    target_audience: null,
+    learning_format: null,
+    duration: null,
+    author_name: null,
+    photo_credit: null,
+    incident_location: null,
+    incident_date: null
   };
 
   const image = getFile("image");
 
   try {
-    if (image) {
-      payload.image_url = await uploadImage(image, "events");
-    } else {
-      payload.image_url = null;
-    }
+    payload.image_url = image ? await uploadImage(image, "events") : null;
 
-    const { data, error } = await supabaseClient
+    const { error } = await supabaseClient
       .from("submissions")
-      .insert([payload])
-      .select();
-
-    console.log("EVENT PAYLOAD:", payload);
-    console.log("EVENT RESULT:", data);
-    console.error("EVENT ERROR:", error);
+      .insert([payload]);
 
     if (error) {
       showMessage("event-message", error.message, "error");
@@ -426,20 +430,12 @@ async function submitEventForm(status = "pending") {
 
 function initEventFormPage() {
   const form = document.getElementById("event-form");
-  const draftBtn = document.getElementById("save-draft-btn");
-
   if (!form) return;
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     await submitEventForm("pending");
   });
-
-  if (draftBtn) {
-    draftBtn.addEventListener("click", async () => {
-      await submitEventForm("draft");
-    });
-  }
 }
 
 /* =====================================================
