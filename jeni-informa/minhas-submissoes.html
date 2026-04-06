@@ -24,9 +24,9 @@
     <section class="producer-hero-mini">
       <h1>Minhas submissões</h1>
       <p>
-        Aqui pode acompanhar o estado dos conteúdos que submeteu para o
-        <strong>JENI Informa</strong>, incluindo eventos, oportunidades e outras
-        iniciativas em análise editorial.
+        Aqui pode acompanhar o estado dos conteúdos submetidos ao
+        <strong>JENI Informa</strong>, incluindo notícias, eventos, chamadas,
+        bolsas e conteúdos de aprendizagem.
       </p>
     </section>
 
@@ -49,23 +49,71 @@
       if (!dateString) return "Sem data";
       const date = new Date(dateString);
       if (Number.isNaN(date.getTime())) return "Sem data";
-      return date.toLocaleString("pt-PT");
+      return date.toLocaleDateString("pt-PT", {
+        day: "2-digit",
+        month: "long",
+        year: "numeric"
+      });
     }
 
     function getSubmissionStatusLabel(status) {
       const value = (status || "pending").toLowerCase();
-
       if (value === "approved") return "Aprovado";
       if (value === "rejected") return "Rejeitado";
+      if (value === "archived") return "Arquivado";
       return "Pendente";
     }
 
     function getSubmissionStatusClass(status) {
       const value = (status || "pending").toLowerCase();
-
       if (value === "approved") return "approved";
       if (value === "rejected") return "rejected";
+      if (value === "archived") return "archived";
       return "pending";
+    }
+
+    function getTypeLabel(type) {
+      if (type === "news") return "Notícia";
+      if (type === "event") return "Evento";
+      if (type === "call") return "Chamada";
+      if (type === "scholarship") return "Bolsa";
+      if (type === "learning") return "Aprender";
+      return "Submissão";
+    }
+
+    function getPrimaryMeta(item) {
+      if (item.type === "event") {
+        return {
+          label: "Data do evento",
+          value: formatSubmissionDate(item.start_date)
+        };
+      }
+
+      if (item.type === "call" || item.type === "scholarship") {
+        return {
+          label: "Prazo",
+          value: formatSubmissionDate(item.deadline)
+        };
+      }
+
+      if (item.type === "news") {
+        return {
+          label: "Data do ocorrido",
+          value: formatSubmissionDate(item.incident_date)
+        };
+      }
+
+      if (item.type === "learning") {
+        return {
+          label: "Início",
+          value: formatSubmissionDate(item.start_date)
+        };
+      }
+
+      return {
+        label: "Referência",
+        value: "Sem informação"
+      };
     }
 
     async function loadSubmissions() {
@@ -76,7 +124,19 @@
 
       const { data, error } = await supabaseClient
         .from("submissions")
-        .select("id, type, status, title, summary, category, event_date, deadline, created_at, published_at")
+        .select(`
+          id,
+          type,
+          status,
+          title,
+          description,
+          category,
+          start_date,
+          deadline,
+          incident_date,
+          created_at,
+          published_at
+        `)
         .eq("user_id", user.id)
         .order("created_at", { ascending: false });
 
@@ -100,22 +160,15 @@
       }
 
       container.innerHTML = data.map(item => {
-        const principalDate =
-         item.type === "event"
-
-            ? formatSubmissionDate(item.event_date)
-            : formatSubmissionDate(item.deadline);
-
-        const principalLabel =
-         item.type === "event"
-
-            ? "Data do evento"
-            : "Prazo";
+        const primaryMeta = getPrimaryMeta(item);
+        const previewText = item.description
+          ? item.description.slice(0, 180) + (item.description.length > 180 ? "..." : "")
+          : "Sem descrição disponível.";
 
         return `
           <article class="submission-card">
             <div class="submission-meta">
-              <span class="submission-pill">${item.type || "Submissão"}</span>
+              <span class="submission-pill">${getTypeLabel(item.type)}</span>
               <span class="submission-status ${getSubmissionStatusClass(item.status)}">
                 ${getSubmissionStatusLabel(item.status)}
               </span>
@@ -123,11 +176,11 @@
 
             <h3>${item.title || "Sem título"}</h3>
 
-            <p>${item.summary || "Sem resumo disponível."}</p>
+            <p>${previewText}</p>
 
             <div class="submission-details">
               <p><strong>Categoria:</strong> ${item.category || "Não definida"}</p>
-              <p><strong>${principalLabel}:</strong> ${principalDate}</p>
+              <p><strong>${primaryMeta.label}:</strong> ${primaryMeta.value}</p>
               <p><strong>Criado em:</strong> ${formatSubmissionDate(item.created_at)}</p>
               <p><strong>Publicado em:</strong> ${item.published_at ? formatSubmissionDate(item.published_at) : "Ainda não publicado"}</p>
             </div>
