@@ -1001,12 +1001,10 @@ function toggleAdminTypeFields() {
   const newsBlock = document.getElementById("admin-fields-news");
   const eventBlock = document.getElementById("admin-fields-event");
   const opportunityBlock = document.getElementById("admin-fields-opportunity");
+  const learningBlock = document.getElementById("admin-fields-learning");
 
   if (newsBlock) {
-    newsBlock.style.display =
-      type === "news" || type === "learning"
-        ? "block"
-        : "none";
+    newsBlock.style.display = type === "news" ? "block" : "none";
   }
 
   if (eventBlock) {
@@ -1015,9 +1013,11 @@ function toggleAdminTypeFields() {
 
   if (opportunityBlock) {
     opportunityBlock.style.display =
-      type === "call" || type === "scholarship"
-        ? "block"
-        : "none";
+      (type === "call" || type === "scholarship") ? "block" : "none";
+  }
+
+  if (learningBlock) {
+    learningBlock.style.display = type === "learning" ? "block" : "none";
   }
 }
 
