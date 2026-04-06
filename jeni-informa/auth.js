@@ -566,19 +566,26 @@ async function loadMySubmissions() {
   }
 
   listEl.innerHTML = data.map(item => {
-    const principalDate =
-      item.type === "event"
-        ? formatDateTime(item.start_date || item.event_date)
-        : item.type === "opportunity"
-          ? safeText(item.deadline, "Sem prazo")
-          : "—";
+    let principalLabel = "Referência";
+    let principalDate = "—";
 
-    const principalLabel =
-      item.type === "event"
-        ? "Data principal"
-        : item.type === "opportunity"
-          ? "Prazo"
-          : "Referência";
+    if (item.type === "event") {
+      principalLabel = "Data do evento";
+      principalDate = formatDateOnly(item.start_date);
+    } else if (item.type === "call" || item.type === "scholarship") {
+      principalLabel = "Prazo";
+      principalDate = formatDateOnly(item.deadline);
+    } else if (item.type === "news") {
+      principalLabel = "Data do ocorrido";
+      principalDate = formatDateOnly(item.incident_date);
+    } else if (item.type === "learning") {
+      principalLabel = "Início";
+      principalDate = formatDateOnly(item.start_date);
+    }
+
+    const previewText = item.description
+      ? `${item.description.slice(0, 180)}${item.description.length > 180 ? "..." : ""}`
+      : "Sem descrição disponível.";
 
     return `
       <article class="submission-card">
@@ -592,12 +599,12 @@ async function loadMySubmissions() {
         </div>
 
         <h3>${escapeHtml(item.title || "Sem título")}</h3>
-        <p>${escapeHtml(item.summary || "Sem resumo disponível.")}</p>
+        <p>${escapeHtml(previewText)}</p>
 
         <div class="admin-details">
           <p><strong>Categoria:</strong> ${escapeHtml(safeText(item.category, "Não definida"))}</p>
           <p><strong>${principalLabel}:</strong> ${escapeHtml(principalDate)}</p>
-          <p><strong>Local:</strong> ${escapeHtml(safeText(item.location, "Não definido"))}</p>
+          <p><strong>Local:</strong> ${escapeHtml(safeText(item.location || item.incident_location, "Não definido"))}</p>
           <p><strong>Criado em:</strong> ${escapeHtml(formatDateTime(item.created_at))}</p>
           <p><strong>Publicado em:</strong> ${escapeHtml(item.published_at ? formatDateTime(item.published_at) : "Ainda não publicado")}</p>
         </div>
