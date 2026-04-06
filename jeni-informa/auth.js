@@ -731,14 +731,14 @@ function buildAdminCard(item) {
   const principalDate =
     item.type === "event"
       ? formatDateTime(item.start_date || item.event_date)
-      : item.type === "opportunity"
+      : (item.type === "call" || item.type === "scholarship")
         ? safeText(item.deadline, "Sem prazo")
         : "—";
 
   const principalLabel =
     item.type === "event"
       ? "Data principal"
-      : item.type === "opportunity"
+      :(item.type === "call" || item.type === "scholarship")
         ? "Prazo"
         : "Referência";
 
@@ -860,7 +860,7 @@ function fillAdminEditor(item) {
     if (videoEl) videoEl.value = item.video_url || "";
   }
 
-  if (item.type === "opportunity") {
+  if ((item.type === "call" || item.type === "scholarship")) {
     const categoryEl = document.getElementById("admin-opportunity-category");
     const locationEl = document.getElementById("admin-opportunity-location");
     const deadlineEl = document.getElementById("admin-opportunity-deadline");
