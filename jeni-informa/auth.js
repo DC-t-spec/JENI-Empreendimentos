@@ -660,6 +660,85 @@ async function createSubmissionByAdmin(payload) {
     .single();
 }
 
+
+async function submitNewsForm(status = "pending") {
+  clearMessage("news-message");
+
+  const user = await requireAuth();
+  if (!user) return;
+
+  const title = getValue("title");
+
+  const payload = {
+    user_id: user.id,
+    type: "news",
+    status: status || "pending",
+    title,
+    slug: `${slugify(title)}-${Date.now()}`,
+    category: getValue("category") || null,
+    description: getValue("description"),
+    author_name: getValue("author_name") || null,
+    photo_credit: getValue("photo_credit") || null,
+    incident_location: getValue("incident_location") || null,
+    incident_date: getValue("incident_date") || null,
+    image_url: null,
+
+    summary: null,
+    start_date: null,
+    end_date: null,
+    event_time: null,
+    location: null,
+    ticket_price: null,
+    ticket_info: null,
+    video_url: null,
+    deadline: null,
+    external_url: null,
+    institution_name: null,
+    learning_outcomes: null,
+    target_audience: null,
+    learning_format: null,
+    duration: null
+  };
+
+  const image = getFile("image");
+  const galleryFiles = getFiles("gallery");
+
+  try {
+    payload.image_url = image ? await uploadImage(image, "news") : null;
+
+    const { data, error } = await supabaseClient
+      .from("submissions")
+      .insert([payload])
+      .select()
+      .single();
+
+    if (error) {
+      showMessage("news-message", error.message, "error");
+      return;
+    }
+
+    if (galleryFiles.length && data?.id) {
+      const galleryUrls = await uploadMultipleImages(galleryFiles, "news-gallery");
+      await saveSubmissionGallery(data.id, galleryUrls);
+    }
+
+    showMessage("news-message", "Notícia enviada para análise.", "success");
+  } catch (err) {
+    console.error("NEWS CATCH ERROR:", err);
+    showMessage("news-message", err.message || "Erro ao submeter notícia.", "error");
+  }
+}
+
+function initNewsFormPage() {
+  const form = document.getElementById("news-form");
+  if (!form) return;
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    await submitNewsForm("pending");
+  });
+}
+
 /* =====================================================
 ADMIN — HELPERS
 ===================================================== */
@@ -1266,6 +1345,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const dashboardName = document.getElementById("dashboard-name");
   const adminList = document.getElementById("admin-submissions-list");
   const mySubmissionsList = document.getElementById("my-submissions-list");
+   const newsForm = document.getElementById("news-form");
 
   if (signupForm) {
     signupForm.addEventListener("submit", handleSignUp);
@@ -1294,4 +1374,8 @@ document.addEventListener("DOMContentLoaded", () => {
   if (mySubmissionsList) {
     loadMySubmissions();
   }
+  
+ if (newsForm) {
+  initNewsFormPage();
+}
 });
