@@ -1309,7 +1309,7 @@ async function openModalByIndex(index) {
     metaParts.push(`Data: ${formatDate(item.start_date)}`);
   }
 
-  if (item.type === "opportunity" && item.deadline) {
+  if (item.type === "call" || item.type === "scholarship" && item.deadline) {
     metaParts.push(`Prazo: ${formatDate(item.deadline)}`);
   }
 
@@ -1680,19 +1680,7 @@ function renderOpportunities(items) {
     .join("");
 }
 
-    <section class="jeni-section-block" id="learning">
-  <div class="jeni-section-head">
-    <div>
-      <span class="section-tag">Formação</span>
-      <h2>Aprender</h2>
-      <p>
-        Workshops, cursos, programas de formação e conteúdos educativos.
-      </p>
-    </div>
-  </div>
-
-  <div id="learning-grid" class="jeni-grid"></div>
-</section>
+  
 
     function renderLearning(items) {
   const learningItems = sortByMostRecent(
