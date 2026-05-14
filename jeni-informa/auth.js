@@ -113,15 +113,18 @@ function getTypeLabel(type) {
 function getStatusLabel(status) {
   status = normalizeStatus(status);
   if (status === "draft") return "Draft";
-  if (status === "review") return "Review";
-  if (status === "published") return "Published";
-  if (status === "archived") return "Archived";
+  if (status === "submitted") return "Submetido";
+  if (status === "review") return "Em revisão";
+  if (status === "needs_revision") return "Precisa revisão";
+  if (status === "approved") return "Aprovado";
+  if (status === "rejected") return "Rejeitado";
+  if (status === "published") return "Publicado";
   return status || "Sem estado";
 }
 
-const EDITORIAL_STATUS = ["draft", "review", "published", "archived"];
+const EDITORIAL_STATUS = ["draft", "submitted", "review", "needs_revision", "approved", "rejected", "published"];
 function normalizeStatus(status) {
-  const map = { pending: "draft", approved: "published", rejected: "review", publish: "published" };
+  const map = { pending: "submitted", publish: "published" };
   const normalized = map[status] || status || "draft";
   return EDITORIAL_STATUS.includes(normalized) ? normalized : "draft";
 }
@@ -252,7 +255,8 @@ async function handleLogin(event) {
     return;
   }
 
-  window.location.href = "dashboard.html";
+  const profile = await loadProfile();
+  window.location.href = ["admin", "editor"].includes(profile?.role) ? "admin.html" : "dashboard.html";
 }
 
 async function handleLogout() {
@@ -331,6 +335,10 @@ async function initDashboard() {
 
   if (adminLink && profile?.role === "admin") {
     adminLink.style.display = "inline-flex";
+  }
+
+  if (["admin", "editor"].includes(profile?.role)) {
+    window.location.href = "admin.html";
   }
 }
 
@@ -417,7 +425,7 @@ async function saveSubmissionGallery(submissionId, imageUrls = []) {
 EVENT SUBMISSION
 ===================================================== */
 
-async function submitEventForm(status = "draft") {
+async function submitEventForm(status = "review") {
   clearMessage("event-message");
 
   const user = await requireAuth();
@@ -429,7 +437,7 @@ async function submitEventForm(status = "draft") {
   const payload = {
     user_id: user.id,
     type: "event",
-    status: normalizeStatus(status || "draft"),
+    status: normalizeStatus(status || "review"),
     title,
     slug: `${slugify(title)}-${Date.now()}`,
     category: getValue("category") || null,
@@ -488,7 +496,7 @@ function initEventFormPage() {
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
-    await submitEventForm("draft");
+    await submitEventForm("review");
   });
 }
 
@@ -496,7 +504,7 @@ function initEventFormPage() {
 OPPORTUNITY SUBMISSION
 ===================================================== */
 
-async function submitOpportunityForm(status = "draft") {
+async function submitOpportunityForm(status = "review") {
   clearMessage("opportunity-message");
 
   const user = await requireAuth();
@@ -507,7 +515,7 @@ async function submitOpportunityForm(status = "draft") {
   const payload = {
     user_id: user.id,
     type: getValue("type") || "call",
-    status: normalizeStatus(status || "draft"),
+    status: normalizeStatus(status || "review"),
     title,
     slug: `${slugify(title)}-${Date.now()}`,
     category: getValue("category") || null,
@@ -568,12 +576,12 @@ function initOpportunityFormPage() {
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
-    await submitOpportunityForm("draft");
+    await submitOpportunityForm("review");
   });
 
   if (draftBtn) {
     draftBtn.addEventListener("click", async () => {
-      await submitOpportunityForm("draft");
+      await submitOpportunityForm("review");
     });
   }
 }
@@ -669,17 +677,34 @@ ADMIN — DADOS
 ===================================================== */
 
 async function loadAdminSubmissions() {
-  const primary = await supabaseClient.from("content_items").select("*").order("updated_at", { ascending: false });
-  if (!primary.error && Array.isArray(primary.data)) return { ...primary, data: primary.data.map(normalizeItem) };
-  const legacy = await supabaseClient.from("submissions").select("*").order("updated_at", { ascending: false });
-  return { ...legacy, data: (legacy.data || []).map(normalizeItem) };
+  const { data, error } = await supabaseClient
+    .from("submissions")
+    .select("*, profiles!submissions_user_id_fkey(full_name, organization_name)")
+    .order("updated_at", { ascending: false });
+  return { data: (data || []).map(normalizeItem), error };
 }
 
 async function updateSubmissionStatus(submissionId, newStatus) {
   const mapped = normalizeStatus(newStatus);
   const updateData = { status: mapped, updated_at: new Date().toISOString() };
   if (mapped === "published") updateData.published_at = new Date().toISOString();
-  return await supabaseClient.from("content_items").update(updateData).eq("id", submissionId).select().single();
+  const result = await supabaseClient.from("submissions").update(updateData).eq("id", submissionId).select().single();
+  if (result.error || mapped !== "published") return result;
+
+  const item = result.data;
+  const contentPayload = {
+    author_id: item.user_id,
+    type: item.type,
+    status: "published",
+    title: item.title,
+    slug: item.slug || `${slugify(item.title)}-${Date.now()}`,
+    excerpt: item.summary || null,
+    body: item.description || null,
+    featured: false,
+    published_at: updateData.published_at
+  };
+  await supabaseClient.from("content_items").upsert([contentPayload], { onConflict: "slug" });
+  return result;
 }
 
 async function updateSubmissionById(submissionId, payload) {
@@ -691,7 +716,7 @@ async function createSubmissionByAdmin(payload) {
 }
 
 
-async function submitNewsForm(status = "draft") {
+async function submitNewsForm(status = "review") {
   clearMessage("news-message");
 
   const user = await requireAuth();
@@ -702,7 +727,7 @@ async function submitNewsForm(status = "draft") {
   const payload = {
     user_id: user.id,
     type: "news",
-    status: normalizeStatus(status || "draft"),
+    status: normalizeStatus(status || "review"),
     title,
     slug: `${slugify(title)}-${Date.now()}`,
     category: getValue("category") || null,
@@ -765,7 +790,7 @@ function initNewsFormPage() {
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
-    await submitNewsForm("draft");
+    await submitNewsForm("review");
   });
 }
 
@@ -795,12 +820,7 @@ function setAdminStats(data = []) {
 }
 
 function sortAdminData(data = []) {
-  const statusOrder = {
-    draft: 1,
-    review: 2,
-    published: 3,
-    archived: 4
-  };
+  const statusOrder = { draft: 1, submitted: 2, review: 3, needs_revision: 4, approved: 5, rejected: 6, published: 7 };
 
   return [...data].sort((a, b) => {
     const aOrder = statusOrder[a.status] || 99;
@@ -816,6 +836,7 @@ function applyAdminFilters(data = []) {
   const search = getValue("admin-search").toLowerCase();
   const type = getValue("admin-filter-type");
   const status = getValue("admin-filter-status");
+  const producer = getValue("admin-filter-producer").toLowerCase();
 
   let filtered = [...data];
 
@@ -834,6 +855,12 @@ function applyAdminFilters(data = []) {
 
   if (status) {
     filtered = filtered.filter(item => item.status === status);
+  }
+  if (producer) {
+    filtered = filtered.filter(item =>
+      (item.profiles?.full_name || "").toLowerCase().includes(producer) ||
+      (item.profiles?.organization_name || "").toLowerCase().includes(producer)
+    );
   }
 
   return sortAdminData(filtered);
@@ -876,10 +903,11 @@ function buildAdminCard(item) {
 
       <h3>${escapeHtml(item.title || "Sem título")}</h3>
 
-      <p>${escapeHtml(item.summary || "Sem resumo disponível.")}</p>
+      <p>${escapeHtml(item.summary || item.description || "Sem resumo disponível.")}</p>
 
       <div class="admin-details">
         <p><strong>Categoria:</strong> ${escapeHtml(safeText(item.category, "Não definida"))}</p>
+        <p><strong>Produtor:</strong> ${escapeHtml(safeText(item.profiles?.full_name || item.profiles?.organization_name, "Não identificado"))}</p>
         <p><strong>${principalLabel}:</strong> ${escapeHtml(principalDate)}</p>
         <p><strong>Local:</strong> ${escapeHtml(safeText(item.location, "Não definido"))}</p>
         <p><strong>Criado em:</strong> ${escapeHtml(formatDateTime(item.created_at))}</p>
@@ -887,9 +915,10 @@ function buildAdminCard(item) {
       </div>
 
       <div class="admin-actions">
-        <button class="admin-btn admin-btn-approve" data-id="${item.id}" data-action="review">Review</button>
-        <button class="admin-btn admin-btn-approve" data-id="${item.id}" data-action="published">Publish</button>
-        <button class="admin-btn admin-btn-archive" data-id="${item.id}" data-action="archived">Archive</button>
+        <button class="admin-btn admin-btn-approve" data-id="${item.id}" data-action="approved">Aprovar</button>
+        <button class="admin-btn admin-btn-approve" data-id="${item.id}" data-action="needs_revision">Pedir revisão</button>
+        <button class="admin-btn admin-btn-archive" data-id="${item.id}" data-action="rejected">Rejeitar</button>
+        <button class="admin-btn admin-btn-approve" data-id="${item.id}" data-action="published">Publicar</button>
         <button class="admin-btn admin-btn-edit" data-id="${item.id}" data-action="edit">Editar</button>
       </div>
 
