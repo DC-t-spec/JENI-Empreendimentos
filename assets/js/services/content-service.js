@@ -7,21 +7,21 @@ export function createContentService(client) {
 
     listPublishedContent: async (limit = 40) => client
       .from('content_items')
-      .select('id,title,slug,excerpt,body,type,featured,published_at,seo_description,category_id,author_id,status')
+      .select('*')
       .eq('status', 'published')
       .order('published_at', { ascending: false })
       .limit(limit),
 
     getPublishedBySlug: async (slug) => client
       .from('content_items')
-      .select('id,title,slug,excerpt,body,type,featured,published_at,seo_description,category_id,author_id,status')
+      .select('*')
       .eq('status', 'published')
       .eq('slug', slug)
       .maybeSingle(),
 
     getPublishedById: async (id) => client
       .from('content_items')
-      .select('id,title,slug,excerpt,body,type,featured,published_at,seo_description,category_id,author_id,status')
+      .select('*')
       .eq('status', 'published')
       .eq('id', id)
       .maybeSingle(),

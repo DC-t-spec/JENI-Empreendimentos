@@ -4,7 +4,7 @@ const producerPath = "/jeni-informa/dashboard.html";
 
 const supabaseClient = window.JeniSupabase?.createSupabaseClient
   ? window.JeniSupabase.createSupabaseClient()
-  : (window.supabase ? window.supabase.createClient(window.JeniSupabase.SUPABASE_URL, window.JeniSupabase.SUPABASE_ANON_KEY) : null);
+  : window.JENI_SUPABASE_CLIENT || null;
 
 function resolvePath(pathname) {
   return `${window.location.origin}${pathname}`;
