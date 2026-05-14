@@ -7,6 +7,9 @@
   <meta name="description" content="JENI Empreendimentos: consultoria executiva, produção audiovisual, eventos, marketing e media hub internacional com base em Maputo.">
   <meta name="theme-color" content="#050505">
   <link rel="canonical" href="https://jeniempreendimentos.co/">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
   <link rel="stylesheet" href="style.css">
   <link rel="icon" href="favicon.ico">
@@ -17,22 +20,32 @@
       <a href="#inicio" class="brand">
         <img src="logo-jeni.png" alt="Logotipo JENI Empreendimentos" class="brand-logo">
       </a>
-      <nav class="site-nav premium-nav">
-        <a href="#inicio">Início</a>
-        <a href="#sobre">Sobre</a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-navigation" aria-label="Abrir menu principal">
+        <span></span><span></span><span></span>
+      </button>
+      <nav class="site-nav premium-nav" id="site-navigation">
+        <a href="#sobre">Institucional</a>
         <a href="#servicos">Serviços</a>
-        <a href="#projectos">Portfólio</a>
         <a href="#jeni-informa">JENI Informa</a>
-        <a href="#credibilidade">Credibilidade</a>
+        <a href="#projectos">Portfólio</a>
+        <a href="#credibilidade">Investidores/Parcerias</a>
         <a href="contacto.html">Contacto</a>
       </nav>
+    </div>
+    <div class="container mega-menu" aria-label="Mega menu premium">
+      <a href="#sobre" class="mega-item"><span>Institucional</span><small>História, posicionamento e credibilidade</small></a>
+      <a href="#servicos" class="mega-item"><span>Serviços</span><small>Consultoria, eventos e audiovisual premium</small></a>
+      <a href="#jeni-informa" class="mega-item"><span>JENI Informa</span><small>Editorial, insights e cobertura cultural</small></a>
+      <a href="#projectos" class="mega-item"><span>Portfólio</span><small>Projectos com execução de referência</small></a>
+      <a href="#credibilidade" class="mega-item"><span>Investidores/Parcerias</span><small>Rede institucional e oportunidades</small></a>
+      <a href="contacto.html" class="mega-item"><span>Contacto</span><small>Fale com a equipa executiva JENI</small></a>
     </div>
   </header>
 
   <main>
     <section class="hero-cinematic" id="inicio">
       <div class="hero-overlay"></div>
-      <div class="container hero-cinematic-content">
+      <div class="container hero-cinematic-content" data-reveal="fade-up">
         <p class="hero-kicker">JENI PLATFORM · FASE 2</p>
         <h1>Estratégia, cultura e comunicação com padrão internacional.</h1>
         <p class="hero-lead">A JENI Empreendimentos conecta consultoria executiva, produção criativa e media editorial para criar marcas, eventos e narrativas com impacto global.</p>
@@ -46,7 +59,7 @@
 
     <section class="section section-premium" id="sobre">
       <div class="container">
-        <div class="section-head">
+        <div class="section-head" data-reveal="fade-up">
           <span class="section-tag">Sobre JENI</span>
           <h2>Posicionamento executivo com identidade africana contemporânea.</h2>
           <p>Da concepção estratégica à entrega final, a JENI actua como parceira institucional para empresas, governos, criadores e investidores que procuram excelência, reputação e relevância cultural.</p>
@@ -66,7 +79,7 @@
 
     <section class="section" id="servicos">
       <div class="container">
-        <div class="section-head"><span class="section-tag">Serviços Premium</span><h2>Capacidades estratégicas para marcas e instituições.</h2></div>
+        <div class="section-head" data-reveal="fade-up"><span class="section-tag">Serviços Premium</span><h2>Capacidades estratégicas para marcas e instituições.</h2></div>
         <div class="services-grid premium-services-grid">
           <article class="service-card"><i class="fa-solid fa-chess-queen"></i><h3>Consultoria</h3><p>Estratégia executiva, posicionamento e arquitectura de impacto.</p></article>
           <article class="service-card"><i class="fa-solid fa-microphone-lines"></i><h3>Eventos</h3><p>Concepção e operação de eventos institucionais e culturais de alto nível.</p></article>
@@ -80,7 +93,7 @@
 
     <section class="section section-alt" id="projectos">
       <div class="container">
-        <div class="section-head"><span class="section-tag">Portfólio</span><h2>Projectos com execução e presença internacional.</h2></div>
+        <div class="section-head" data-reveal="fade-up"><span class="section-tag">Portfólio</span><h2>Projectos com execução e presença internacional.</h2></div>
         <div class="portfolio-grid">
           <article class="portfolio-card"><img src="foto1.jpg.jpeg" loading="lazy" alt="Evento cultural"><div><h3>Eventos institucionais</h3><p>Conferências, lançamentos e fóruns com direcção premium.</p></div></article>
           <article class="portfolio-card"><img src="foto4.jpg.jpeg" loading="lazy" alt="Projecto social"><div><h3>Projectos culturais</h3><p>Iniciativas de impacto social e valorização artística local.</p></div></article>
@@ -91,7 +104,7 @@
 
     <section class="section" id="jeni-informa">
       <div class="container">
-        <div class="section-head"><span class="section-tag">JENI Informa</span><h2>Editorial premium com linguagem Forbes.</h2></div>
+        <div class="section-head" data-reveal="fade-up"><span class="section-tag">JENI Informa</span><h2>Editorial premium com linguagem Forbes.</h2></div>
         <div class="editorial-grid">
           <article class="lead-story"><span class="category">Lead Story</span><h3>Economia criativa em África: tendências e oportunidades para 2026.</h3><p>Uma leitura estratégica sobre negócios criativos, cultura e inovação no continente.</p><a href="jeni-informa.html">Ler edição</a></article>
           <article class="editorial-card"><span class="category">Eventos</span><h4>Agenda institucional e cultural</h4><p>Actualizações semanais de fóruns, festivais e cimeiras.</p></article>
@@ -103,7 +116,7 @@
 
     <section class="section section-dark" id="credibilidade">
       <div class="container">
-        <div class="section-head light"><span class="section-tag">Parceiros e Credibilidade</span><h2>Confiada por líderes, instituições e comunidades.</h2></div>
+        <div class="section-head light" data-reveal="fade-up"><span class="section-tag">Parceiros e Credibilidade</span><h2>Confiada por líderes, instituições e comunidades.</h2></div>
         <div class="cred-grid">
           <div class="dark-card"><strong>+50K</strong><p>Audiência potencial em acções mediáticas e culturais.</p></div>
           <div class="dark-card"><strong>+25</strong><p>Parceiros institucionais, artísticos e empresariais.</p></div>
@@ -113,7 +126,7 @@
     </section>
 
     <section class="section cta-final">
-      <div class="container cta-premium">
+      <div class="container cta-premium" data-reveal="fade-up">
         <h2>Pronto para construir a próxima referência criativa e institucional?</h2>
         <p>Para investidores, clientes e parceiros que exigem sofisticação, resultado e legado.</p>
         <a href="contacto.html" class="btn btn-gold">Iniciar conversa estratégica</a>
@@ -127,5 +140,32 @@
       <div><p>Maputo · Moçambique</p><p><a href="tel:+258848523478">+258 848 523 478</a> · <a href="tel:+258872554906">+258 872 554 906</a></p><p><a href="privacidade.html">Política de Privacidade</a></p></div>
     </div>
   </footer>
+<script>
+  const toggle = document.querySelector(".menu-toggle");
+  const nav = document.getElementById("site-navigation");
+  if (toggle && nav) {
+    toggle.addEventListener("click", () => {
+      const open = nav.classList.toggle("is-open");
+      toggle.setAttribute("aria-expanded", String(open));
+      document.body.classList.toggle("menu-open", open);
+    });
+    nav.querySelectorAll("a").forEach((link) => link.addEventListener("click", () => {
+      nav.classList.remove("is-open");
+      toggle.setAttribute("aria-expanded", "false");
+      document.body.classList.remove("menu-open");
+    }));
+  }
+
+  const reveals = document.querySelectorAll("[data-reveal]");
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (!entry.isIntersecting) return;
+      entry.target.classList.add("is-visible");
+      observer.unobserve(entry.target);
+    });
+  }, { threshold: 0.12, rootMargin: "0px 0px -8% 0px" });
+
+  reveals.forEach((el) => observer.observe(el));
+</script>
 </body>
 </html>
