@@ -760,20 +760,24 @@ ADMIN — HELPERS
 ===================================================== */
 
 function setAdminStats(data = []) {
+  const statTotal = document.getElementById("stat-total");
   const statPending = document.getElementById("stat-pending");
   const statApproved = document.getElementById("stat-approved");
   const statRejected = document.getElementById("stat-rejected");
   const statArchived = document.getElementById("stat-archived");
+  const statNewsletter = document.getElementById("stat-newsletter");
 
   const pendingCount = data.filter(item => item.status === "pending").length;
   const approvedCount = data.filter(item => item.status === "approved").length;
   const rejectedCount = data.filter(item => item.status === "rejected").length;
   const archivedCount = data.filter(item => item.status === "archived").length;
 
+  if (statTotal) statTotal.textContent = data.length;
   if (statPending) statPending.textContent = pendingCount;
   if (statApproved) statApproved.textContent = approvedCount;
   if (statRejected) statRejected.textContent = rejectedCount;
   if (statArchived) statArchived.textContent = archivedCount;
+  if (statNewsletter) statNewsletter.textContent = "n/d";
 }
 
 function sortAdminData(data = []) {
