@@ -1,27 +1,18 @@
 const LONG_PRESS_MS = 950;
-const ADMIN_PATH = "/jeni-informa/admin.html";
-const PRODUCER_PATH = "/jeni-informa/dashboard.html";
+const adminPath = "/jeni-informa/admin.html";
+const producerPath = "/jeni-informa/dashboard.html";
 
-function debugLog(...args) {
-  console.log("[private-access]", ...args);
-}
+const supabaseClient = window.JeniSupabase?.createSupabaseClient
+  ? window.JeniSupabase.createSupabaseClient()
+  : (window.supabase ? window.supabase.createClient(window.JeniSupabase.SUPABASE_URL, window.JeniSupabase.SUPABASE_ANON_KEY) : null);
 
 function resolvePath(pathname) {
   return `${window.location.origin}${pathname}`;
 }
 
-function getSupabaseClient() {
-  if (window.JeniSupabase?.createSupabaseClient) return window.JeniSupabase.createSupabaseClient();
-  if (window.supabase && window.JeniSupabase?.SUPABASE_URL && window.JeniSupabase?.SUPABASE_ANON_KEY) {
-    return window.supabase.createClient(window.JeniSupabase.SUPABASE_URL, window.JeniSupabase.SUPABASE_ANON_KEY);
-  }
-  return null;
-}
-
 function createModal() {
   const modal = document.createElement("div");
   modal.className = "private-access-modal";
-  modal.setAttribute("aria-hidden", "true");
   modal.innerHTML = `
     <div class="private-access-card" role="dialog" aria-modal="true" aria-labelledby="private-access-title">
       <img src="/logo-jeni.png" alt="JENI">
@@ -44,16 +35,31 @@ function createModal() {
   return modal;
 }
 
-async function initPrivateAccess() {
+async function fetchRole() {
+  const { data: userData } = await supabaseClient.auth.getUser();
+  const user = userData?.user;
+  if (!user) return null;
+  const { data: profile } = await supabaseClient.from("profiles").select("role").eq("id", user.id).single();
+  return profile?.role || null;
+}
+
+function redirectByRole(role) {
+  if (role === "admin" || role === "editor") {
+    window.location.href = resolvePath(adminPath);
+    return true;
+  }
+  if (role === "producer") {
+    window.location.href = resolvePath(producerPath);
+    return true;
+  }
+  return false;
+}
+
+function initPrivateAccess() {
   const trigger = document.querySelector(".brand");
-  debugLog("brand found:", Boolean(trigger));
-  if (!trigger) return;
-
-  const supabaseClient = getSupabaseClient();
-  debugLog("supabase client available:", Boolean(supabaseClient));
-  if (!supabaseClient) return;
-
+  if (!trigger || !supabaseClient) return;
   trigger.classList.add("private-access-trigger");
+
   const modal = createModal();
   const form = modal.querySelector("#private-access-form");
   const emailInput = modal.querySelector("#private-access-email");
@@ -61,38 +67,9 @@ async function initPrivateAccess() {
   const submitButton = modal.querySelector(".private-access-submit");
   const feedback = modal.querySelector("#private-access-feedback");
   let longPressTimer = null;
-  let longPressTriggered = false;
 
-  async function fetchRole() {
-    const { data: userData } = await supabaseClient.auth.getUser();
-    const user = userData?.user;
-    if (!user) return null;
-    const { data: profile } = await supabaseClient.from("profiles").select("role").eq("id", user.id).single();
-    debugLog("role detected:", profile?.role || null);
-    return profile?.role || null;
-  }
-
-  function redirectByRole(role) {
-    if (role === "admin" || role === "editor") {
-      debugLog("redirect target:", ADMIN_PATH);
-      window.location.href = resolvePath(ADMIN_PATH);
-      return true;
-    }
-    if (role === "producer") {
-      debugLog("redirect target:", PRODUCER_PATH);
-      window.location.href = resolvePath(PRODUCER_PATH);
-      return true;
-    }
-    return false;
-  }
-
-  function closeModal() {
-    modal.classList.remove("is-open");
-    modal.setAttribute("aria-hidden", "true");
-  }
-
-  async function openModal() {
-    debugLog("modal open");
+  const closeModal = () => modal.classList.remove("is-open");
+  const openModal = async () => {
     const { data } = await supabaseClient.auth.getSession();
     if (data?.session) {
       const role = await fetchRole();
@@ -101,52 +78,30 @@ async function initPrivateAccess() {
       feedback.className = "private-access-feedback error";
     }
     modal.classList.add("is-open");
-    modal.setAttribute("aria-hidden", "false");
-    setTimeout(() => emailInput.focus(), 30);
-  }
+    setTimeout(() => emailInput.focus(), 40);
+  };
 
   modal.addEventListener("click", (event) => {
     if (event.target === modal) closeModal();
   });
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") closeModal();
-    if (event.ctrlKey && event.shiftKey && event.key.toLowerCase() === "j") {
-      event.preventDefault();
-      debugLog("shortcut detected");
-      openModal();
-    }
-  });
-
-  trigger.addEventListener("click", (event) => {
-    if (longPressTriggered) {
-      event.preventDefault();
-      longPressTriggered = false;
-    }
   });
 
   trigger.addEventListener("dblclick", (event) => {
     event.preventDefault();
-    debugLog("dblclick detected");
     openModal();
   });
 
-  const startLongPress = (event) => {
-    longPressTriggered = false;
-    if (longPressTimer) window.clearTimeout(longPressTimer);
-    longPressTimer = window.setTimeout(() => {
-      longPressTriggered = true;
-      debugLog("long press detected");
-      openModal();
-    }, LONG_PRESS_MS);
-    if (event.type === "touchstart") event.preventDefault();
+  const startLongPress = () => {
+    longPressTimer = window.setTimeout(() => openModal(), LONG_PRESS_MS);
   };
-
   const stopLongPress = () => {
     if (longPressTimer) window.clearTimeout(longPressTimer);
     longPressTimer = null;
   };
 
-  trigger.addEventListener("touchstart", startLongPress, { passive: false });
+  trigger.addEventListener("touchstart", startLongPress, { passive: true });
   trigger.addEventListener("touchend", stopLongPress);
   trigger.addEventListener("touchcancel", stopLongPress);
   trigger.addEventListener("mousedown", startLongPress);
@@ -155,7 +110,6 @@ async function initPrivateAccess() {
 
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
-    debugLog("auth start");
     feedback.className = "private-access-feedback";
     feedback.textContent = "A validar acesso...";
     submitButton.disabled = true;
@@ -180,8 +134,4 @@ async function initPrivateAccess() {
   });
 }
 
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", initPrivateAccess);
-} else {
-  initPrivateAccess();
-}
+initPrivateAccess();
