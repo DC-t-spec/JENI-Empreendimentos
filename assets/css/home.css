@@ -1,1 +1,4 @@
-/* Home-specific styles placeholder for gradual migration in Fase 1. */
+/* Homepage dinâmica (fase preparatória, sem redesign). */
+[data-home-section][data-loading="true"] {
+  opacity: 0.85;
+}
