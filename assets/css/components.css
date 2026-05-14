@@ -4,3 +4,63 @@
 .admin-btn {
   touch-action: manipulation;
 }
+
+.private-access-modal {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(5, 5, 5, 0.72);
+  backdrop-filter: blur(6px);
+  z-index: 1400;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+.private-access-modal.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.private-access-card {
+  width: min(420px, 100%);
+  border: 1px solid rgba(182, 141, 73, 0.35);
+  border-radius: 20px;
+  background: linear-gradient(165deg, rgba(20, 20, 20, 0.92), rgba(11, 11, 11, 0.94));
+  color: #f5f1e8;
+  padding: 28px;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.5);
+  transform: translateY(8px) scale(0.985);
+  transition: transform 0.25s ease;
+}
+
+.private-access-modal.is-open .private-access-card { transform: translateY(0) scale(1); }
+.private-access-card img { width: 56px; margin-bottom: 14px; }
+.private-access-card h3 { margin: 0; font-family: "Playfair Display", serif; font-size: 1.7rem; }
+.private-access-card p { margin: 4px 0 22px; color: rgba(245, 241, 232, 0.76); }
+.private-access-form { display: grid; gap: 12px; }
+.private-access-form label { font-size: 0.82rem; letter-spacing: 0.06em; text-transform: uppercase; color: rgba(245, 241, 232, 0.7); }
+.private-access-form input {
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid rgba(245, 241, 232, 0.24);
+  background: rgba(245, 241, 232, 0.03);
+  color: #f5f1e8;
+  padding: 11px 12px;
+}
+.private-access-submit {
+  margin-top: 6px;
+  border: 1px solid rgba(182, 141, 73, 0.7);
+  background: linear-gradient(120deg, #b68d49, #d3b37a);
+  color: #0b0b0b;
+  border-radius: 999px;
+  padding: 11px 18px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.private-access-submit:disabled { opacity: 0.66; cursor: wait; }
+.private-access-feedback { min-height: 20px; margin: 4px 0 0; font-size: 0.92rem; color: rgba(245, 241, 232, 0.8); }
+.private-access-feedback.error { color: #f1b0b0; }
+.brand.private-access-trigger { -webkit-user-select: none; user-select: none; }
