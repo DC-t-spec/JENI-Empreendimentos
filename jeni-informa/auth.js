@@ -97,12 +97,23 @@ function getTypeLabel(type) {
 }
 
 function getStatusLabel(status) {
-  if (status === "pending") return "Pendente";
-  if (status === "approved") return "Aprovado";
-  if (status === "rejected") return "Rejeitado";
-  if (status === "archived") return "Arquivado";
-  if (status === "draft") return "Rascunho";
+  status = normalizeStatus(status);
+  if (status === "draft") return "Draft";
+  if (status === "review") return "Review";
+  if (status === "published") return "Published";
+  if (status === "archived") return "Archived";
   return status || "Sem estado";
+}
+
+const EDITORIAL_STATUS = ["draft", "review", "published", "archived"];
+function normalizeStatus(status) {
+  const map = { pending: "draft", approved: "published", rejected: "review", publish: "published" };
+  const normalized = map[status] || status || "draft";
+  return EDITORIAL_STATUS.includes(normalized) ? normalized : "draft";
+}
+function normalizeItem(item) {
+  if (!item) return item;
+  return { ...item, status: normalizeStatus(item.status) };
 }
 
 /* =====================================================
@@ -382,7 +393,7 @@ async function saveSubmissionGallery(submissionId, imageUrls = []) {
 EVENT SUBMISSION
 ===================================================== */
 
-async function submitEventForm(status = "pending") {
+async function submitEventForm(status = "draft") {
   clearMessage("event-message");
 
   const user = await requireAuth();
@@ -394,7 +405,7 @@ async function submitEventForm(status = "pending") {
   const payload = {
     user_id: user.id,
     type: "event",
-    status: status || "pending",
+    status: normalizeStatus(status || "draft"),
     title,
     slug: `${slugify(title)}-${Date.now()}`,
     category: getValue("category") || null,
@@ -453,7 +464,7 @@ function initEventFormPage() {
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
-    await submitEventForm("pending");
+    await submitEventForm("draft");
   });
 }
 
@@ -461,7 +472,7 @@ function initEventFormPage() {
 OPPORTUNITY SUBMISSION
 ===================================================== */
 
-async function submitOpportunityForm(status = "pending") {
+async function submitOpportunityForm(status = "draft") {
   clearMessage("opportunity-message");
 
   const user = await requireAuth();
@@ -472,7 +483,7 @@ async function submitOpportunityForm(status = "pending") {
   const payload = {
     user_id: user.id,
     type: getValue("type") || "call",
-    status: status || "pending",
+    status: normalizeStatus(status || "draft"),
     title,
     slug: `${slugify(title)}-${Date.now()}`,
     category: getValue("category") || null,
@@ -533,7 +544,7 @@ function initOpportunityFormPage() {
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
-    await submitOpportunityForm("pending");
+    await submitOpportunityForm("draft");
   });
 
   if (draftBtn) {
@@ -634,14 +645,14 @@ ADMIN — DADOS
 ===================================================== */
 
 async function loadAdminSubmissions() {
-  return await supabaseClient
-    .from("content_items")
-    .select("*")
-    .order("updated_at", { ascending: false });
+  const primary = await supabaseClient.from("content_items").select("*").order("updated_at", { ascending: false });
+  if (!primary.error && Array.isArray(primary.data)) return { ...primary, data: primary.data.map(normalizeItem) };
+  const legacy = await supabaseClient.from("submissions").select("*").order("updated_at", { ascending: false });
+  return { ...legacy, data: (legacy.data || []).map(normalizeItem) };
 }
 
 async function updateSubmissionStatus(submissionId, newStatus) {
-  const mapped = { approved: "published", rejected: "review", archived: "archived" }[newStatus] || newStatus;
+  const mapped = normalizeStatus(newStatus);
   const updateData = { status: mapped, updated_at: new Date().toISOString() };
   if (mapped === "published") updateData.published_at = new Date().toISOString();
   return await supabaseClient.from("content_items").update(updateData).eq("id", submissionId).select().single();
@@ -656,7 +667,7 @@ async function createSubmissionByAdmin(payload) {
 }
 
 
-async function submitNewsForm(status = "pending") {
+async function submitNewsForm(status = "draft") {
   clearMessage("news-message");
 
   const user = await requireAuth();
@@ -667,7 +678,7 @@ async function submitNewsForm(status = "pending") {
   const payload = {
     user_id: user.id,
     type: "news",
-    status: status || "pending",
+    status: normalizeStatus(status || "draft"),
     title,
     slug: `${slugify(title)}-${Date.now()}`,
     category: getValue("category") || null,
@@ -730,7 +741,7 @@ function initNewsFormPage() {
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
-    await submitNewsForm("pending");
+    await submitNewsForm("draft");
   });
 }
 
@@ -740,15 +751,15 @@ ADMIN — HELPERS
 
 function setAdminStats(data = []) {
   const statTotal = document.getElementById("stat-total");
-  const statPending = document.getElementById("stat-pending");
-  const statApproved = document.getElementById("stat-approved");
-  const statRejected = document.getElementById("stat-rejected");
+  const statPending = document.getElementById("stat-draft");
+  const statApproved = document.getElementById("stat-published");
+  const statRejected = document.getElementById("stat-review");
   const statArchived = document.getElementById("stat-archived");
   const statNewsletter = document.getElementById("stat-newsletter");
 
-  const pendingCount = data.filter(item => item.status === "pending").length;
-  const approvedCount = data.filter(item => item.status === "approved").length;
-  const rejectedCount = data.filter(item => item.status === "rejected").length;
+  const pendingCount = data.filter(item => normalizeStatus(item.status) === "draft").length;
+  const approvedCount = data.filter(item => normalizeStatus(item.status) === "published").length;
+  const rejectedCount = data.filter(item => normalizeStatus(item.status) === "review").length;
   const archivedCount = data.filter(item => item.status === "archived").length;
 
   if (statTotal) statTotal.textContent = data.length;
@@ -761,11 +772,10 @@ function setAdminStats(data = []) {
 
 function sortAdminData(data = []) {
   const statusOrder = {
-    pending: 1,
-    approved: 2,
-    rejected: 3,
-    archived: 4,
-    draft: 5
+    draft: 1,
+    review: 2,
+    published: 3,
+    archived: 4
   };
 
   return [...data].sort((a, b) => {
@@ -853,9 +863,9 @@ function buildAdminCard(item) {
       </div>
 
       <div class="admin-actions">
-        <button class="admin-btn admin-btn-approve" data-id="${item.id}" data-action="approved">Aprovar</button>
-        <button class="admin-btn admin-btn-reject" data-id="${item.id}" data-action="rejected">Rejeitar</button>
-        <button class="admin-btn admin-btn-archive" data-id="${item.id}" data-action="archived">Arquivar</button>
+        <button class="admin-btn admin-btn-approve" data-id="${item.id}" data-action="review">Review</button>
+        <button class="admin-btn admin-btn-approve" data-id="${item.id}" data-action="published">Publish</button>
+        <button class="admin-btn admin-btn-archive" data-id="${item.id}" data-action="archived">Archive</button>
         <button class="admin-btn admin-btn-edit" data-id="${item.id}" data-action="edit">Editar</button>
       </div>
 
@@ -902,7 +912,7 @@ function fillAdminEditor(item) {
   const featuredEl = document.getElementById("admin-content-featured");
 
   if (typeEl) typeEl.value = item.type || "news";
-  if (statusEl) statusEl.value = item.status || "pending";
+  if (statusEl) statusEl.value = normalizeStatus(item.status);
   if (titleEl) titleEl.value = item.title || "";
   if (summaryEl) summaryEl.value = item.summary || "";
   if (imageEl) imageEl.value = item.image_url || "";
@@ -974,7 +984,7 @@ function getAdminFormData() {
 
   return {
     type: getValue("admin-content-type") || "news",
-    status: getValue("admin-content-status") || "pending",
+    status: normalizeStatus(getValue("admin-content-status") || "draft"),
     title: title,
     slug: slugValue || `${slugify(title)}-${Date.now()}`,
 summary: getValue("admin-content-summary") || "Sem resumo",
@@ -1116,7 +1126,7 @@ function getAdminFormDataByType(imageUrl = null) {
 
   const baseData = {
     type,
-    status: getValue("admin-content-status") || "pending",
+    status: normalizeStatus(getValue("admin-content-status") || "draft"),
     title,
     summary: getValue("admin-content-summary") || "Sem resumo",
     image_url: imageUrl,
@@ -1226,7 +1236,7 @@ async function saveAdminContent() {
         user_id: adminAccess.user.id
       };
 
-      if (createPayload.status === "approved") {
+      if (normalizeStatus(createPayload.status) === "published") {
         createPayload.published_at = new Date().toISOString();
       }
 const { data, error } = await createSubmissionByAdmin(createPayload);
@@ -1326,7 +1336,7 @@ async function initHomepageControl() {
 
 async function initNewsletterManagement() {
   const list = document.getElementById("newsletter-list"); if(!list) return;
-  const load = async ()=>{ const q=getValue("newsletter-search"); let req=supabaseClient.from("newsletter_subscribers").select("*").order("created_at",{ascending:false}); if(q) req=req.ilike("email",`%${q}%`); const {data,error}=await req; if(error){showMessage("newsletter-message",error.message,"error"); return;} document.getElementById("newsletter-total").textContent=`Total: ${data.length}`; list.innerHTML=data.map(x=>`<article class="admin-card"><h3>${escapeHtml(x.email)}</h3><p>${escapeHtml(formatDateTime(x.created_at))}</p></article>`).join("")||'<div class="admin-empty-state">Sem subscritores.</div>'; };
+  const load = async ()=>{ const q=getValue("newsletter-search"); let req=supabaseClient.from("newsletter_subscribers").select("*").order("created_at",{ascending:false}); if(q) req=req.ilike("email",`%${q}%`); const {data,error}=await req; if(error){showMessage("newsletter-message",error.message,"error"); return;} const rows=data||[]; document.getElementById("newsletter-total").textContent=`Total: ${rows.length}`; list.innerHTML=rows.map(x=>`<article class="admin-card"><h3>${escapeHtml(x.email)}</h3><p>${escapeHtml(formatDateTime(x.created_at))}</p></article>`).join("")||'<div class="admin-empty-state">Sem subscritores.</div>'; const btn=document.getElementById("newsletter-export-btn"); if(btn){ btn.onclick=()=>{ const csv=["email,created_at",...rows.map(r=>`${r.email},${r.created_at}`)].join("\n"); const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"})); a.download=`newsletter-${Date.now()}.csv`; a.click();}; } };
   document.getElementById("newsletter-search-btn")?.addEventListener("click",load); await load();
 }
 
@@ -1346,6 +1356,7 @@ async function initAdminPage() {
   if (!adminAccess) return;
 
   initAdminEditor();
+  initPremiumEditorEnhancements();
   await initHomepageControl();
   await initNewsletterManagement();
   await initMediaLibrary();
@@ -1413,3 +1424,52 @@ document.addEventListener("DOMContentLoaded", () => {
   initNewsFormPage();
 }
 });
+
+
+function initPremiumEditorEnhancements() {
+  const titleEl = document.getElementById("admin-content-title");
+  const slugEl = document.getElementById("admin-news-slug");
+  const bodyEl = document.getElementById("admin-news-description");
+  const readingEl = document.getElementById("admin-reading-time");
+  const previewBtn = document.getElementById("admin-preview-btn");
+  const previewBox = document.getElementById("admin-preview");
+  const form = document.getElementById("admin-content-form");
+  if (!form) return;
+
+  const syncDerived = () => {
+    if (titleEl && slugEl && !slugEl.dataset.manual) slugEl.value = slugify(titleEl.value || "");
+    const words = (bodyEl?.value || "").trim().split(/\s+/).filter(Boolean).length;
+    if (readingEl) readingEl.value = `${Math.max(1, Math.ceil(words / 200))} min`;
+  };
+  titleEl?.addEventListener("input", syncDerived);
+  bodyEl?.addEventListener("input", syncDerived);
+  slugEl?.addEventListener("input", () => { if ((slugEl.value || "").trim()) slugEl.dataset.manual = "1"; });
+  previewBtn?.addEventListener("click", () => {
+    const title = getValue("admin-content-title");
+    const summary = getValue("admin-content-summary");
+    const body = getValue("admin-news-description");
+    previewBox.style.display = "block";
+    previewBox.innerHTML = `<h3>${escapeHtml(title || "Sem título")}</h3><p>${escapeHtml(summary)}</p><hr><p>${escapeHtml(body.slice(0, 1200))}</p>`;
+  });
+
+  setInterval(() => {
+    const payload = {
+      title: getValue("admin-content-title"), summary: getValue("admin-content-summary"),
+      body: getValue("admin-news-description"), slug: getValue("admin-news-slug"),
+      status: normalizeStatus(getValue("admin-content-status") || "draft")
+    };
+    localStorage.setItem("jeni_admin_autosave", JSON.stringify(payload));
+  }, 15000);
+
+  try {
+    const saved = JSON.parse(localStorage.getItem("jeni_admin_autosave") || "null");
+    if (saved && !document.getElementById("admin-edit-id")?.value) {
+      if (titleEl) titleEl.value = saved.title || "";
+      document.getElementById("admin-content-summary").value = saved.summary || "";
+      if (bodyEl) bodyEl.value = saved.body || "";
+      if (slugEl) slugEl.value = saved.slug || "";
+      document.getElementById("admin-content-status").value = normalizeStatus(saved.status);
+      syncDerived();
+    }
+  } catch {}
+}
