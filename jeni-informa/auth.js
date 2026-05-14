@@ -442,38 +442,39 @@ function initEventFormPage() {
 OPPORTUNITY SUBMISSION
 ===================================================== */
 
-async function submitEventForm(status = "pending") {
-  clearMessage("event-message");
+async function submitOpportunityForm(status = "pending") {
+  clearMessage("opportunity-message");
 
   const user = await requireAuth();
   if (!user) return;
 
   const title = getValue("title");
-  const startDate = getValue("start_date");
 
   const payload = {
     user_id: user.id,
-    type: "event",
+    type: getValue("type") || "call",
     status: status || "pending",
     title,
     slug: `${slugify(title)}-${Date.now()}`,
     category: getValue("category") || null,
-    start_date: startDate || null,
-    end_date: null,
-    event_time: getValue("event_time") || null,
-    location: getValue("location") || null,
-    summary: null,
+    summary: getValue("summary") || null,
     description: getValue("description"),
-    ticket_price: getValue("ticket_price") || null,
-    ticket_info: getValue("ticket_info") || null,
-    video_url: getValue("video_url") || null,
-    deadline: null,
-    external_url: null,
-    institution_name: null,
-    learning_outcomes: null,
-    target_audience: null,
-    learning_format: null,
-    duration: null,
+    deadline: getValue("deadline") || null,
+    external_url: getValue("external_url") || null,
+    institution_name: getValue("institution_name") || null,
+    target_audience: getValue("target_audience") || null,
+    learning_outcomes: getValue("learning_outcomes") || null,
+    learning_format: getValue("learning_format") || null,
+    duration: getValue("duration") || null,
+    image_url: null,
+
+    start_date: null,
+    end_date: null,
+    event_time: null,
+    location: null,
+    ticket_price: null,
+    ticket_info: null,
+    video_url: null,
     author_name: null,
     photo_credit: null,
     incident_location: null,
@@ -483,25 +484,25 @@ async function submitEventForm(status = "pending") {
   const image = getFile("image");
 
   try {
-    payload.image_url = image ? await uploadImage(image, "events") : null;
+    payload.image_url = image ? await uploadImage(image, "opportunities") : null;
 
     const { error } = await supabaseClient
       .from("submissions")
       .insert([payload]);
 
     if (error) {
-      showMessage("event-message", error.message, "error");
+      showMessage("opportunity-message", error.message, "error");
       return;
     }
 
     showMessage(
-      "event-message",
-      status === "draft" ? "Rascunho guardado." : "Evento enviado para aprovação.",
+      "opportunity-message",
+      status === "draft" ? "Rascunho guardado." : "Oportunidade enviada para aprovação.",
       "success"
     );
   } catch (err) {
-    console.error("EVENT CATCH ERROR:", err);
-    showMessage("event-message", err.message || "Erro ao submeter evento.", "error");
+    console.error("OPPORTUNITY CATCH ERROR:", err);
+    showMessage("opportunity-message", err.message || "Erro ao submeter oportunidade.", "error");
   }
 }
 
