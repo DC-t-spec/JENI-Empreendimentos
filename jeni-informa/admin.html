@@ -16,14 +16,13 @@
       </div>
       <nav class="admin-nav">
         <a href="#overview" class="active">Dashboard</a>
-        <a href="#content">Conteúdos</a>
+        <a href="#content">Submissões</a>
         <a href="#editor">Editor</a>
         <a href="#homepage">Homepage Control</a>
         <a href="#media">Media Library</a>
         <a href="#newsletter">Newsletter</a>
       </nav>
       <div class="sidebar-footer">
-        <a href="dashboard.html" class="producer-back-link">Área do Produtor</a>
         <a href="../jeni-informa.html" class="producer-back-link">JENI Informa</a>
       </div>
     </aside>
@@ -54,11 +53,12 @@
       </section>
 
       <section class="dashboard-panel" id="content">
-        <div class="section-head"><h3>Gestão de Conteúdo</h3><p>Filtrar, pesquisar, editar, publicar ou arquivar.</p></div>
+        <div class="section-head"><h3>Submissões</h3><p>Fluxo editorial de análise, aprovação e publicação.</p></div>
         <div class="admin-toolbar">
           <div class="admin-field grow"><label for="admin-search">Pesquisar</label><input type="text" id="admin-search" placeholder="Título, resumo, categoria..." /></div>
           <div class="admin-field"><label for="admin-filter-type">Tipo</label><select id="admin-filter-type"><option value="">Todos</option><option value="news">Notícias</option><option value="event">Eventos</option><option value="call">Oportunidades</option><option value="scholarship">Bolsas</option><option value="learning">Serviços</option></select></div>
-          <div class="admin-field"><label for="admin-filter-status">Estado</label><select id="admin-filter-status"><option value="">Todos</option><option value="draft">Draft</option><option value="review">Review</option><option value="published">Published</option><option value="archived">Archived</option></select></div>
+          <div class="admin-field"><label for="admin-filter-status">Estado</label><select id="admin-filter-status"><option value="">Todos</option><option value="draft">Draft</option><option value="submitted">Submetido</option><option value="review">Em revisão</option><option value="needs_revision">Precisa revisão</option><option value="approved">Aprovado</option><option value="rejected">Rejeitado</option><option value="published">Publicado</option></select></div>
+          <div class="admin-field"><label for="admin-filter-producer">Produtor</label><input type="text" id="admin-filter-producer" placeholder="Nome do produtor..." /></div>
           <button type="button" id="admin-apply-filters" class="jeni-btn jeni-btn-secondary">Aplicar</button>
           <button type="button" id="admin-toggle-editor" class="jeni-btn jeni-btn-primary">+ Novo conteúdo</button>
         </div>
