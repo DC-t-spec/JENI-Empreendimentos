@@ -49,6 +49,20 @@ function clearMessage(targetId) {
   el.textContent = "";
   el.className = "auth-message";
 }
+function showToast(message, type = "info") {
+  let stack = document.getElementById("admin-toast-stack");
+  if (!stack) {
+    stack = document.createElement("div");
+    stack.id = "admin-toast-stack";
+    stack.className = "admin-toast-stack";
+    document.body.appendChild(stack);
+  }
+  const toast = document.createElement("div");
+  toast.className = `admin-toast ${type}`;
+  toast.textContent = message;
+  stack.appendChild(toast);
+  setTimeout(() => toast.remove(), 3200);
+}
 
 function getValue(id) {
   const el = document.getElementById(id);
@@ -274,6 +288,16 @@ async function requireAdmin() {
     return null;
   }
 
+  return { user, profile };
+}
+async function requireContentManager() {
+  const user = await requireAuth();
+  if (!user) return null;
+  const profile = await loadProfile();
+  if (!profile || !["admin", "editor"].includes(profile.role)) {
+    window.location.href = "dashboard.html";
+    return null;
+  }
   return { user, profile };
 }
 
@@ -1318,20 +1342,70 @@ function initAdminEditor() {
 
 
 async function initHomepageControl() {
-  const form = document.getElementById("homepage-form");
-  if (!form || form.dataset.bound) return;
-  form.dataset.bound = "true";
-  const { data } = await supabaseClient.from("homepage_sections").select("*").eq("section_key", "hero").maybeSingle();
-  const cfg = data?.payload || {};
-  ["hero_title","hero_subtitle","cta_primary","cta_secondary","lead_story","highlights","partners","portfolio","main_sections"].forEach(k=>{
-    const map={hero_title:"home-hero-title",hero_subtitle:"home-hero-subtitle",cta_primary:"home-cta-primary",cta_secondary:"home-cta-secondary",lead_story:"home-lead-story",highlights:"home-highlights",partners:"home-partners",portfolio:"home-portfolio",main_sections:"home-main-sections"};
-    const el=document.getElementById(map[k]); if(!el) return; const v=cfg[k]; el.value=typeof v==='object'?JSON.stringify(v): (v||"");
+  const wrap = document.getElementById("homepage-sections-list");
+  if (!wrap || wrap.dataset.bound) return;
+  wrap.dataset.bound = "true";
+
+  const editable = ["hero", "ctas", "highlights", "partners", "portfolio"];
+  const load = async () => {
+    wrap.innerHTML = '<div class="admin-skeleton"></div><div class="admin-skeleton"></div>';
+    const { data, error } = await supabaseClient.from("homepage_sections").select("*").order("display_order", { ascending: true });
+    if (error) {
+      showMessage("homepage-message", error.message, "error");
+      return;
+    }
+    if (!data?.length) {
+      wrap.innerHTML = '<div class="admin-empty-state">Sem secções. Crie a primeira secção da homepage.</div>';
+      return;
+    }
+    wrap.innerHTML = data.map((section) => {
+      const payload = JSON.stringify(section.payload || {}, null, 2);
+      const isEditable = editable.includes(section.section_key);
+      return `<article class="home-section-card">
+        <div class="home-section-grid">
+          <div><strong>${escapeHtml(section.section_key)}</strong><p>Estado: ${escapeHtml(section.status || "draft")}</p></div>
+          <div><label>Ordem</label><input data-home-order="${section.id}" type="number" value="${section.display_order || 0}" /></div>
+          <div><label>Status</label><select data-home-status="${section.id}"><option value="draft"${section.status === "draft" ? " selected" : ""}>Draft</option><option value="published"${section.status === "published" ? " selected" : ""}>Published</option></select></div>
+          <div><label>Ativo</label><select data-home-enabled="${section.id}"><option value="true"${section.is_enabled ? " selected" : ""}>Ativo</option><option value="false"${!section.is_enabled ? " selected" : ""}>Desativado</option></select></div>
+        </div>
+        ${isEditable ? `<label>Conteúdo JSON</label><textarea data-home-payload="${section.id}" rows="7">${escapeHtml(payload)}</textarea>` : '<div class="preview-box">Secção bloqueada para edição direta nesta fase.</div>'}
+        <div class="preview-box"><strong>Preview:</strong> ${escapeHtml(JSON.stringify(section.payload || {})).slice(0, 300)}</div>
+        <div class="admin-actions-row"><button type="button" class="jeni-btn jeni-btn-secondary" data-home-save="${section.id}">Guardar</button></div>
+      </article>`;
+    }).join("");
+  };
+
+  wrap.addEventListener("click", async (event) => {
+    const button = event.target.closest("[data-home-save]");
+    if (!button) return;
+    const id = button.getAttribute("data-home-save");
+    const payloadEl = wrap.querySelector(`[data-home-payload="${id}"]`);
+    const orderEl = wrap.querySelector(`[data-home-order="${id}"]`);
+    const enabledEl = wrap.querySelector(`[data-home-enabled="${id}"]`);
+    const statusEl = wrap.querySelector(`[data-home-status="${id}"]`);
+    let parsedPayload = {};
+    if (payloadEl) {
+      try { parsedPayload = JSON.parse(payloadEl.value || "{}"); }
+      catch { showToast("JSON inválido na secção.", "error"); return; }
+    }
+    const updatePayload = {
+      display_order: Number(orderEl?.value || 0),
+      is_enabled: enabledEl?.value === "true",
+      status: statusEl?.value || "draft",
+      updated_at: new Date().toISOString()
+    };
+    if (payloadEl) updatePayload.payload = parsedPayload;
+    const { error } = await supabaseClient.from("homepage_sections").update(updatePayload).eq("id", id);
+    if (error) {
+      showMessage("homepage-message", error.message, "error");
+      showToast("Erro ao guardar secção.", "error");
+      return;
+    }
+    showMessage("homepage-message", "Secção guardada com sucesso.", "success");
+    showToast("Secção atualizada.", "success");
+    await load();
   });
-  form.addEventListener("submit", async (e)=>{e.preventDefault(); showMessage("homepage-message","A guardar homepage...","info");
-    const payload={hero_title:getValue("home-hero-title"),hero_subtitle:getValue("home-hero-subtitle"),cta_primary:getValue("home-cta-primary"),cta_secondary:getValue("home-cta-secondary"),lead_story:getValue("home-lead-story"),highlights:JSON.parse(getValue("home-highlights")||"[]"),partners:JSON.parse(getValue("home-partners")||"[]"),portfolio:JSON.parse(getValue("home-portfolio")||"[]"),main_sections:JSON.parse(getValue("home-main-sections")||"[]")};
-    const { error } = await supabaseClient.from("homepage_sections").upsert({section_key:"hero",payload,updated_at:new Date().toISOString()},{onConflict:"section_key"});
-    showMessage("homepage-message", error? error.message : "Homepage actualizada.", error?"error":"success");
-  });
+  await load();
 }
 
 async function initNewsletterManagement() {
@@ -1342,8 +1416,33 @@ async function initNewsletterManagement() {
 
 async function initMediaLibrary() {
   const grid=document.getElementById("media-grid"); if(!grid) return;
-  const load=async()=>{ const {data,error}=await supabaseClient.storage.from("jeni-informa").list("",{limit:60}); if(error){showMessage("media-message",error.message,"error"); return;} grid.innerHTML=(data||[]).filter(f=>f.name).map(f=>`<article><img src="${escapeHtml(supabaseClient.storage.from('jeni-informa').getPublicUrl(f.name).data.publicUrl)}" alt="${escapeHtml(f.name)}"><p>${escapeHtml(f.name)}</p></article>`).join("")||'<article>Biblioteca vazia.</article>';};
-  document.getElementById("media-upload-btn")?.addEventListener("click", async ()=>{ const file=getFile("media-upload"); if(!file){showMessage("media-message","Selecione um ficheiro.","error");return;} showMessage("media-message","A enviar...","info"); const path=`admin/${Date.now()}-${file.name.replace(/\s+/g,'-')}`; const {error}=await supabaseClient.storage.from("jeni-informa").upload(path,file,{upsert:false}); showMessage("media-message",error?error.message:"Upload concluído.",error?"error":"success"); if(!error) load(); });
+  const load=async()=>{
+    grid.innerHTML = '<div class="admin-skeleton"></div><div class="admin-skeleton"></div>';
+    const {data,error}=await supabaseClient.storage.from("jeni-informa").list("admin",{limit:100,sortBy:{column:"created_at",order:"desc"}});
+    if(error){showMessage("media-message",error.message,"error"); return;}
+    const rows=(data||[]).filter(f=>f.name);
+    if (!rows.length) { grid.innerHTML='<article class="admin-empty-state">Sem ficheiros ainda. Faça upload para iniciar a biblioteca.</article>'; return; }
+    grid.innerHTML=rows.map((f)=>{ const path=`admin/${f.name}`; const publicUrl=supabaseClient.storage.from("jeni-informa").getPublicUrl(path).data.publicUrl; return `<article class="media-card"><img src="${escapeHtml(publicUrl)}" alt="${escapeHtml(f.name)}"><p>${escapeHtml(f.name)}</p><p>${escapeHtml(String(f.metadata?.size || 0))} bytes</p><div class="media-actions"><button type="button" class="jeni-btn jeni-btn-outline" data-copy-url="${escapeHtml(publicUrl)}">Copiar URL</button><button type="button" class="jeni-btn jeni-btn-secondary" data-delete-media="${escapeHtml(path)}">Apagar</button></div></article>`; }).join("");
+  };
+  document.getElementById("media-upload-btn")?.addEventListener("click", async ()=>{ const file=getFile("media-upload"); if(!file){showMessage("media-message","Selecione um ficheiro.","error");return;} showMessage("media-message","A enviar...","info"); const path=`admin/${Date.now()}-${file.name.replace(/\s+/g,'-')}`; const {error}=await supabaseClient.storage.from("jeni-informa").upload(path,file,{upsert:false}); showMessage("media-message",error?error.message:"Upload concluído.",error?"error":"success"); showToast(error ? "Falha no upload." : "Upload concluído.", error ? "error" : "success"); if(!error) load(); });
+  grid.addEventListener("click", async (event) => {
+    const copyBtn = event.target.closest("[data-copy-url]");
+    if (copyBtn) {
+      const url = copyBtn.getAttribute("data-copy-url") || "";
+      await navigator.clipboard.writeText(url);
+      showToast("URL pública copiada.", "success");
+      return;
+    }
+    const delBtn = event.target.closest("[data-delete-media]");
+    if (delBtn) {
+      const path = delBtn.getAttribute("data-delete-media");
+      if (!path || !window.confirm("Confirmar remoção permanente deste ficheiro?")) return;
+      const { error } = await supabaseClient.storage.from("jeni-informa").remove([path]);
+      if (error) { showMessage("media-message", error.message, "error"); showToast("Erro ao remover ficheiro.", "error"); return; }
+      showToast("Ficheiro removido com sucesso.", "success");
+      await load();
+    }
+  });
   await load();
 }
 
@@ -1352,7 +1451,7 @@ ADMIN INIT
 ===================================================== */
 
 async function initAdminPage() {
-  const adminAccess = await requireAdmin();
+  const adminAccess = await requireContentManager();
   if (!adminAccess) return;
 
   initAdminEditor();
