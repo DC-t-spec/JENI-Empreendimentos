@@ -635,45 +635,24 @@ ADMIN — DADOS
 
 async function loadAdminSubmissions() {
   return await supabaseClient
-    .from("submissions")
+    .from("content_items")
     .select("*")
-    .order("status", { ascending: true })
-    .order("created_at", { ascending: false });
+    .order("updated_at", { ascending: false });
 }
 
 async function updateSubmissionStatus(submissionId, newStatus) {
-  const updateData = {
-    status: newStatus,
-    reviewed_at: new Date().toISOString()
-  };
-
-  if (newStatus === "approved") {
-    updateData.published_at = new Date().toISOString();
-  }
-
-  return await supabaseClient
-    .from("submissions")
-    .update(updateData)
-    .eq("id", submissionId)
-    .select()
-    .single();
+  const mapped = { approved: "published", rejected: "review", archived: "archived" }[newStatus] || newStatus;
+  const updateData = { status: mapped, updated_at: new Date().toISOString() };
+  if (mapped === "published") updateData.published_at = new Date().toISOString();
+  return await supabaseClient.from("content_items").update(updateData).eq("id", submissionId).select().single();
 }
 
 async function updateSubmissionById(submissionId, payload) {
-  return await supabaseClient
-    .from("submissions")
-    .update(payload)
-    .eq("id", submissionId)
-    .select()
-    .single();
+  return await supabaseClient.from("content_items").update(payload).eq("id", submissionId).select().single();
 }
 
 async function createSubmissionByAdmin(payload) {
-  return await supabaseClient
-    .from("submissions")
-    .insert([payload])
-    .select()
-    .single();
+  return await supabaseClient.from("content_items").insert([payload]).select().single();
 }
 
 
@@ -1326,6 +1305,38 @@ function initAdminEditor() {
 }
 
 
+
+
+async function initHomepageControl() {
+  const form = document.getElementById("homepage-form");
+  if (!form || form.dataset.bound) return;
+  form.dataset.bound = "true";
+  const { data } = await supabaseClient.from("homepage_sections").select("*").eq("section_key", "hero").maybeSingle();
+  const cfg = data?.payload || {};
+  ["hero_title","hero_subtitle","cta_primary","cta_secondary","lead_story","highlights","partners","portfolio","main_sections"].forEach(k=>{
+    const map={hero_title:"home-hero-title",hero_subtitle:"home-hero-subtitle",cta_primary:"home-cta-primary",cta_secondary:"home-cta-secondary",lead_story:"home-lead-story",highlights:"home-highlights",partners:"home-partners",portfolio:"home-portfolio",main_sections:"home-main-sections"};
+    const el=document.getElementById(map[k]); if(!el) return; const v=cfg[k]; el.value=typeof v==='object'?JSON.stringify(v): (v||"");
+  });
+  form.addEventListener("submit", async (e)=>{e.preventDefault(); showMessage("homepage-message","A guardar homepage...","info");
+    const payload={hero_title:getValue("home-hero-title"),hero_subtitle:getValue("home-hero-subtitle"),cta_primary:getValue("home-cta-primary"),cta_secondary:getValue("home-cta-secondary"),lead_story:getValue("home-lead-story"),highlights:JSON.parse(getValue("home-highlights")||"[]"),partners:JSON.parse(getValue("home-partners")||"[]"),portfolio:JSON.parse(getValue("home-portfolio")||"[]"),main_sections:JSON.parse(getValue("home-main-sections")||"[]")};
+    const { error } = await supabaseClient.from("homepage_sections").upsert({section_key:"hero",payload,updated_at:new Date().toISOString()},{onConflict:"section_key"});
+    showMessage("homepage-message", error? error.message : "Homepage actualizada.", error?"error":"success");
+  });
+}
+
+async function initNewsletterManagement() {
+  const list = document.getElementById("newsletter-list"); if(!list) return;
+  const load = async ()=>{ const q=getValue("newsletter-search"); let req=supabaseClient.from("newsletter_subscribers").select("*").order("created_at",{ascending:false}); if(q) req=req.ilike("email",`%${q}%`); const {data,error}=await req; if(error){showMessage("newsletter-message",error.message,"error"); return;} document.getElementById("newsletter-total").textContent=`Total: ${data.length}`; list.innerHTML=data.map(x=>`<article class="admin-card"><h3>${escapeHtml(x.email)}</h3><p>${escapeHtml(formatDateTime(x.created_at))}</p></article>`).join("")||'<div class="admin-empty-state">Sem subscritores.</div>'; };
+  document.getElementById("newsletter-search-btn")?.addEventListener("click",load); await load();
+}
+
+async function initMediaLibrary() {
+  const grid=document.getElementById("media-grid"); if(!grid) return;
+  const load=async()=>{ const {data,error}=await supabaseClient.storage.from("jeni-informa").list("",{limit:60}); if(error){showMessage("media-message",error.message,"error"); return;} grid.innerHTML=(data||[]).filter(f=>f.name).map(f=>`<article><img src="${escapeHtml(supabaseClient.storage.from('jeni-informa').getPublicUrl(f.name).data.publicUrl)}" alt="${escapeHtml(f.name)}"><p>${escapeHtml(f.name)}</p></article>`).join("")||'<article>Biblioteca vazia.</article>';};
+  document.getElementById("media-upload-btn")?.addEventListener("click", async ()=>{ const file=getFile("media-upload"); if(!file){showMessage("media-message","Selecione um ficheiro.","error");return;} showMessage("media-message","A enviar...","info"); const path=`admin/${Date.now()}-${file.name.replace(/\s+/g,'-')}`; const {error}=await supabaseClient.storage.from("jeni-informa").upload(path,file,{upsert:false}); showMessage("media-message",error?error.message:"Upload concluído.",error?"error":"success"); if(!error) load(); });
+  await load();
+}
+
 /* =====================================================
 ADMIN INIT
 ===================================================== */
@@ -1335,6 +1346,9 @@ async function initAdminPage() {
   if (!adminAccess) return;
 
   initAdminEditor();
+  await initHomepageControl();
+  await initNewsletterManagement();
+  await initMediaLibrary();
 
   showMessage("admin-message", "A carregar submissões...", "info");
 
