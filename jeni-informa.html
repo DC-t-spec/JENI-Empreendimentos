@@ -72,15 +72,18 @@
   <section class="container newsletter-premium">
     <h3>Newsletter Premium</h3>
     <p>Receba curadoria semanal com inteligência cultural, mercado e oportunidades.</p>
-    <form>
-      <input type="email" placeholder="Seu e-mail profissional" aria-label="Email">
+    <form id="newsletterForm">
+      <input id="newsletterEmail" type="email" placeholder="Seu e-mail profissional" aria-label="Email" required>
       <button type="submit" class="jeni-btn-dark">Subscrever</button>
     </form>
+    <p id="newsletterMessage" aria-live="polite"></p>
   </section>
 
   <section class="container category-strip">
     <a href="jeni-informa-arquivo.html?cat=economia-criativa">Economia Criativa</a><a href="jeni-informa-arquivo.html?cat=cultura">Cultura</a><a href="jeni-informa-arquivo.html?cat=eventos">Eventos</a><a href="jeni-informa-arquivo.html?cat=negocios">Negócios</a><a href="jeni-informa-arquivo.html?cat=talento">Talento</a><a href="jeni-informa-arquivo.html?cat=mercado">Mercado</a><a href="jeni-informa-arquivo.html?cat=audiovisual">Audiovisual</a><a href="jeni-informa-arquivo.html?cat=oportunidades">Oportunidades</a><a href="jeni-informa-arquivo.html?cat=entrevistas">Entrevistas</a><a href="jeni-informa-arquivo.html?cat=analises">Análises</a>
   </section>
 </main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script type="module" src="assets/js/public/informa-dynamic.js"></script>
 </body>
 </html>

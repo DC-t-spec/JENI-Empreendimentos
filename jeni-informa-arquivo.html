@@ -30,15 +30,10 @@
     <article class="archive-card" data-cat="eventos" data-type="Análises"><img src="foto3.jpg.jpeg" loading="lazy" alt=""><div class="archive-card-content"><h3>Eventos premium e diplomacia cultural contemporânea</h3><p>Como experiências físicas geram autoridade de marca.</p></div></article>
     <article class="archive-card" data-cat="audiovisual" data-type="Análises"><img src="foto4.jpg.jpeg" loading="lazy" alt=""><div class="archive-card-content"><h3>Audiovisual africano como ativo de negócios</h3><p>Conteúdo, distribuição e posicionamento global.</p></div></article>
   </section>
+  <section id="archiveEmpty" class="archive-empty" hidden><p>Nenhum conteúdo encontrado para os filtros atuais.</p></section>
 </main>
-<script>
-const chips=[...document.querySelectorAll('.archive-filter-chip')],cards=[...document.querySelectorAll('.archive-card')];
-const search=document.getElementById('searchInput'); const type=document.getElementById('typeSelect');
-function filter(){const active=document.querySelector('.archive-filter-chip.active')?.dataset.filter||'all';
-const q=search.value.toLowerCase(); const t=type.value;
-cards.forEach(c=>{const okCat=active==='all'||c.dataset.cat===active; const okType=!t||c.dataset.type===t; const okText=c.innerText.toLowerCase().includes(q); c.style.display=(okCat&&okType&&okText)?'flex':'none';});}
-chips.forEach(ch=>ch.onclick=()=>{chips.forEach(c=>c.classList.remove('active')); ch.classList.add('active'); filter();});
-search.addEventListener('input',filter); type.addEventListener('change',filter);
-</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script type="module" src="assets/js/public/informa-dynamic.js"></script>
+
 </body>
 </html>
