@@ -8,10 +8,16 @@ const SUPABASE_URL = "https://qkwusyhkycthottckzww.supabase.co";
 const SUPABASE_ANON_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrd3VzeWhreWN0aG90dGNrend3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1MTM2OTIsImV4cCI6MjA4OTA4OTY5Mn0.ycIm_1lZlGNApILY1OReDQmp4Qv4n1Rw7iTAbFq7rdA";
 
-const supabaseClient = window.supabase.createClient(
-  SUPABASE_URL,
-  SUPABASE_ANON_KEY
-);
+const supabaseClient = window.JeniSupabase?.createSupabaseClient
+  ? window.JeniSupabase.createSupabaseClient()
+  : window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const authService = window.JeniAuthService?.createAuthService
+  ? window.JeniAuthService.createAuthService(supabaseClient)
+  : null;
+const contentService = window.JeniContentService?.createContentService
+  ? window.JeniContentService.createContentService(supabaseClient)
+  : null;
 
 /* =====================================================
 HELPERS
@@ -106,7 +112,7 @@ AUTH
 async function getCurrentUser() {
   const {
     data: { user },
-  } = await supabaseClient.auth.getUser();
+  } = await (authService ? { data: { user: await authService.getCurrentUser() } } : supabaseClient.auth.getUser());
 
   return user;
 }
@@ -152,13 +158,21 @@ async function handleSignUp(event) {
 
   showMessage("signup-message", "A criar conta...", "info");
 
-  const { data, error } = await supabaseClient.auth.signUp({
+  const { data, error } = await (authService
+    ? authService.signUp({
+        email,
+        password,
+        options: {
+          data: { full_name: fullName }
+        }
+      })
+    : supabaseClient.auth.signUp({
     email,
     password,
     options: {
       data: { full_name: fullName }
     }
-  });
+  }));
 
   if (error) {
     showMessage("signup-message", error.message, "error");
@@ -198,10 +212,15 @@ async function handleLogin(event) {
 
   showMessage("login-message", "A entrar...", "info");
 
-  const { error } = await supabaseClient.auth.signInWithPassword({
+  const { error } = await (authService
+    ? authService.signInWithPassword({
+        email,
+        password
+      })
+    : supabaseClient.auth.signInWithPassword({
     email,
     password
-  });
+  }));
 
   if (error) {
     showMessage("login-message", error.message, "error");
@@ -212,7 +231,7 @@ async function handleLogin(event) {
 }
 
 async function handleLogout() {
-  await supabaseClient.auth.signOut();
+  await (authService ? authService.signOut() : supabaseClient.auth.signOut());
   window.location.href = "login.html";
 }
 

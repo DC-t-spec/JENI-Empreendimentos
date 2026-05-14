@@ -1,1 +1,5 @@
-/* Layout styles placeholder for gradual migration in Fase 1. */
+/* Estrutura principal para futura extração granular. */
+.container {
+  width: min(1200px, calc(100% - 2rem));
+  margin-inline: auto;
+}

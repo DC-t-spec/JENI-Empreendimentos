@@ -1,1 +1,6 @@
-/* Responsive styles placeholder for gradual migration in Fase 1. */
+/* Placeholders responsivos para consolidação progressiva. */
+@media (max-width: 768px) {
+  .container {
+    width: min(1200px, calc(100% - 1.25rem));
+  }
+}

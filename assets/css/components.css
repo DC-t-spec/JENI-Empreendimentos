@@ -1,1 +1,6 @@
-/* Component styles placeholder for gradual migration in Fase 1. */
+/* Componentes base compartilhados. */
+.btn,
+.auth-btn,
+.admin-btn {
+  touch-action: manipulation;
+}
