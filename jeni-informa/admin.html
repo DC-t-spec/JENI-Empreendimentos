@@ -5,385 +5,94 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Administração | JENI Informa</title>
   <link rel="stylesheet" href="auth.css" />
-
-  <link rel="stylesheet" href="../assets/css/admin.css">
-
-
+  <link rel="stylesheet" href="../assets/css/admin.css" />
 </head>
 <body class="dashboard-page">
-  <header class="dashboard-header">
-    <div class="dashboard-header-wrap">
-      <div>
-        <h1>JENI Informa — Administração</h1>
-        <p class="dashboard-header-subtitle">
-          Gestão editorial, curadoria e controlo dos conteúdos públicos
-        </p>
+  <div class="admin-shell">
+    <aside class="admin-sidebar" id="admin-sidebar">
+      <div class="brand-block">
+        <span class="brand-kicker">JENI Platform</span>
+        <h1>CMS Premium</h1>
       </div>
-
-      <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+      <nav class="admin-nav">
+        <a href="#overview" class="active">Dashboard</a>
+        <a href="#content">Conteúdos</a>
+        <a href="#editor">Editor</a>
+        <a href="#homepage">Homepage Control</a>
+        <a href="#media">Media Library</a>
+        <a href="#newsletter">Newsletter</a>
+      </nav>
+      <div class="sidebar-footer">
         <a href="dashboard.html" class="producer-back-link">Área do Produtor</a>
         <a href="../jeni-informa.html" class="producer-back-link">JENI Informa</a>
-        <a href="../jeni-informa-arquivo.html" class="producer-back-link">Arquivo Público</a>
-        <button id="logout-btn" type="button">Sair</button>
       </div>
-    </div>
-  </header>
+    </aside>
 
-  <main class="dashboard-main">
-    <section class="producer-hero-mini">
-      <h1>Painel de Administração</h1>
-      <p>
-        Nesta área poderá rever, aprovar, rejeitar, destacar, editar e arquivar conteúdos
-        submetidos à plataforma <strong>JENI Informa</strong>. A estrutura abaixo já está
-        preparada para notícias, agenda e oportunidades.
-      </p>
-
-      <div class="admin-legend">
-        <span class="admin-chip chip-pending">Pendente</span>
-        <span class="admin-chip chip-approved">Aprovado</span>
-        <span class="admin-chip chip-rejected">Rejeitado</span>
-        <span class="admin-chip chip-archived">Arquivado</span>
-        <span class="admin-chip chip-featured">Destaque</span>
-      </div>
-    </section>
-
-    <section class="dashboard-panel">
-      <h2>Resumo da administração</h2>
-
-      <div class="admin-stats">
-        <div class="admin-stat-card">
-          <span class="admin-stat-label">Pendentes</span>
-          <strong id="stat-pending">0</strong>
+    <main class="admin-content-area">
+      <header class="dashboard-header">
+        <button id="sidebar-toggle" class="mobile-nav-btn" type="button">☰</button>
+        <div>
+          <p class="dashboard-eyebrow">Workspace editorial corporativo</p>
+          <h2>Administração JENI Informa</h2>
         </div>
-
-        <div class="admin-stat-card">
-          <span class="admin-stat-label">Aprovados</span>
-          <strong id="stat-approved">0</strong>
+        <div class="topbar-actions">
+          <a href="../jeni-informa-arquivo.html" class="producer-back-link">Arquivo Público</a>
+          <button id="logout-btn" type="button">Sair</button>
         </div>
+      </header>
 
-        <div class="admin-stat-card">
-          <span class="admin-stat-label">Rejeitados</span>
-          <strong id="stat-rejected">0</strong>
+      <section class="dashboard-panel" id="overview">
+        <div class="section-head"><h3>Dashboard Premium</h3><p>Visão rápida de performance editorial.</p></div>
+        <div class="admin-stats">
+          <div class="admin-stat-card"><span>Total artigos</span><strong id="stat-total">0</strong></div>
+          <div class="admin-stat-card"><span>Drafts</span><strong id="stat-pending">0</strong></div>
+          <div class="admin-stat-card"><span>Publicados</span><strong id="stat-approved">0</strong></div>
+          <div class="admin-stat-card"><span>Arquivados</span><strong id="stat-archived">0</strong></div>
+          <div class="admin-stat-card"><span>Rejeitados</span><strong id="stat-rejected">0</strong></div>
+          <div class="admin-stat-card"><span>Newsletter</span><strong id="stat-newsletter">--</strong></div>
         </div>
+      </section>
 
-        <div class="admin-stat-card">
-          <span class="admin-stat-label">Arquivados</span>
-          <strong id="stat-archived">0</strong>
+      <section class="dashboard-panel" id="content">
+        <div class="section-head"><h3>Gestão de Conteúdo</h3><p>Filtrar, pesquisar, editar, publicar ou arquivar.</p></div>
+        <div class="admin-toolbar">
+          <div class="admin-field grow"><label for="admin-search">Pesquisar</label><input type="text" id="admin-search" placeholder="Título, resumo, categoria..." /></div>
+          <div class="admin-field"><label for="admin-filter-type">Tipo</label><select id="admin-filter-type"><option value="">Todos</option><option value="news">Notícias</option><option value="event">Eventos</option><option value="call">Oportunidades</option><option value="scholarship">Bolsas</option><option value="learning">Serviços</option></select></div>
+          <div class="admin-field"><label for="admin-filter-status">Estado</label><select id="admin-filter-status"><option value="">Todos</option><option value="pending">Draft</option><option value="approved">Publicado</option><option value="rejected">Rejeitado</option><option value="archived">Arquivado</option></select></div>
+          <button type="button" id="admin-apply-filters" class="jeni-btn jeni-btn-secondary">Aplicar</button>
+          <button type="button" id="admin-toggle-editor" class="jeni-btn jeni-btn-primary">+ Novo conteúdo</button>
         </div>
-      </div>
-    </section>
+        <div id="admin-message" class="auth-message"></div>
+        <div id="admin-submissions-list" class="admin-submissions-list"><div class="admin-empty-state">A carregar conteúdos...</div></div>
+      </section>
 
-    <section class="dashboard-panel">
-      <h2>Ferramentas de gestão</h2>
-      <p class="admin-section-note">
-        Esta secção deixa o admin preparado para gerir tudo sem precisar mexer no HTML depois.
-      </p>
+      <section class="dashboard-panel admin-editor" id="editor">
+        <div class="section-head"><h3 id="admin-editor-title">Editor de Artigo Premium</h3><p>Fluxo editorial confortável sem tocar código.</p></div>
+        <form id="admin-content-form"><input type="hidden" id="admin-edit-id" />
+          <div class="admin-form-grid">
+            <div class="admin-field"><label for="admin-content-type">Tipo</label><select id="admin-content-type" required><option value="news">Notícia</option><option value="event">Evento</option><option value="call">Oportunidade</option><option value="scholarship">Bolsa</option><option value="learning">Serviço</option></select></div>
+            <div class="admin-field"><label for="admin-content-status">Status</label><select id="admin-content-status" required><option value="pending">Draft</option><option value="approved">Publicado</option><option value="rejected">Rejeitado</option><option value="archived">Arquivado</option></select></div>
+            <div class="admin-field full"><label for="admin-content-title">Título</label><input type="text" id="admin-content-title" required /></div>
+            <div class="admin-field full"><label for="admin-content-summary">Subtítulo / resumo</label><textarea id="admin-content-summary"></textarea></div>
+            <div class="admin-field full"><label for="admin-news-description">Corpo</label><textarea id="admin-news-description"></textarea></div>
+            <textarea id="admin-content-description" style="display:none;"></textarea>
+            <div class="admin-field"><label for="admin-news-slug">Slug</label><input type="text" id="admin-news-slug" /></div>
+            <div class="admin-field"><label for="admin-content-image-upload">Hero image</label><input type="file" id="admin-content-image-upload" accept="image/*" /></div>
+            <div class="admin-field full"><label for="admin-content-gallery-upload">Galeria</label><input type="file" id="admin-content-gallery-upload" accept="image/*" multiple /></div>
+            <div class="admin-field full"><label for="admin-content-image">Ou URL da imagem</label><input type="url" id="admin-content-image" placeholder="https://..." /></div>
+            <div class="admin-field full"><div class="admin-check-row"><input type="checkbox" id="admin-content-featured" /><label for="admin-content-featured">Marcar como destaque / lead story</label></div></div>
+          </div>
+          <div id="admin-fields-event" class="admin-type-block" style="display:none;"><div class="admin-form-grid"><div class="admin-field"><label for="admin-event-category">Categoria</label><input id="admin-event-category" type="text"/></div><div class="admin-field"><label for="admin-event-location">Local</label><input id="admin-event-location" type="text"/></div><div class="admin-field"><label for="admin-event-date">Data</label><input id="admin-event-date" type="date"/></div><div class="admin-field"><label for="admin-event-time">Hora</label><input id="admin-event-time" type="time"/></div><div class="admin-field full"><label for="admin-event-description">Descrição</label><textarea id="admin-event-description"></textarea></div><div class="admin-field"><label for="admin-event-ticket-price">Preço</label><input id="admin-event-ticket-price" type="text"/></div><div class="admin-field"><label for="admin-event-ticket-info">Bilhetes</label><input id="admin-event-ticket-info" type="text"/></div><div class="admin-field full"><label for="admin-event-video-url">Video URL</label><input id="admin-event-video-url" type="url"/></div></div></div>
+          <div id="admin-fields-opportunity" class="admin-type-block" style="display:none;"><div class="admin-form-grid"><div class="admin-field"><label for="admin-opportunity-category">Categoria</label><input id="admin-opportunity-category" type="text"/></div><div class="admin-field"><label for="admin-opportunity-location">Local</label><input id="admin-opportunity-location" type="text"/></div><div class="admin-field"><label for="admin-opportunity-deadline">Prazo</label><input id="admin-opportunity-deadline" type="date"/></div><div class="admin-field"><label for="admin-opportunity-link">Link</label><input id="admin-opportunity-link" type="url"/></div><div class="admin-field full"><label for="admin-opportunity-description">Descrição</label><textarea id="admin-opportunity-description"></textarea></div></div></div>
+          <div class="admin-actions-row"><button type="submit" class="jeni-btn jeni-btn-primary">Guardar</button><button type="button" id="admin-cancel-editor" class="jeni-btn jeni-btn-secondary">Cancelar</button><button type="button" id="admin-reset-editor" class="jeni-btn jeni-btn-outline">Limpar</button></div>
+        </form>
+      </section>
 
-      <div class="admin-toolbar">
-        <div class="admin-field">
-          <label for="admin-search">Pesquisar</label>
-          <input
-            type="text"
-            id="admin-search"
-            placeholder="Pesquisar por título, resumo ou descrição"
-          />
-        </div>
-
-        <div class="admin-field">
-          <label for="admin-filter-type">Tipo</label>
-          <select id="admin-filter-type">
-            <option value="">Todos</option>
-          <option value="">Todos</option>
-<option value="news">Notícias</option>
-<option value="event">Eventos</option>
-<option value="call">Chamadas</option>
-<option value="scholarship">Bolsas</option>
-<option value="learning">Aprender</option>
-          </select>
-        </div>
-
-        <div class="admin-field">
-          <label for="admin-filter-status">Estado</label>
-          <select id="admin-filter-status">
-            <option value="">Todos</option>
-            <option value="pending">Pendentes</option>
-            <option value="approved">Aprovados</option>
-            <option value="rejected">Rejeitados</option>
-            <option value="archived">Arquivados</option>
-          </select>
-        </div>
-
-        <button type="button" id="admin-apply-filters" class="jeni-btn jeni-btn-secondary">
-          Aplicar filtros
-        </button>
-
-        <button type="button" id="admin-toggle-editor" class="jeni-btn jeni-btn-primary">
-        + Criar conteúdo
-        </button>
-      </div>
-
-      <div class="admin-helper">
-        Sugestão de lógica final: notícias podem ser mantidas activas ou arquivadas manualmente;
-        eventos devem sair da principal após a data; oportunidades devem sair após o prazo.
-      </div>
-
-      <div id="admin-editor" class="admin-editor">
-        <h2 id="admin-editor-title">Criar / editar conteúdo</h2>
-        <p class="admin-section-note">
-          Este formulário foi pensado para permitir criação de notícia pelo admin e edição de conteúdos.
-        </p>
-
- <form id="admin-content-form">
-  <input type="hidden" id="admin-edit-id" />
-
-  <div class="admin-form-grid">
-    <div class="admin-field">
-      <label for="admin-content-type">Tipo</label>
-    <select id="admin-content-type" required>
-  <option value="news">Notícia</option>
-  <option value="event">Evento</option>
-  <option value="call">Chamada</option>
-  <option value="scholarship">Bolsa</option>
-  <option value="learning">Aprender</option>
-</select>
-    </div>
-
-    <div class="admin-field">
-      <label for="admin-content-status">Estado</label>
-      <select id="admin-content-status" required>
-        <option value="pending">Pendente</option>
-        <option value="approved">Aprovado</option>
-        <option value="rejected">Rejeitado</option>
-        <option value="archived">Arquivado</option>
-      </select>
-    </div>
-
-    <div class="admin-field full">
-      <label for="admin-content-title">Título</label>
-      <input
-        type="text"
-        id="admin-content-title"
-        placeholder="Título do conteúdo"
-        required
-      />
-    </div>
-
-    <div class="admin-field full">
-  <label for="admin-content-summary">Resumo</label>
-  <textarea
-    id="admin-content-summary"
-    placeholder="Resumo curto do conteúdo"
-  ></textarea>
-</div>
-
-<div class="admin-field full">
-  <label for="admin-content-description">Descrição / conteúdo completo</label>
-  <textarea
-    id="admin-content-description"
-    placeholder="Escreva aqui o conteúdo completo"
-  ></textarea>
-</div>
-
-    <div class="admin-field full">
-  <label for="admin-content-image-upload">Carregar imagem principal</label>
-  <input
-    type="file"
-    id="admin-content-image-upload"
-    accept="image/*"
-  />
-</div>
-
-<div class="admin-field full">
-  <label for="admin-content-gallery-upload">Carregar imagens da galeria</label>
-  <input
-    type="file"
-    id="admin-content-gallery-upload"
-    accept="image/*"
-    multiple
-  />
-</div>
-
-    <div class="admin-field full">
-      <label for="admin-content-image">Ou usar URL de imagem já existente</label>
-      <input
-        type="url"
-        id="admin-content-image"
-        placeholder="https://..."
-      />
-    </div>
-
-    <div class="admin-field full">
-      <div class="admin-check-row">
-        <input type="checkbox" id="admin-content-featured" />
-        <label for="admin-content-featured">Marcar como destaque</label>
-      </div>
-    </div>
+      <section class="dashboard-panel" id="homepage"><div class="section-head"><h3>Homepage Control</h3><p>Gestão de hero, CTA, destaques, parceiros e secções.</p></div><div class="quick-grid"><article>Hero + CTAs</article><article>Lead Story</article><article>Destaques</article><article>Parceiros</article><article>Portfolio</article><article>Serviços</article></div></section>
+      <section class="dashboard-panel" id="media"><div class="section-head"><h3>Media Library</h3><p>Upload visual e gestão básica de metadata.</p></div><div class="quick-grid"><article>Upload para Supabase Storage</article><article>Grid de previews</article><article>Tags / alt text (futuro)</article></div></section>
+      <section class="dashboard-panel" id="newsletter"><div class="section-head"><h3>Newsletter Management</h3><p>Subscribers, métricas simples e exportação futura.</p></div><div class="quick-grid"><article>Lista de subscritores</article><article>Taxa de crescimento</article><article>Export CSV (backlog)</article></div></section>
+    </main>
   </div>
-
-  <!-- BLOCO NOTÍCIA -->
-  <div id="admin-fields-news" class="admin-type-block">
-    <div class="admin-form-grid">
-      <div class="admin-field full">
-        <label for="admin-news-description">Texto completo da notícia</label>
-        <textarea
-          id="admin-news-description"
-          placeholder="Corpo completo da notícia"
-        ></textarea>
-      </div>
-
-      <div class="admin-field">
-        <label for="admin-news-slug">Slug</label>
-        <input
-          type="text"
-          id="admin-news-slug"
-          placeholder="titulo-da-noticia"
-        />
-      </div>
-    </div>
-  </div>
-
-  <!-- BLOCO EVENTO -->
-  <div id="admin-fields-event" class="admin-type-block" style="display:none;">
-    <div class="admin-form-grid">
-      <div class="admin-field">
-        <label for="admin-event-category">Categoria</label>
-        <input
-          type="text"
-          id="admin-event-category"
-          placeholder="Ex.: Música, Teatro, Dança"
-        />
-      </div>
-
-      <div class="admin-field">
-        <label for="admin-event-location">Local</label>
-        <input
-          type="text"
-          id="admin-event-location"
-          placeholder="Ex.: Maputo, Matola"
-        />
-      </div>
-
-      <div class="admin-field">
-        <label for="admin-event-date">Data do evento</label>
-        <input type="date" id="admin-event-date" />
-      </div>
-
-      <div class="admin-field">
-        <label for="admin-event-time">Hora</label>
-        <input type="time" id="admin-event-time" />
-      </div>
-
-      <div class="admin-field">
-        <label for="admin-event-ticket-price">Preço do bilhete</label>
-        <input
-          type="text"
-          id="admin-event-ticket-price"
-          placeholder="Ex.: 500 MZN"
-        />
-      </div>
-
-      <div class="admin-field">
-        <label for="admin-event-ticket-info">Informação do bilhete</label>
-        <input
-          type="text"
-          id="admin-event-ticket-info"
-          placeholder="Ex.: Bilhetes no local / online"
-        />
-      </div>
-
-      <div class="admin-field full">
-        <label for="admin-event-description">Descrição do evento</label>
-        <textarea
-          id="admin-event-description"
-          placeholder="Descrição completa do evento"
-        ></textarea>
-      </div>
-
-      <div class="admin-field">
-        <label for="admin-event-video-url">Link de vídeo</label>
-        <input
-          type="url"
-          id="admin-event-video-url"
-          placeholder="https://..."
-        />
-      </div>
-    </div>
-  </div>
-
-  <!-- BLOCO OPORTUNIDADE -->
-  <div id="admin-fields-opportunity" class="admin-type-block" style="display:none;">
-    <div class="admin-form-grid">
-      <div class="admin-field">
-        <label for="admin-opportunity-category">Categoria</label>
-        <input
-          type="text"
-          id="admin-opportunity-category"
-          placeholder="Ex.: Bolsa, concurso, chamada"
-        />
-      </div>
-
-      <div class="admin-field">
-        <label for="admin-opportunity-location">Local</label>
-        <input
-          type="text"
-          id="admin-opportunity-location"
-          placeholder="Ex.: Maputo / Online / Internacional"
-        />
-      </div>
-
-      <div class="admin-field">
-        <label for="admin-opportunity-deadline">Prazo / deadline</label>
-        <input type="date" id="admin-opportunity-deadline" />
-      </div>
-
-      <div class="admin-field">
-        <label for="admin-opportunity-link">Link externo</label>
-        <input
-          type="url"
-          id="admin-opportunity-link"
-          placeholder="https://..."
-        />
-      </div>
-
-      <div class="admin-field full">
-        <label for="admin-opportunity-description">Descrição da oportunidade</label>
-        <textarea
-          id="admin-opportunity-description"
-          placeholder="Descrição completa da oportunidade"
-        ></textarea>
-      </div>
-    </div>
-  </div>
-
-  <div class="admin-actions-row">
-    <button type="submit" class="jeni-btn jeni-btn-primary">Guardar conteúdo</button>
-    <button type="button" id="admin-cancel-editor" class="jeni-btn jeni-btn-secondary">
-      Cancelar
-    </button>
-    <button type="button" id="admin-reset-editor" class="jeni-btn jeni-btn-outline">
-      Limpar formulário
-    </button>
-  </div>
-</form>
-      </div>
-    </section>
-
-    <section class="dashboard-panel">
-      <h2>Submissões</h2>
-      <p class="dashboard-note">
-        As submissões pendentes devem aparecer primeiro. Ao aprovar um conteúdo,
-        o sistema pode registar automaticamente a data de publicação.
-      </p>
-
-      <div id="admin-message" class="auth-message"></div>
-
-      <div id="admin-submissions-list" class="admin-submissions-list">
-        <div class="admin-empty-state">
-          A carregar conteúdos da administração...
-        </div>
-      </div>
-    </section>
-  </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="../assets/js/services/supabase-client.js" type="module"></script>
@@ -392,33 +101,8 @@
   <script src="../assets/js/services/media-service.js" type="module"></script>
   <script src="auth.js"></script>
   <script>
-  
-
-    const adminToggleEditorBtn = document.getElementById("admin-toggle-editor");
-    const adminEditor = document.getElementById("admin-editor");
-    const adminCancelEditorBtn = document.getElementById("admin-cancel-editor");
-    const adminResetEditorBtn = document.getElementById("admin-reset-editor");
-
-    if (adminToggleEditorBtn && adminEditor) {
-      adminToggleEditorBtn.addEventListener("click", function () {
-        adminEditor.classList.toggle("active");
-      });
-    }
-
-    if (adminCancelEditorBtn && adminEditor) {
-      adminCancelEditorBtn.addEventListener("click", function () {
-        adminEditor.classList.remove("active");
-      });
-    }
-
-    if (adminResetEditorBtn) {
-      adminResetEditorBtn.addEventListener("click", function () {
-        const form = document.getElementById("admin-content-form");
-        if (form) form.reset();
-        const editId = document.getElementById("admin-edit-id");
-        if (editId) editId.value = "";
-      });
-    }
+    document.getElementById("admin-toggle-editor")?.addEventListener("click", () => document.getElementById("editor")?.classList.add("active"));
+    document.getElementById("sidebar-toggle")?.addEventListener("click", () => document.getElementById("admin-sidebar")?.classList.toggle("open"));
   </script>
 </body>
 </html>
