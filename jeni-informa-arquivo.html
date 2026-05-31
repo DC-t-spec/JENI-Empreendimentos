@@ -10,22 +10,18 @@
 <body class="informa-premium">
 <header class="site-header"><div class="container header-wrap"><a href="index.html" class="brand"><img src="logo-jeni.png" class="brand-logo" alt="JENI"></a><nav class="site-nav"><a href="jeni-informa.html">JENI Informa</a><a href="jeni-informa-arquivo.html" aria-current="page">Arquivo</a></nav></div></header>
 <main class="archive-main container">
-  <section class="archive-hero"><p class="section-tag">Arquivo Editorial</p><h1>Pesquisa, categorias e filtros com UX premium</h1></section>
+  <section class="archive-hero"><p class="section-tag">Arquivo Editorial</p><h1>Conteúdos publicados no JENI Informa</h1></section>
   <section class="archive-toolbar">
     <div class="archive-search-row">
       <input id="searchInput" type="search" placeholder="Pesquisar por título, tema ou autor" />
-      <select id="typeSelect"><option value="">Todos os formatos</option><option>Entrevistas</option><option>Análises</option><option>Mercado</option></select>
+      <select id="typeSelect"><option value="">Todos os formatos</option></select>
     </div>
     <div class="archive-filter-row" id="chips">
       <button class="archive-filter-chip active" data-filter="all">Todos</button>
-      <button class="archive-filter-chip" data-filter="negocios">Negócios</button>
-      <button class="archive-filter-chip" data-filter="cultura">Cultura</button>
-      <button class="archive-filter-chip" data-filter="eventos">Eventos</button>
-      <button class="archive-filter-chip" data-filter="audiovisual">Audiovisual</button>
     </div>
   </section>
   <section class="archive-grid" id="archiveGrid"></section>
-  <section id="archiveEmpty" class="archive-empty" hidden><p>Nenhum conteúdo encontrado para os filtros atuais.</p></section>
+  <section id="archiveEmpty" class="archive-empty" hidden><p>Ainda não há conteúdos publicados.</p></section>
 </main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script type="module" src="assets/js/public/informa-dynamic.js"></script>
