@@ -670,6 +670,10 @@ async function createContentItemByAdmin(payload) {
   return await supabaseClient.from("content_items").insert([contentPayload]).select().single();
 }
 
+async function deleteContentItemPermanently(id) {
+  return await supabaseClient.from('content_items').delete().eq('id', id);
+}
+
 
 async function submitNewsForm(status = "review") {
   clearMessage("news-message");
@@ -791,6 +795,9 @@ function applyAdminFilters(data = []) {
 function buildAdminCard(item) {
   const principalDate = item.published_at ? formatDateTime(item.published_at) : "Ainda não publicado";
   const principalLabel = "Publicado";
+  const deleteButton = adminCurrentUserRole === "admin"
+    ? `<button class="admin-btn admin-btn-delete" data-id="${item.id}" data-action="delete-permanent">Eliminar definitivamente</button>`
+    : "";
 
   const coverImage = item.image_url
     ? `<div class="admin-card-cover">
@@ -831,6 +838,7 @@ function buildAdminCard(item) {
         <button class="admin-btn admin-btn-approve" data-id="${item.id}" data-action="published">Publicar</button>
         <button class="admin-btn admin-btn-archive" data-id="${item.id}" data-action="archived">Arquivar</button>
         <button class="admin-btn admin-btn-edit" data-id="${item.id}" data-action="edit">Editar</button>
+        ${deleteButton}
       </div>
     </article>
   `;
@@ -911,6 +919,7 @@ ADMIN — RENDER
 
 
 let adminContentItemsCache = [];
+let adminCurrentUserRole = null;
 
 function bindAdminActionButtons() {
   const listEl = document.getElementById("admin-content-list");
@@ -926,6 +935,11 @@ function bindAdminActionButtons() {
       if (action === "edit") {
         const item = adminContentItemsCache.find(entry => entry.id === contentItemId);
         if (item) fillAdminEditor(item);
+        return;
+      }
+
+      if (action === "delete-permanent") {
+        await handlePermanentContentDelete(contentItemId);
         return;
       }
 
@@ -946,6 +960,32 @@ function bindAdminActionButtons() {
       }, 400);
     });
   });
+}
+
+async function handlePermanentContentDelete(contentItemId) {
+  if (adminCurrentUserRole !== "admin") {
+    showMessage("admin-message", "Apenas administradores podem eliminar definitivamente conteúdos.", "error");
+    return;
+  }
+
+  const confirmed = window.confirm("Tem certeza que deseja eliminar definitivamente este conteúdo? Esta ação não pode ser desfeita.");
+  if (!confirmed) return;
+
+  showMessage("admin-message", "A eliminar definitivamente conteúdo...", "info");
+
+  const { error } = await deleteContentItemPermanently(contentItemId);
+
+  if (error) {
+    console.error("ADMIN DELETE ERROR:", error);
+    showMessage("admin-message", error.message || "Erro ao eliminar conteúdo.", "error");
+    return;
+  }
+
+  adminContentItemsCache = adminContentItemsCache.filter(item => item.id !== contentItemId);
+  setAdminStats(adminContentItemsCache);
+  renderAdminList(applyAdminFilters(adminContentItemsCache));
+  showMessage("admin-message", "Conteúdo eliminado definitivamente com sucesso.", "success");
+  showToast("Conteúdo eliminado definitivamente.", "success");
 }
 
 function renderAdminList(data = []) {
@@ -1311,6 +1351,8 @@ ADMIN INIT
 async function initAdminPage() {
   const adminAccess = await requireContentManager();
   if (!adminAccess) return;
+
+  adminCurrentUserRole = adminAccess.profile?.role || null;
 
   initAdminEditor();
   initPremiumEditorEnhancements();
