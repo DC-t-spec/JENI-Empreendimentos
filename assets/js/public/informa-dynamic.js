@@ -26,19 +26,49 @@ function getTypeLabel(type) {
   return labels[type] || type || 'Conteúdo';
 }
 
-function parseExternalLinks(item) {
-  const links = [];
-  const rawLinks = Array.isArray(item.external_links) ? item.external_links : [];
+function normalizeExternalUrl(url) {
+  const trimmedUrl = String(url || '').trim();
+  if (!/^https?:\/\//i.test(trimmedUrl)) return '';
 
-  rawLinks.forEach((entry) => {
-    if (typeof entry === 'string') links.push({ url: entry, label: entry });
-    if (entry && typeof entry === 'object' && entry.url) links.push({ url: entry.url, label: entry.label || entry.title || entry.url });
+  try {
+    return new URL(trimmedUrl).href;
+  } catch (_error) {
+    return '';
+  }
+}
+
+function uniqueValidLinks(links) {
+  const seen = new Set();
+
+  return links.reduce((validLinks, link) => {
+    const normalizedUrl = normalizeExternalUrl(link?.url);
+    if (!normalizedUrl || seen.has(normalizedUrl)) return validLinks;
+
+    seen.add(normalizedUrl);
+    const label = String(safe(link.label, normalizedUrl)).trim() || normalizedUrl;
+    validLinks.push({
+      url: normalizedUrl,
+      label
+    });
+    return validLinks;
+  }, []);
+}
+
+export function parseExternalLinks(item) {
+  const rawLinks = Array.isArray(item.external_links) ? item.external_links : [];
+  const externalLinks = rawLinks.map((entry) => {
+    if (typeof entry === 'string') return { url: entry, label: entry };
+    if (entry && typeof entry === 'object' && entry.url) return { url: entry.url, label: entry.label || entry.title || entry.url };
+    return null;
   });
 
-  if (item.external_url) links.push({ url: item.external_url, label: item.external_label || 'Link relacionado' });
-  if (item.video_url) links.push({ url: item.video_url, label: 'Vídeo relacionado' });
+  const validExternalLinks = uniqueValidLinks(externalLinks);
+  if (validExternalLinks.length > 0) return validExternalLinks;
 
-  return links.filter((link) => /^https?:\/\//i.test(link.url));
+  return uniqueValidLinks([{
+    url: item.external_url,
+    label: item.external_label || 'Link relacionado'
+  }]);
 }
 
 function normalizePublishedItem(item, index, catMap, authorMap) {
