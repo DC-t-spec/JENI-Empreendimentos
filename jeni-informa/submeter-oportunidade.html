@@ -56,21 +56,6 @@
             <input type="text" id="title" required placeholder="Ex.: Open Call para artistas emergentes" />
           </div>
 
-          <div class="auth-field" id="deadline-field">
-            <label for="deadline">Prazo</label>
-            <input type="date" id="deadline" />
-          </div>
-
-          <div class="auth-field" id="start-date-field">
-            <label for="start_date">Data de início</label>
-            <input type="date" id="start_date" />
-          </div>
-
-          <div class="auth-field">
-            <label for="location">Local / abrangência</label>
-            <input type="text" id="location" placeholder="Ex.: Maputo, Moçambique, Online, Internacional" />
-          </div>
-
           <div class="auth-field" id="institution-field">
             <label for="institution_name">Instituição / entidade</label>
             <input type="text" id="institution_name" placeholder="Ex.: Goethe-Institut, Universidade X, Fundação Y" />
@@ -138,8 +123,6 @@
     function toggleOpportunityFields() {
       const type = document.getElementById("type")?.value;
 
-      const deadlineField = document.getElementById("deadline-field");
-      const startDateField = document.getElementById("start-date-field");
       const institutionField = document.getElementById("institution-field");
       const durationField = document.getElementById("duration-field");
       const formatField = document.getElementById("format-field");
@@ -153,8 +136,6 @@
       const isScholarship = type === "scholarship";
       const isCall = type === "call";
 
-      if (deadlineField) deadlineField.style.display = isLearning ? "none" : "";
-      if (startDateField) startDateField.style.display = isLearning ? "" : "none";
       if (institutionField) institutionField.style.display = isScholarship || isLearning ? "" : "";
       if (durationField) durationField.style.display = isLearning ? "" : "none";
       if (formatField) formatField.style.display = isLearning ? "" : "none";

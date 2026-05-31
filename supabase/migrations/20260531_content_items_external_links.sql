@@ -8,16 +8,7 @@ alter table if exists public.content_items
   add column if not exists description text,
   add column if not exists image_url text,
   add column if not exists external_url text,
-  add column if not exists external_links jsonb not null default '[]'::jsonb,
-  add column if not exists tags text[] not null default '{}'::text[],
-  add column if not exists related_items text[] not null default '{}'::text[],
-  add column if not exists location text,
-  add column if not exists event_date date,
-  add column if not exists event_time text,
-  add column if not exists ticket_price text,
-  add column if not exists ticket_info text,
-  add column if not exists video_url text,
-  add column if not exists deadline date;
+  add column if not exists external_links jsonb not null default '[]'::jsonb;
 
 -- Backfill leve para instalações que já tinham conteúdos com os nomes originais.
 update public.content_items
