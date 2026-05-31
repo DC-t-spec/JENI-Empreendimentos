@@ -9,7 +9,8 @@ export function createContentService(client) {
       .from('content_items')
       .select('*')
       .eq('status', 'published')
-      .order('published_at', { ascending: false })
+      .order('published_at', { ascending: false, nullsFirst: false })
+      .order('created_at', { ascending: false })
       .limit(limit),
 
     getPublishedBySlug: async (slug) => client

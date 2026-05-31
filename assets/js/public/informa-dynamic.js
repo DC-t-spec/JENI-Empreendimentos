@@ -5,6 +5,7 @@ const EMPTY_MESSAGE = 'Ainda não há conteúdos publicados.';
 const qs = (selector, root = document) => root.querySelector(selector);
 const qsa = (selector, root = document) => [...root.querySelectorAll(selector)];
 const safe = (value, fallback = '') => (value == null || value === '' ? fallback : value);
+const articleUrl = (item) => `jeni-informa-artigo.html?slug=${encodeURIComponent(item.slug)}`;
 const fmt = (iso) => {
   if (!iso) return 'Sem data';
   const date = new Date(iso);
@@ -37,15 +38,24 @@ function normalizeExternalUrl(url) {
   }
 }
 
+function getHostnameLabel(url) {
+  try {
+    return new URL(url).hostname.replace(/^www\./i, '');
+  } catch (_error) {
+    return url;
+  }
+}
+
 function uniqueValidLinks(links) {
   const seen = new Set();
 
-  return links.reduce((validLinks, link) => {
+  return links.filter(Boolean).reduce((validLinks, link) => {
     const normalizedUrl = normalizeExternalUrl(link?.url);
-    if (!normalizedUrl || seen.has(normalizedUrl)) return validLinks;
+    const uniqueKey = normalizedUrl.toLowerCase();
+    if (!normalizedUrl || seen.has(uniqueKey)) return validLinks;
 
-    seen.add(normalizedUrl);
-    const label = String(safe(link.label, normalizedUrl)).trim() || normalizedUrl;
+    seen.add(uniqueKey);
+    const label = String(link.label || '').trim() || getHostnameLabel(normalizedUrl);
     validLinks.push({
       url: normalizedUrl,
       label
@@ -54,11 +64,24 @@ function uniqueValidLinks(links) {
   }, []);
 }
 
+
+function parseStoredExternalLinks(rawValue) {
+  if (Array.isArray(rawValue)) return rawValue;
+  if (typeof rawValue !== 'string') return [];
+
+  try {
+    const parsed = JSON.parse(rawValue);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (_error) {
+    return [];
+  }
+}
+
 export function parseExternalLinks(item) {
-  const rawLinks = Array.isArray(item.external_links) ? item.external_links : [];
+  const rawLinks = parseStoredExternalLinks(item.external_links);
   const externalLinks = rawLinks.map((entry) => {
-    if (typeof entry === 'string') return { url: entry, label: entry };
-    if (entry && typeof entry === 'object' && entry.url) return { url: entry.url, label: entry.label || entry.title || entry.url };
+    if (typeof entry === 'string') return { url: entry, label: '' };
+    if (entry && typeof entry === 'object' && entry.url) return { url: entry.url, label: entry.title || entry.label || '' };
     return null;
   });
 
@@ -67,21 +90,21 @@ export function parseExternalLinks(item) {
 
   return uniqueValidLinks([{
     url: item.external_url,
-    label: item.external_label || 'Link relacionado'
+    label: item.external_label || ''
   }]);
 }
 
 function normalizePublishedItem(item, index, catMap, authorMap) {
   const categoryRecord = catMap.get(item.category_id);
-  const categoryName = categoryRecord?.name || item.category || 'Editorial';
-  const categorySlug = categoryRecord?.slug || (item.category ? slugify(item.category) : 'editorial');
+  const categoryName = categoryRecord?.name || item.category || getTypeLabel(item.type);
+  const categorySlug = categoryRecord?.slug || (categoryName ? slugify(categoryName) : 'conteudo');
   const body = safe(item.body, item.description || '');
 
   return {
     ...item,
     excerpt: safe(item.excerpt, item.summary || ''),
     body,
-    author_name: authorMap.get(item.author_id)?.display_name || authorMap.get(item.author_id)?.full_name || item.author_name || 'Redação',
+    author_name: authorMap.get(item.author_id)?.display_name || authorMap.get(item.author_id)?.full_name || item.author_name || '',
     category: { slug: categorySlug, name: categoryName },
     cover_image: item.image_url || null,
     external_links: parseExternalLinks(item),
@@ -131,6 +154,32 @@ async function fetchPublishedContent() {
   }
 }
 
+async function fetchPublishedContentItem({ slug, id }) {
+  if (!window.supabase || (!slug && !id)) return null;
+
+  try {
+    const supabase = createSupabaseClient();
+    const content = createContentService(supabase);
+    const { data, error } = slug ? await content.getPublishedBySlug(slug) : await content.getPublishedById(id);
+    if (error || !data || data.status !== 'published') return null;
+
+    const [catRes, authorRes] = await Promise.all([
+      data.category_id ? content.listCategories([data.category_id]) : { data: [] },
+      data.author_id ? content.listAuthors([data.author_id]) : { data: [] }
+    ]);
+
+    return normalizePublishedItem(
+      data,
+      0,
+      new Map((catRes.data || []).map((category) => [category.id, category])),
+      new Map((authorRes.data || []).map((author) => [author.id, author]))
+    );
+  } catch (error) {
+    console.error('PUBLIC CONTENT ITEM LOAD ERROR:', error);
+    return null;
+  }
+}
+
 function renderEmptyCard() {
   return `<article class="premium-card premium-empty"><span>JENI Informa</span><h3>${EMPTY_MESSAGE}</h3></article>`;
 }
@@ -153,23 +202,25 @@ function renderHomepage(items) {
   }
 
   const lead = items.find((item) => item.featured) || items[0];
-  const imageHtml = lead.cover_image ? `<img src="${escapeHtml(lead.cover_image)}" loading="lazy" alt="${escapeHtml(lead.title)}">` : '';
+  const leadUrl = articleUrl(lead);
+  const imageHtml = lead.cover_image ? `<a class="lead-story-image-link" href="${leadUrl}" aria-label="Abrir ${escapeHtml(lead.title)}"><img src="${escapeHtml(lead.cover_image)}" loading="lazy" alt="${escapeHtml(lead.title)}"></a>` : '';
+  const metaParts = [lead.author_name && `Por ${escapeHtml(lead.author_name)}`, escapeHtml(fmt(lead.published_at)), `${lead.read_minutes} min`].filter(Boolean);
   leadWrap.innerHTML = `${imageHtml}<article>
-    <p class="kicker">Lead Story · ${escapeHtml(lead.category.name)}</p>
-    <h1>${escapeHtml(lead.title)}</h1><p class="subtitle">${escapeHtml(lead.excerpt)}</p>
-    <p class="meta">Por ${escapeHtml(lead.author_name)} · ${escapeHtml(fmt(lead.published_at))} · ${lead.read_minutes} min</p>
-    <a class="jeni-btn-dark" href="jeni-informa-artigo.html?slug=${encodeURIComponent(lead.slug)}">Ler artigo</a></article>`;
+    <p class="kicker">${escapeHtml(lead.category.name)}</p>
+    <h1><a href="${leadUrl}">${escapeHtml(lead.title)}</a></h1><p class="subtitle">${escapeHtml(lead.excerpt)}</p>
+    <p class="meta">${metaParts.join(' · ')}</p>
+    <a class="jeni-btn-dark" href="${leadUrl}">Ler artigo</a></article>`;
 
   const editorialGrid = qs('.editorial-grid');
   if (editorialGrid) {
-    editorialGrid.innerHTML = items.slice(0, 8).map((item) => `<article class="premium-card"><span>${escapeHtml(item.category.name)}</span><h3><a href="jeni-informa-artigo.html?slug=${encodeURIComponent(item.slug)}">${escapeHtml(item.title)}</a></h3></article>`).join('');
+    editorialGrid.innerHTML = items.slice(0, 8).map((item) => `<a class="premium-card clickable-card" href="${articleUrl(item)}"><span>${escapeHtml(item.category.name)}</span><h3>${escapeHtml(item.title)}</h3><p>${escapeHtml(item.excerpt)}</p><strong>Ler artigo</strong></a>`).join('');
   }
 
   const trending = qs('.trending ol');
-  if (trending) trending.innerHTML = items.slice(0, 4).map((item) => `<li><a href="jeni-informa-artigo.html?slug=${encodeURIComponent(item.slug)}">${escapeHtml(item.title)}</a></li>`).join('');
+  if (trending) trending.innerHTML = items.slice(0, 4).map((item) => `<li><a href="${articleUrl(item)}">${escapeHtml(item.title)}</a></li>`).join('');
 
   const highlights = qs('.highlight-list');
-  if (highlights) highlights.innerHTML = items.slice(1, 5).map((item) => `<article><strong>${escapeHtml(getTypeLabel(item.type))}</strong><p>${escapeHtml(item.excerpt)}</p></article>`).join('') || `<article><p>${EMPTY_MESSAGE}</p></article>`;
+  if (highlights) highlights.innerHTML = items.slice(1, 5).map((item) => `<a class="highlight-card clickable-card" href="${articleUrl(item)}"><strong>${escapeHtml(item.category.name)}</strong><p>${escapeHtml(item.excerpt)}</p></a>`).join('') || `<article><p>${EMPTY_MESSAGE}</p></article>`;
 
   const categories = [...new Map(items.map((item) => [item.category.slug, item.category])).values()];
   const categoryStrip = qs('.category-strip');
@@ -180,24 +231,28 @@ function renderSiteHomepageInforma(items) {
   const host = qs('[data-homepage-informa]');
   if (!host) return;
 
+  const dynamicTitle = qs('[data-homepage-informa-title]');
   if (!items.length) {
+    if (dynamicTitle) dynamicTitle.textContent = 'JENI Informa';
     host.innerHTML = `<article class="editorial-card"><p>${EMPTY_MESSAGE}</p><a href="jeni-informa.html">Ver JENI Informa</a></article>`;
     return;
   }
 
   const lead = items.find((item) => item.featured) || items[0];
-  const cards = items.slice(1, 4).map((item) => `<article class="editorial-card"><span class="category">${escapeHtml(item.category.name)}</span><h4>${escapeHtml(item.title)}</h4><p>${escapeHtml(item.excerpt)}</p><a href="jeni-informa-artigo.html?slug=${encodeURIComponent(item.slug)}">Ler</a></article>`).join('');
-  host.innerHTML = `<article class="lead-story"><span class="category">${escapeHtml(lead.category.name)}</span><h3>${escapeHtml(lead.title)}</h3><p>${escapeHtml(lead.excerpt)}</p><a href="jeni-informa-artigo.html?slug=${encodeURIComponent(lead.slug)}">Ler artigo</a></article>${cards}`;
+  if (dynamicTitle) dynamicTitle.innerHTML = `<a href="${articleUrl(lead)}">${escapeHtml(lead.title)}</a>`;
+  const cards = items.slice(1, 4).map((item) => `<a class="editorial-card clickable-card" href="${articleUrl(item)}"><span class="category">${escapeHtml(item.category.name)}</span><h4>${escapeHtml(item.title)}</h4><p>${escapeHtml(item.excerpt)}</p><strong>Ler artigo</strong></a>`).join('');
+  host.innerHTML = `<a class="lead-story clickable-card" href="${articleUrl(lead)}"><span class="category">${escapeHtml(lead.category.name)}</span><h3>${escapeHtml(lead.title)}</h3><p>${escapeHtml(lead.excerpt)}</p><strong>Ler artigo</strong></a>${cards}`;
 }
 
-function renderArticlePage(items) {
+async function renderArticlePage(items) {
   const host = qs('[data-article-root]');
   if (!host) return;
 
   const params = new URLSearchParams(window.location.search);
   const slug = params.get('slug');
   const id = params.get('id');
-  const item = items.find((entry) => (slug && entry.slug === slug) || (id && String(entry.id) === id));
+  let item = items.find((entry) => (slug && entry.slug === slug) || (id && String(entry.id) === id));
+  if (!item) item = await fetchPublishedContentItem({ slug, id });
 
   if (!item) {
     host.dataset.state = 'empty';
@@ -230,7 +285,7 @@ function renderArticlePage(items) {
   qs('.kicker').textContent = `${getTypeLabel(item.type)} · ${item.category.name}`;
   qs('h1').textContent = item.title;
   qs('.subtitle').textContent = item.excerpt;
-  qs('.meta').textContent = `Por ${item.author_name} · ${fmt(item.published_at)} · ${item.read_minutes} min de leitura`;
+  qs('.meta').textContent = [item.author_name && `Por ${item.author_name}`, fmt(item.published_at), `${item.read_minutes} min de leitura`].filter(Boolean).join(' · ');
   qs('.article-body').innerHTML = `<p>${escapeHtml(item.body).replaceAll('\n', '</p><p>')}</p>`;
 
   const externalLinks = qs('.external-links');
@@ -267,7 +322,7 @@ function renderArchivePage(items) {
     const filtered = items.filter((item) => (cat === 'all' || item.category.slug === cat) && (!type?.value || item.type === type.value) && (`${item.title} ${item.excerpt} ${item.author_name}`.toLowerCase().includes(term)));
     grid.innerHTML = filtered.map((item) => {
       const imageHtml = item.cover_image ? `<img src="${escapeHtml(item.cover_image)}" loading="lazy" alt="${escapeHtml(item.title)}">` : '';
-      return `<article class="archive-card" data-cat="${escapeHtml(item.category.slug)}" data-type="${escapeHtml(item.type)}">${imageHtml}<div class="archive-card-content"><h3><a href="jeni-informa-artigo.html?slug=${encodeURIComponent(item.slug)}">${escapeHtml(item.title)}</a></h3><p>${escapeHtml(item.excerpt)}</p></div></article>`;
+      return `<a class="archive-card clickable-card" data-cat="${escapeHtml(item.category.slug)}" data-type="${escapeHtml(item.type)}" href="${articleUrl(item)}">${imageHtml}<div class="archive-card-content"><span>${escapeHtml(item.category.name)}</span><h3>${escapeHtml(item.title)}</h3><p>${escapeHtml(item.excerpt)}</p><strong>Ler artigo</strong></div></a>`;
     }).join('');
     empty.hidden = filtered.length > 0;
     if (!filtered.length) qs('#archiveEmpty p').textContent = items.length ? 'Nenhum conteúdo encontrado para os filtros atuais.' : EMPTY_MESSAGE;
@@ -312,7 +367,7 @@ function bindNewsletter() {
   const data = await fetchPublishedContent();
   renderHomepage(data);
   renderSiteHomepageInforma(data);
-  renderArticlePage(data);
+  await renderArticlePage(data);
   renderArchivePage(data);
   bindNewsletter();
 })();
