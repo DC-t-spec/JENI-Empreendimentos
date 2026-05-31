@@ -110,7 +110,10 @@
   <script src="../assets/js/services/media-service.js" type="module"></script>
   <script src="auth.js"></script>
   <script>
-    document.getElementById("admin-toggle-editor")?.addEventListener("click", () => document.getElementById("editor")?.classList.add("active"));
+    document.getElementById("admin-toggle-editor")?.addEventListener("click", () => {
+      if (typeof resetAdminEditor === "function") resetAdminEditor();
+      document.getElementById("editor")?.classList.add("active");
+    });
     document.getElementById("sidebar-toggle")?.addEventListener("click", () => document.getElementById("admin-sidebar")?.classList.toggle("open"));
   </script>
 </body>

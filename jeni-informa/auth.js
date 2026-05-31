@@ -49,6 +49,10 @@ function clearMessage(targetId) {
   el.textContent = "";
   el.className = "auth-message";
 }
+
+function getAdminEditorElement() {
+  return document.getElementById("admin-editor") || document.getElementById("editor");
+}
 function showToast(message, type = "info") {
   let stack = document.getElementById("admin-toast-stack");
   if (!stack) {
@@ -151,6 +155,22 @@ function splitCsv(value) {
     .split(",")
     .map((entry) => entry.trim())
     .filter(Boolean);
+}
+
+function normalizeContentItemPayload(payload = {}) {
+  const normalized = { ...payload };
+
+  if (normalized.user_id && !normalized.author_id) {
+    normalized.author_id = normalized.user_id;
+  }
+
+  delete normalized.user_id;
+
+  if (!normalized.author_id) {
+    delete normalized.author_id;
+  }
+
+  return normalized;
 }
 
 /* =====================================================
@@ -712,11 +732,13 @@ async function updateSubmissionStatus(submissionId, newStatus) {
 }
 
 async function updateSubmissionById(submissionId, payload) {
-  return await supabaseClient.from("content_items").update(payload).eq("id", submissionId).select().single();
+  const contentPayload = normalizeContentItemPayload(payload);
+  return await supabaseClient.from("content_items").update(contentPayload).eq("id", submissionId).select().single();
 }
 
 async function createSubmissionByAdmin(payload) {
-  return await supabaseClient.from("content_items").insert([payload]).select().single();
+  const contentPayload = normalizeContentItemPayload(payload);
+  return await supabaseClient.from("content_items").insert([contentPayload]).select().single();
 }
 
 
@@ -955,7 +977,7 @@ async function renderAdminGalleryPreviews(items = []) {
 }
 
 function fillAdminEditor(item) {
-  const editor = document.getElementById("admin-editor");
+  const editor = getAdminEditorElement();
   const editId = document.getElementById("admin-edit-id");
   const editorTitle = document.getElementById("admin-editor-title");
 
@@ -1312,10 +1334,10 @@ async function saveAdminContent() {
       const adminAccess = await requireAdmin();
       if (!adminAccess) return;
 
-      const createPayload = {
-        ...payload,
-        author_id: adminAccess.user.id
-      };
+      const createPayload = { ...payload };
+      if (adminAccess.user?.id) {
+        createPayload.author_id = adminAccess.user.id;
+      }
 
       if (normalizeStatus(createPayload.status) === "published" && !createPayload.published_at) {
         createPayload.published_at = new Date().toISOString();
@@ -1379,7 +1401,7 @@ function initAdminEditor() {
 
   if (cancelBtn) {
     cancelBtn.addEventListener("click", () => {
-      const editor = document.getElementById("admin-editor");
+      const editor = getAdminEditorElement();
       editor?.classList.remove("active");
       resetAdminEditor();
     });
