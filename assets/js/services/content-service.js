@@ -18,7 +18,9 @@ const CONTENT_ITEM_COLUMNS = new Set([
   'external_links',
   'external_url',
   'image_url',
-  'summary'
+  'summary',
+  'metadata',
+  'gallery'
 ]);
 
 function sanitizeContentItemPayload(payload = {}) {

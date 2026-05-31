@@ -70,3 +70,27 @@ body.dashboard-page { margin: 0; background: linear-gradient(145deg, #f7f4ef, #f
 @keyframes shine{to{background-position:-200% 0}}
 .preview-box{background:#f8fbff;border:1px dashed #b5c9ea;border-radius:12px;padding:8px;font-size:.88rem;color:#334}
 @media (max-width: 768px){.media-card img{height:120px}}
+
+.admin-type-block {
+  margin-top: 18px;
+  border: 1px dashed var(--line);
+  border-radius: 16px;
+  padding: 18px;
+  background: var(--paper);
+}
+
+.section-head.compact {
+  margin-bottom: 14px;
+}
+
+.section-head.compact h4 {
+  margin: 0;
+  font-family: Georgia, serif;
+  font-size: 1.05rem;
+}
+
+.section-head.compact p {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}

@@ -105,9 +105,9 @@ function escapeHtml(text = "") {
 function getTypeLabel(type) {
   if (type === "event") return "Evento";
   if (type === "news") return "Notícia";
-  if (type === "call") return "Chamada";
+  if (type === "call") return "Oportunidade";
   if (type === "scholarship") return "Bolsa";
-  if (type === "learning") return "Aprender";
+  if (type === "learning") return "Serviço";
   return type || "Conteúdo";
 }
 
@@ -168,7 +168,9 @@ const CONTENT_ITEM_COLUMNS = new Set([
   "external_links",
   "external_url",
   "image_url",
-  "summary"
+  "summary",
+  "metadata",
+  "gallery"
 ]);
 
 function normalizeContentItemPayload(payload = {}) {
@@ -851,51 +853,24 @@ function fillAdminEditor(item) {
   if (editId) editId.value = item.id || "";
   if (editorTitle) editorTitle.textContent = "Editar conteúdo";
 
-  const typeEl = document.getElementById("admin-content-type");
-  const statusEl = document.getElementById("admin-content-status");
-  const titleEl = document.getElementById("admin-content-title");
-  const categoryEl = document.getElementById("admin-content-category");
-  const summaryEl = document.getElementById("admin-content-summary");
-  const imageEl = document.getElementById("admin-content-image");
-  const externalUrlEl = document.getElementById("admin-content-external-url");
-  const featuredEl = document.getElementById("admin-content-featured");
+  setValue("admin-content-type", item.type || "news");
+  setValue("admin-content-status", normalizeStatus(item.status));
+  setValue("admin-content-title", item.title || "");
+  setValue("admin-content-category", item.category || "");
+  setValue("admin-content-summary", item.summary || item.excerpt || "");
+  setValue("admin-news-description", item.description || item.body || item.content || "");
+  setValue("admin-news-slug", item.slug || "");
+  setValue("admin-content-image", item.image_url || "");
+  setValue("admin-content-external-url", item.external_url || "");
+  setValue("admin-content-seo-title", item.seo_title || "");
+  setValue("admin-content-seo-description", item.seo_description || "");
 
-  if (typeEl) typeEl.value = item.type || "news";
-  if (statusEl) statusEl.value = normalizeStatus(item.status);
-  if (titleEl) titleEl.value = item.title || "";
-  if (categoryEl) categoryEl.value = item.category || "";
-  if (summaryEl) summaryEl.value = item.summary || item.excerpt || "";
-  if (imageEl) imageEl.value = item.image_url || "";
-  if (externalUrlEl) externalUrlEl.value = item.external_url || "";
+  const featuredEl = document.getElementById("admin-content-featured");
   if (featuredEl) featuredEl.checked = !!item.featured;
 
+  fillMetadataFields(item.type || "news", item.metadata || {});
+  fillGalleryFields(item.gallery || []);
   toggleAdminTypeFields();
-
-  if (item.type === "news") {
-    const slugEl = document.getElementById("admin-news-slug");
-    const descEl = document.getElementById("admin-news-description");
-
-    if (slugEl) slugEl.value = item.slug || "";
-    if (descEl) descEl.value = item.description || item.body || item.content || "";
-  }
-
-  if (item.type === "event") {
-    const categoryEl = document.getElementById("admin-event-category");
-    const descEl = document.getElementById("admin-event-description");
-
-    if (categoryEl) categoryEl.value = item.category || "";
-    if (descEl) descEl.value = item.description || item.body || "";
-  }
-
-  if ((item.type === "call" || item.type === "scholarship")) {
-    const categoryEl = document.getElementById("admin-opportunity-category");
-    const linkEl = document.getElementById("admin-opportunity-link");
-    const descEl = document.getElementById("admin-opportunity-description");
-
-    if (categoryEl) categoryEl.value = item.category || "";
-    if (linkEl) linkEl.value = item.external_url || "";
-    if (descEl) descEl.value = item.description || item.body || "";
-  }
 
   if (editor) editor.classList.add("active");
   editor?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -1011,30 +986,209 @@ function renderAdminList(data = []) {
 
 
 
+
+function compactObject(value = {}) {
+  return Object.entries(value).reduce((result, [key, entry]) => {
+    if (entry !== undefined && entry !== null && String(entry).trim() !== "") {
+      result[key] = typeof entry === "string" ? entry.trim() : entry;
+    }
+    return result;
+  }, {});
+}
+
+function parseJsonArrayField(rawValue) {
+  if (Array.isArray(rawValue)) return rawValue;
+  if (typeof rawValue !== "string") return [];
+
+  try {
+    const parsed = JSON.parse(rawValue);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (_error) {
+    return [];
+  }
+}
+
+function normalizeGalleryEntry(entry) {
+  const rawUrl = typeof entry === "string" ? entry : entry?.url;
+  const url = String(rawUrl || "").trim();
+  if (!url) return null;
+
+  return {
+    url,
+    alt: String(entry?.alt || "").trim()
+  };
+}
+
+function getGalleryFromTextarea() {
+  return getValue("admin-gallery-urls")
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((url) => ({ url, alt: "" }));
+}
+
+async function uploadAdminGalleryIfNeeded() {
+  const input = document.getElementById("admin-gallery-uploads");
+  const files = input?.files ? Array.from(input.files) : [];
+  const uploaded = [];
+
+  for (const file of files) {
+    const url = await uploadImage(file, "gallery");
+    if (url) uploaded.push({ url, alt: file.name || "" });
+  }
+
+  const manual = getGalleryFromTextarea();
+  const seen = new Set();
+  return [...manual, ...uploaded].map(normalizeGalleryEntry).filter(Boolean).filter((entry) => {
+    const key = entry.url.toLowerCase();
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function setValue(id, value = "") {
+  const el = document.getElementById(id);
+  if (el) el.value = value || "";
+}
+
+function getAdminMetadataByType(type) {
+  if (type === "news") {
+    return compactObject({
+      news_author: getValue("admin-news-author"),
+      photo_credits: getValue("admin-photo-credits")
+    });
+  }
+
+  if (type === "event") {
+    return compactObject({
+      event_date: getValue("admin-event-date"),
+      event_time: getValue("admin-event-time"),
+      event_location: getValue("admin-event-location"),
+      ticket_info: getValue("admin-ticket-info"),
+      organizer: getValue("admin-organizer"),
+      registration_url: getValue("admin-registration-url")
+    });
+  }
+
+  if (type === "call") {
+    return compactObject({
+      deadline: getValue("admin-opportunity-deadline"),
+      promoter: getValue("admin-opportunity-promoter"),
+      target_audience: getValue("admin-opportunity-target-audience"),
+      requirements: getValue("admin-opportunity-requirements"),
+      benefits: getValue("admin-opportunity-benefits"),
+      application_url: getValue("admin-opportunity-application-url"),
+      attachment_url: getValue("admin-opportunity-attachment-url")
+    });
+  }
+
+  if (type === "scholarship") {
+    return compactObject({
+      country_or_location: getValue("admin-scholarship-country-location"),
+      amount_or_benefit: getValue("admin-scholarship-amount-benefit"),
+      duration: getValue("admin-scholarship-duration"),
+      deadline: getValue("admin-scholarship-deadline"),
+      eligibility: getValue("admin-scholarship-eligibility"),
+      application_url: getValue("admin-scholarship-application-url"),
+      required_documents: getValue("admin-scholarship-required-documents")
+    });
+  }
+
+  if (type === "learning") {
+    return compactObject({
+      service_type: getValue("admin-service-type"),
+      price_info: getValue("admin-service-price-info") || "Sob consulta",
+      target_audience: getValue("admin-service-target-audience"),
+      benefits: getValue("admin-service-benefits"),
+      contact_url: getValue("admin-service-contact-url")
+    });
+  }
+
+  return {};
+}
+
+function getRecommendedFieldWarnings(type) {
+  const warnings = [];
+  if (type === "call") {
+    if (!getValue("admin-opportunity-deadline")) warnings.push("Prazo de candidatura recomendado para Oportunidade.");
+    if (!getValue("admin-opportunity-application-url")) warnings.push("Link de candidatura recomendado para Oportunidade.");
+  }
+  if (type === "scholarship") {
+    if (!getValue("admin-scholarship-deadline")) warnings.push("Prazo recomendado para Bolsa.");
+    if (!getValue("admin-scholarship-application-url")) warnings.push("Link de candidatura recomendado para Bolsa.");
+  }
+  if (type === "learning") {
+    if (!getValue("admin-service-type")) warnings.push("Tipo de serviço recomendado.");
+    if (!getValue("admin-service-contact-url")) warnings.push("Contacto/WhatsApp recomendado para Serviço.");
+  }
+  return warnings;
+}
+
+function getAdminValidationError(type) {
+  if (!getValue("admin-content-title")) return "Preencha o título do conteúdo.";
+  if (!type) return "Escolha o tipo de conteúdo.";
+  if (!getValue("admin-content-summary")) return "Preencha o resumo do conteúdo.";
+  if (!getValue("admin-news-description")) return "Preencha o corpo do texto.";
+  if (type === "event" && !getValue("admin-event-date")) return "Preencha a data do evento.";
+  if (type === "event" && !getValue("admin-event-location")) return "Preencha o local do evento.";
+  return "";
+}
+
+function fillMetadataFields(type, metadata = {}) {
+  setValue("admin-news-author", metadata.news_author);
+  setValue("admin-photo-credits", metadata.photo_credits);
+
+  setValue("admin-event-date", metadata.event_date);
+  setValue("admin-event-time", metadata.event_time);
+  setValue("admin-event-location", metadata.event_location);
+  setValue("admin-ticket-info", metadata.ticket_info);
+  setValue("admin-organizer", metadata.organizer);
+  setValue("admin-registration-url", metadata.registration_url);
+
+  setValue("admin-opportunity-deadline", metadata.deadline);
+  setValue("admin-opportunity-promoter", metadata.promoter);
+  setValue("admin-opportunity-target-audience", metadata.target_audience);
+  setValue("admin-opportunity-requirements", metadata.requirements);
+  setValue("admin-opportunity-benefits", metadata.benefits);
+  setValue("admin-opportunity-application-url", metadata.application_url);
+  setValue("admin-opportunity-attachment-url", metadata.attachment_url);
+
+  setValue("admin-scholarship-country-location", metadata.country_or_location);
+  setValue("admin-scholarship-amount-benefit", metadata.amount_or_benefit);
+  setValue("admin-scholarship-duration", metadata.duration);
+  setValue("admin-scholarship-deadline", metadata.deadline);
+  setValue("admin-scholarship-eligibility", metadata.eligibility);
+  setValue("admin-scholarship-application-url", metadata.application_url);
+  setValue("admin-scholarship-required-documents", metadata.required_documents);
+
+  setValue("admin-service-type", metadata.service_type);
+  setValue("admin-service-price-info", metadata.price_info || "Sob consulta");
+  setValue("admin-service-target-audience", metadata.target_audience);
+  setValue("admin-service-benefits", metadata.benefits);
+  setValue("admin-service-contact-url", metadata.contact_url);
+}
+
+function fillGalleryFields(gallery = []) {
+  const normalized = parseJsonArrayField(gallery).map(normalizeGalleryEntry).filter(Boolean);
+  setValue("admin-gallery-urls", normalized.map((entry) => entry.url).join("\n"));
+}
+
 function toggleAdminTypeFields() {
   const type = getValue("admin-content-type");
+  const visibility = {
+    "admin-fields-news": type === "news",
+    "admin-fields-event": type === "event",
+    "admin-fields-opportunity": type === "call",
+    "admin-fields-scholarship": type === "scholarship",
+    "admin-fields-learning": type === "learning",
+    "admin-gallery-fields": type === "event" || type === "learning"
+  };
 
-  const newsBlock = document.getElementById("admin-fields-news");
-  const eventBlock = document.getElementById("admin-fields-event");
-  const opportunityBlock = document.getElementById("admin-fields-opportunity");
-  const learningBlock = document.getElementById("admin-fields-learning");
-
-  if (newsBlock) {
-    newsBlock.style.display = type === "news" ? "block" : "none";
-  }
-
-  if (eventBlock) {
-    eventBlock.style.display = type === "event" ? "block" : "none";
-  }
-
-  if (opportunityBlock) {
-    opportunityBlock.style.display =
-      (type === "call" || type === "scholarship") ? "block" : "none";
-  }
-
-  if (learningBlock) {
-    learningBlock.style.display = type === "learning" ? "block" : "none";
-  }
+  Object.entries(visibility).forEach(([id, isVisible]) => {
+    const block = document.getElementById(id);
+    if (block) block.style.display = isVisible ? "block" : "none";
+  });
 }
 
 async function uploadAdminImageIfNeeded() {
@@ -1048,73 +1202,39 @@ async function uploadAdminImageIfNeeded() {
   return existingUrl || null;
 }
 
-function getAdminFormDataByType(imageUrl = null) {
+async function getAdminFormDataByType(imageUrl = null) {
   const type = getValue("admin-content-type") || "news";
   const title = getValue("admin-content-title");
-
   const summary = getValue("admin-content-summary");
   const body = getValue("admin-news-description");
   const status = normalizeStatus(getValue("admin-content-status") || "draft");
+  const externalUrl = getValue("admin-content-external-url") || null;
+  const metadata = getAdminMetadataByType(type);
+  const gallery = type === "event" || type === "learning" ? await uploadAdminGalleryIfNeeded() : [];
 
-  const baseData = {
+  const primaryCtaUrl = metadata.registration_url || metadata.application_url || metadata.contact_url || externalUrl;
+  const slugValue = getValue("admin-news-slug") || `${slugify(title)}-${Date.now()}`;
+
+  return {
     type,
     status,
     title,
+    slug: slugValue,
     category: getValue("admin-content-category") || null,
     excerpt: summary || null,
-    body: body || null,
     summary: summary || null,
+    body: body || null,
     description: body || null,
     image_url: imageUrl,
-    external_url: getValue("admin-content-external-url") || null,
-    external_links: buildExternalLinks(getValue("admin-content-external-url") || null),
+    external_url: primaryCtaUrl || null,
+    external_links: buildExternalLinks(primaryCtaUrl || null),
+    metadata,
+    gallery,
     seo_title: getValue("admin-content-seo-title") || null,
     seo_description: getValue("admin-content-seo-description") || null,
     featured: document.getElementById("admin-content-featured")?.checked || false,
     updated_at: new Date().toISOString()
   };
-
-  // NOTÍCIA
-  if (type === "news") {
-    return {
-      ...baseData,
-      slug: getValue("admin-news-slug") || `${slugify(title)}-${Date.now()}`
-    };
-  }
-
-  // APRENDER (usa estrutura de notícia)
-  if (type === "learning") {
-    return {
-      ...baseData,
-      slug: `${slugify(title)}-${Date.now()}`
-    };
-  }
-
-  // EVENTO
-  if (type === "event") {
-    return {
-      ...baseData,
-      slug: `${slugify(title)}-${Date.now()}`,
-      category: getValue("admin-event-category") || getValue("admin-content-category") || null,
-      body: getValue("admin-event-description") || null,
-      description: getValue("admin-event-description") || null
-    };
-  }
-
-  // CHAMADA + BOLSA (usa estrutura de oportunidade)
-  if (type === "call" || type === "scholarship") {
-    return {
-      ...baseData,
-      slug: `${slugify(title)}-${Date.now()}`,
-      category: getValue("admin-opportunity-category") || getValue("admin-content-category") || null,
-      external_url: getValue("admin-opportunity-link") || getValue("admin-content-external-url") || null,
-      external_links: buildExternalLinks(getValue("admin-opportunity-link") || getValue("admin-content-external-url") || null),
-      body: getValue("admin-opportunity-description") || null,
-      description: getValue("admin-opportunity-description")
-    };
-  }
-
-  return baseData;
 }
 
 /* =====================================================
@@ -1125,17 +1245,19 @@ async function saveAdminContent() {
   const editId = getValue("admin-edit-id");
   const type = getValue("admin-content-type");
   const title = getValue("admin-content-title");
+  const validationError = getAdminValidationError(type);
 
-  if (!title) {
-    showMessage("admin-message", "Preencha o título do conteúdo.", "error");
+  if (validationError) {
+    showMessage("admin-message", validationError, "error");
     return;
   }
 
-  showMessage("admin-message", "A guardar conteúdo...", "info");
+  const recommendations = getRecommendedFieldWarnings(type);
+  showMessage("admin-message", recommendations.length ? `A guardar conteúdo... ${recommendations.join(" ")}` : "A guardar conteúdo...", recommendations.length ? "info" : "info");
 
   try {
     const imageUrl = await uploadAdminImageIfNeeded();
-    const payload = getAdminFormDataByType(imageUrl);
+    const payload = await getAdminFormDataByType(imageUrl);
     if (normalizeStatus(payload.status) === "published") {
       payload.published_at = new Date().toISOString();
     } else {

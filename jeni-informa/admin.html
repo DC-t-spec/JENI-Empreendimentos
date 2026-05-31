@@ -86,8 +86,71 @@
             <div class="admin-field full"><button type="button" id="admin-preview-btn" class="jeni-btn jeni-btn-outline">Preview</button></div>
 
           </div>
-          <div id="admin-fields-event" class="admin-type-block" style="display:none;"><div class="admin-form-grid"><div class="admin-field"><label for="admin-event-category">Categoria</label><input id="admin-event-category" type="text"/></div><div class="admin-field full"><label for="admin-event-description">Descrição</label><textarea id="admin-event-description"></textarea></div></div></div>
-          <div id="admin-fields-opportunity" class="admin-type-block" style="display:none;"><div class="admin-form-grid"><div class="admin-field"><label for="admin-opportunity-category">Categoria</label><input id="admin-opportunity-category" type="text"/></div><div class="admin-field"><label for="admin-opportunity-link">Link</label><input id="admin-opportunity-link" type="url"/></div><div class="admin-field full"><label for="admin-opportunity-description">Descrição</label><textarea id="admin-opportunity-description"></textarea></div></div></div>
+          <div id="admin-fields-news" class="admin-type-block" style="display:none;">
+            <div class="section-head compact"><h4>Campos de notícia</h4><p>Comunicados, artigos e novidades.</p></div>
+            <div class="admin-form-grid">
+              <div class="admin-field"><label for="admin-news-author">Autor da notícia</label><input id="admin-news-author" type="text" /></div>
+              <div class="admin-field"><label for="admin-photo-credits">Créditos das fotos</label><input id="admin-photo-credits" type="text" /></div>
+            </div>
+          </div>
+
+          <div id="admin-fields-event" class="admin-type-block" style="display:none;">
+            <div class="section-head compact"><h4>Campos de evento</h4><p>Espetáculos, formações, lançamentos e debates.</p></div>
+            <div class="admin-form-grid">
+              <div class="admin-field"><label for="admin-event-date">Data do evento *</label><input id="admin-event-date" type="date" /></div>
+              <div class="admin-field"><label for="admin-event-time">Hora</label><input id="admin-event-time" type="time" /></div>
+              <div class="admin-field full"><label for="admin-event-location">Local *</label><input id="admin-event-location" type="text" /></div>
+              <div class="admin-field"><label for="admin-ticket-info">Preço/bilhete</label><input id="admin-ticket-info" type="text" /></div>
+              <div class="admin-field"><label for="admin-organizer">Organização/parceiro</label><input id="admin-organizer" type="text" /></div>
+              <div class="admin-field full"><label for="admin-registration-url">Link de inscrição/bilhete</label><input id="admin-registration-url" type="url" placeholder="https://..." /></div>
+            </div>
+          </div>
+
+          <div id="admin-fields-opportunity" class="admin-type-block" style="display:none;">
+            <div class="section-head compact"><h4>Campos de oportunidade</h4><p>Chamadas abertas, concursos e candidaturas.</p></div>
+            <div class="admin-form-grid">
+              <div class="admin-field"><label for="admin-opportunity-deadline">Prazo de candidatura</label><input id="admin-opportunity-deadline" type="date" /></div>
+              <div class="admin-field"><label for="admin-opportunity-promoter">Entidade promotora</label><input id="admin-opportunity-promoter" type="text" /></div>
+              <div class="admin-field full"><label for="admin-opportunity-target-audience">Público-alvo</label><input id="admin-opportunity-target-audience" type="text" /></div>
+              <div class="admin-field full"><label for="admin-opportunity-requirements">Requisitos</label><textarea id="admin-opportunity-requirements"></textarea></div>
+              <div class="admin-field full"><label for="admin-opportunity-benefits">Benefícios</label><textarea id="admin-opportunity-benefits"></textarea></div>
+              <div class="admin-field"><label for="admin-opportunity-application-url">Link de candidatura</label><input id="admin-opportunity-application-url" type="url" placeholder="https://..." /></div>
+              <div class="admin-field"><label for="admin-opportunity-attachment-url">Anexo/documento</label><input id="admin-opportunity-attachment-url" type="url" placeholder="https://..." /></div>
+            </div>
+          </div>
+
+          <div id="admin-fields-scholarship" class="admin-type-block" style="display:none;">
+            <div class="section-head compact"><h4>Campos de bolsa</h4><p>Bolsas de estudo, apoios, residências e financiamento.</p></div>
+            <div class="admin-form-grid">
+              <div class="admin-field"><label for="admin-scholarship-country-location">País/local</label><input id="admin-scholarship-country-location" type="text" /></div>
+              <div class="admin-field"><label for="admin-scholarship-amount-benefit">Valor/benefício</label><input id="admin-scholarship-amount-benefit" type="text" /></div>
+              <div class="admin-field"><label for="admin-scholarship-duration">Duração</label><input id="admin-scholarship-duration" type="text" /></div>
+              <div class="admin-field"><label for="admin-scholarship-deadline">Prazo</label><input id="admin-scholarship-deadline" type="date" /></div>
+              <div class="admin-field full"><label for="admin-scholarship-eligibility">Critérios de elegibilidade</label><textarea id="admin-scholarship-eligibility"></textarea></div>
+              <div class="admin-field"><label for="admin-scholarship-application-url">Link de candidatura</label><input id="admin-scholarship-application-url" type="url" placeholder="https://..." /></div>
+              <div class="admin-field full"><label for="admin-scholarship-required-documents">Documentos necessários</label><textarea id="admin-scholarship-required-documents"></textarea></div>
+            </div>
+          </div>
+
+          <div id="admin-fields-learning" class="admin-type-block" style="display:none;">
+            <div class="section-head compact"><h4>Campos de serviço</h4><p>Serviços da JENI consultoria.</p></div>
+            <div class="admin-form-grid">
+              <div class="admin-field"><label for="admin-service-type">Tipo de serviço</label><input id="admin-service-type" type="text" /></div>
+              <div class="admin-field"><label for="admin-service-price-info">Preço</label><input id="admin-service-price-info" type="text" value="Sob consulta" /></div>
+              <div class="admin-field full"><label for="admin-service-target-audience">Público-alvo</label><input id="admin-service-target-audience" type="text" /></div>
+              <div class="admin-field full"><label for="admin-service-benefits">Benefícios</label><textarea id="admin-service-benefits"></textarea></div>
+              <div class="admin-field full"><label for="admin-service-contact-url">Botão de contacto/WhatsApp</label><input id="admin-service-contact-url" type="url" placeholder="https://wa.me/..." /></div>
+            </div>
+          </div>
+
+          <div id="admin-gallery-fields" class="admin-type-block" style="display:none;">
+            <div class="section-head compact"><h4>Galeria / portfólio</h4><p>Uma imagem por linha. Também pode enviar várias imagens se o upload estiver disponível.</p></div>
+            <div class="admin-form-grid">
+              <div class="admin-field full"><label for="admin-gallery-uploads">Upload de imagens da galeria</label><input type="file" id="admin-gallery-uploads" accept="image/*" multiple /></div>
+              <div class="admin-field full"><label for="admin-gallery-urls">URLs da galeria</label><textarea id="admin-gallery-urls" placeholder="https://...
+https://..."></textarea></div>
+            </div>
+          </div>
           <div class="admin-actions-row"><button type="submit" class="jeni-btn jeni-btn-primary">Guardar</button><button type="button" id="admin-cancel-editor" class="jeni-btn jeni-btn-secondary">Cancelar</button><button type="button" id="admin-reset-editor" class="jeni-btn jeni-btn-outline">Limpar</button></div>
         </form><div id="admin-preview" class="admin-empty-state" style="display:none;"></div>
       </section>
