@@ -16,7 +16,7 @@
       </div>
       <nav class="admin-nav">
         <a href="#overview" class="active">Dashboard</a>
-        <a href="#content">Submissões</a>
+        <a href="#content">Conteúdos</a>
         <a href="#editor">Editor</a>
         <a href="#homepage">Homepage Control</a>
         <a href="#media">Media Library</a>
@@ -47,23 +47,21 @@
           <div class="admin-stat-card"><span>Drafts</span><strong id="stat-draft">0</strong></div>
           <div class="admin-stat-card"><span>Publicados</span><strong id="stat-published">0</strong></div>
           <div class="admin-stat-card"><span>Arquivados</span><strong id="stat-archived">0</strong></div>
-          <div class="admin-stat-card"><span>Rejeitados</span><strong id="stat-review">0</strong></div>
+          <div class="admin-stat-card"><span>Em revisão</span><strong id="stat-review">0</strong></div>
           <div class="admin-stat-card"><span>Newsletter</span><strong id="stat-newsletter">--</strong></div>
         </div>
       </section>
 
       <section class="dashboard-panel" id="content">
-        <div class="section-head"><h3>Submissões</h3><p>Fluxo editorial de análise, aprovação e publicação.</p></div>
+        <div class="section-head"><h3>Conteúdos</h3><p>Fluxo editorial de rascunho, revisão, publicação e arquivo.</p></div>
         <div class="admin-toolbar">
           <div class="admin-field grow"><label for="admin-search">Pesquisar</label><input type="text" id="admin-search" placeholder="Título, resumo, categoria..." /></div>
-          <div class="admin-field"><label for="admin-filter-type">Tipo</label><select id="admin-filter-type"><option value="">Todos</option><option value="news">Notícias</option><option value="event">Eventos</option><option value="call">Oportunidades</option><option value="scholarship">Bolsas</option><option value="learning">Serviços</option></select></div>
-          <div class="admin-field"><label for="admin-filter-status">Estado</label><select id="admin-filter-status"><option value="">Todos</option><option value="draft">Draft</option><option value="submitted">Submetido</option><option value="review">Em revisão</option><option value="needs_revision">Precisa revisão</option><option value="approved">Aprovado</option><option value="rejected">Rejeitado</option><option value="published">Publicado</option></select></div>
-          <div class="admin-field"><label for="admin-filter-producer">Produtor</label><input type="text" id="admin-filter-producer" placeholder="Nome do produtor..." /></div>
+          <div class="admin-field"><label for="admin-filter-status">Estado</label><select id="admin-filter-status"><option value="">Todos</option><option value="draft">Rascunho</option><option value="review">Em revisão</option><option value="published">Publicado</option><option value="archived">Arquivado</option></select></div>
           <button type="button" id="admin-apply-filters" class="jeni-btn jeni-btn-secondary">Aplicar</button>
           <button type="button" id="admin-toggle-editor" class="jeni-btn jeni-btn-primary">+ Novo conteúdo</button>
         </div>
         <div id="admin-message" class="auth-message"></div>
-        <div id="admin-submissions-list" class="admin-submissions-list"><div class="admin-empty-state">A carregar conteúdos...</div></div>
+        <div id="admin-content-list" class="admin-content-list"><div class="admin-empty-state">A carregar conteúdos...</div></div>
       </section>
 
       <section class="dashboard-panel admin-editor" id="editor">
@@ -71,7 +69,7 @@
         <form id="admin-content-form"><input type="hidden" id="admin-edit-id" />
           <div class="admin-form-grid">
             <div class="admin-field"><label for="admin-content-type">Tipo</label><select id="admin-content-type" required><option value="news">Notícia</option><option value="event">Evento</option><option value="call">Oportunidade</option><option value="scholarship">Bolsa</option><option value="learning">Serviço</option></select></div>
-            <div class="admin-field"><label for="admin-content-status">Status</label><select id="admin-content-status" required><option value="draft">Draft</option><option value="review">Review</option><option value="published">Published</option><option value="archived">Archived</option></select></div>
+            <div class="admin-field"><label for="admin-content-status">Status</label><select id="admin-content-status" required><option value="draft">Rascunho</option><option value="review">Em revisão</option><option value="published">Publicado</option><option value="archived">Arquivado</option></select></div>
             <div class="admin-field full"><label for="admin-content-title">Título</label><input type="text" id="admin-content-title" required /></div>
             <div class="admin-field"><label for="admin-content-category">Categoria</label><input type="text" id="admin-content-category" placeholder="Ex.: Cultura, Negócios, Eventos" /></div>
             <div class="admin-field full"><label for="admin-content-summary">Subtítulo / resumo</label><textarea id="admin-content-summary"></textarea></div>
@@ -79,7 +77,6 @@
             <textarea id="admin-content-description" style="display:none;"></textarea>
             <div class="admin-field"><label for="admin-news-slug">Slug</label><input type="text" id="admin-news-slug" /></div>
             <div class="admin-field"><label for="admin-content-image-upload">Hero image</label><input type="file" id="admin-content-image-upload" accept="image/*" /></div>
-            <div class="admin-field full"><label for="admin-content-gallery-upload">Galeria</label><input type="file" id="admin-content-gallery-upload" accept="image/*" multiple /></div>
             <div class="admin-field full"><label for="admin-content-image">Ou URL da imagem</label><input type="url" id="admin-content-image" placeholder="https://..." /></div>
             <div class="admin-field full"><label for="admin-content-external-url">Link externo relacionado</label><input type="url" id="admin-content-external-url" placeholder="https://fonte, vídeo, publicação original ou parceiro" /></div>
             <div class="admin-field full"><div class="admin-check-row"><input type="checkbox" id="admin-content-featured" /><label for="admin-content-featured">Marcar como destaque / lead story</label></div></div>
@@ -97,9 +94,9 @@
         </form><div id="admin-preview" class="admin-empty-state" style="display:none;"></div>
       </section>
 
-      <section class="dashboard-panel" id="homepage"><div class="section-head"><h3>Homepage Control</h3><p>Gestão de hero, CTA, destaques, parceiros e secções.</p></div><div id="homepage-sections-list" class="admin-submissions-list"><div class="admin-empty-state">A carregar secções da homepage...</div></div><div id="homepage-message" class="auth-message"></div></section>
+      <section class="dashboard-panel" id="homepage"><div class="section-head"><h3>Homepage Control</h3><p>Gestão de hero, CTA, destaques, parceiros e secções.</p></div><div id="homepage-sections-list" class="admin-content-list"><div class="admin-empty-state">A carregar secções da homepage...</div></div><div id="homepage-message" class="auth-message"></div></section>
       <section class="dashboard-panel" id="media"><div class="section-head"><h3>Media Library</h3><p>Upload visual e gestão básica de metadata.</p></div><div class="admin-toolbar"><div class="admin-field grow"><label for="media-upload">Upload</label><input type="file" id="media-upload" accept="image/*" /></div><button type="button" id="media-upload-btn" class="jeni-btn jeni-btn-primary">Enviar</button></div><div id="media-message" class="auth-message"></div><div id="media-grid" class="quick-grid"><div class="admin-empty-state">A carregar biblioteca...</div></div></section>
-      <section class="dashboard-panel" id="newsletter"><div class="section-head"><h3>Newsletter Management</h3><p>Subscribers, métricas simples e exportação futura.</p></div><div class="admin-toolbar"><div class="admin-field grow"><label for="newsletter-search">Pesquisar</label><input type="text" id="newsletter-search" placeholder="email" /></div><button type="button" id="newsletter-search-btn" class="jeni-btn jeni-btn-secondary">Filtrar</button><button type="button" id="newsletter-export-btn" class="jeni-btn jeni-btn-outline">Export CSV</button></div><div id="newsletter-message" class="auth-message"></div><div id="newsletter-total" class="admin-empty-state">Total: 0</div><div id="newsletter-list" class="admin-submissions-list"></div></section>
+      <section class="dashboard-panel" id="newsletter"><div class="section-head"><h3>Newsletter Management</h3><p>Subscribers, métricas simples e exportação futura.</p></div><div class="admin-toolbar"><div class="admin-field grow"><label for="newsletter-search">Pesquisar</label><input type="text" id="newsletter-search" placeholder="email" /></div><button type="button" id="newsletter-search-btn" class="jeni-btn jeni-btn-secondary">Filtrar</button><button type="button" id="newsletter-export-btn" class="jeni-btn jeni-btn-outline">Export CSV</button></div><div id="newsletter-message" class="auth-message"></div><div id="newsletter-total" class="admin-empty-state">Total: 0</div><div id="newsletter-list" class="admin-content-list"></div></section>
     </main>
   </div>
 

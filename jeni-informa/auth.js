@@ -1,6 +1,6 @@
 /* =====================================================
-JENI INFORMA — AUTH & SUBMISSIONS
-Supabase client + auth + forms + admin
+JENI INFORMA — AUTH & CONTENT ITEMS
+Supabase client + auth + content forms + admin
 ===================================================== */
 
 const SUPABASE_URL = "https://qkwusyhkycthottckzww.supabase.co";
@@ -14,9 +14,6 @@ const supabaseClient = window.JeniSupabase?.createSupabaseClient
 
 const authService = window.JeniAuthService?.createAuthService
   ? window.JeniAuthService.createAuthService(supabaseClient)
-  : null;
-const contentService = window.JeniContentService?.createContentService
-  ? window.JeniContentService.createContentService(supabaseClient)
   : null;
 
 /* =====================================================
@@ -111,31 +108,21 @@ function getTypeLabel(type) {
   if (type === "call") return "Chamada";
   if (type === "scholarship") return "Bolsa";
   if (type === "learning") return "Aprender";
-  return type || "Submissão";
+  return type || "Conteúdo";
 }
 
 function getStatusLabel(status) {
   status = normalizeStatus(status);
-  if (status === "draft") return "Draft";
-  if (status === "submitted") return "Submetido";
+  if (status === "draft") return "Rascunho";
   if (status === "review") return "Em revisão";
-  if (status === "needs_revision") return "Precisa revisão";
-  if (status === "approved") return "Aprovado";
-  if (status === "rejected") return "Rejeitado";
   if (status === "published") return "Publicado";
   if (status === "archived") return "Arquivado";
-  return status || "Sem estado";
+  return "Rascunho";
 }
 
-const EDITORIAL_STATUS = ["draft", "submitted", "review", "needs_revision", "approved", "rejected", "published", "archived"];
+const EDITORIAL_STATUS = ["draft", "review", "published", "archived"];
 function normalizeStatus(status) {
-  const map = { pending: "submitted", publish: "published" };
-  const normalized = map[status] || status || "draft";
-  return EDITORIAL_STATUS.includes(normalized) ? normalized : "draft";
-}
-function normalizeItem(item) {
-  if (!item) return item;
-  return { ...item, status: normalizeStatus(item.status) };
+  return EDITORIAL_STATUS.includes(status) ? status : "draft";
 }
 
 function normalizeContentItem(item) {
@@ -157,14 +144,12 @@ function splitCsv(value) {
     .filter(Boolean);
 }
 
+function buildExternalLinks(primaryUrl, label = "Link externo") {
+  return primaryUrl ? [{ url: primaryUrl, label }] : [];
+}
+
 function normalizeContentItemPayload(payload = {}) {
   const normalized = { ...payload };
-
-  if (normalized.user_id && !normalized.author_id) {
-    normalized.author_id = normalized.user_id;
-  }
-
-  delete normalized.user_id;
 
   if (!normalized.author_id) {
     delete normalized.author_id;
@@ -409,60 +394,12 @@ async function uploadImage(file, folder) {
 
   return data.publicUrl;
 }
-async function uploadMultipleImages(files, folder) {
-  if (!files || !files.length) return [];
-
-  const user = await getCurrentUser();
-  if (!user) return [];
-
-  const uploadedUrls = [];
-
-  for (let i = 0; i < files.length; i++) {
-    const file = files[i];
-    const cleanName = file.name.replace(/\s+/g, "-");
-    const fileName = `${user.id}/${folder}/${Date.now()}-${i}-${cleanName}`;
-
-    const { error } = await supabaseClient
-      .storage
-      .from("jeni-informa")
-      .upload(fileName, file);
-
-    if (error) throw error;
-
-    const { data } = supabaseClient
-      .storage
-      .from("jeni-informa")
-      .getPublicUrl(fileName);
-
-    uploadedUrls.push(data.publicUrl);
-  }
-
-  return uploadedUrls;
-}
-
-function getFiles(id) {
-  const el = document.getElementById(id);
-  return el && el.files ? Array.from(el.files) : [];
-}
-
-async function saveSubmissionGallery(submissionId, imageUrls = []) {
-  if (!submissionId || !imageUrls.length) return;
-
-  const rows = imageUrls.map((url, index) => ({
-    submission_id: submissionId,
-    image_url: url,
-    position: index + 1
-  }));
-
-  const { error } = await supabaseClient
-    .from("submission_images")
-    .insert(rows);
-
-  if (error) throw error;
-}
+/* =====================================================
+CONTENT FORMS
+===================================================== */
 
 /* =====================================================
-EVENT SUBMISSION
+EVENT CONTENT
 ===================================================== */
 
 async function submitEventForm(status = "review") {
@@ -474,35 +411,28 @@ async function submitEventForm(status = "review") {
   const title = getValue("title");
   const startDate = getValue("start_date");
 
+  const description = getValue("description");
   const payload = {
-    user_id: user.id,
+    author_id: user.id,
     type: "event",
     status: normalizeStatus(status || "review"),
     title,
     slug: `${slugify(title)}-${Date.now()}`,
+    excerpt: getValue("category") || null,
+    summary: getValue("category") || null,
+    body: description || null,
+    description: description || null,
+    image_url: null,
+    external_url: null,
+    external_links: [],
+    published_at: null,
     category: getValue("category") || null,
-    description: getValue("description"),
-    start_date: startDate || null,
-    end_date: null,
-    event_time: getValue("event_time") || null,
     location: getValue("location") || null,
+    event_date: startDate || null,
+    event_time: getValue("event_time") || null,
     ticket_price: getValue("ticket_price") || null,
     ticket_info: getValue("ticket_info") || null,
-    video_url: getValue("video_url") || null,
-    image_url: null,
-
-    summary: null,
-    deadline: null,
-    external_url: null,
-    institution_name: null,
-    learning_outcomes: null,
-    target_audience: null,
-    learning_format: null,
-    duration: null,
-    author_name: null,
-    photo_credit: null,
-    incident_location: null,
-    incident_date: null
+    video_url: getValue("video_url") || null
   };
 
   const image = getFile("image");
@@ -511,7 +441,7 @@ async function submitEventForm(status = "review") {
     payload.image_url = image ? await uploadImage(image, "events") : null;
 
     const { error } = await supabaseClient
-      .from("submissions")
+      .from("content_items")
       .insert([payload]);
 
     if (error) {
@@ -521,12 +451,12 @@ async function submitEventForm(status = "review") {
 
     showMessage(
       "event-message",
-      status === "draft" ? "Rascunho guardado." : "Evento enviado para aprovação.",
+      status === "draft" ? "Rascunho guardado." : "Evento guardado em revisão.",
       "success"
     );
   } catch (err) {
     console.error("EVENT CATCH ERROR:", err);
-    showMessage("event-message", err.message || "Erro ao submeter evento.", "error");
+    showMessage("event-message", err.message || "Erro ao guardar evento.", "error");
   }
 }
 
@@ -541,7 +471,7 @@ function initEventFormPage() {
 }
 
 /* =====================================================
-OPPORTUNITY SUBMISSION
+OPPORTUNITY CONTENT
 ===================================================== */
 
 async function submitOpportunityForm(status = "review") {
@@ -552,35 +482,25 @@ async function submitOpportunityForm(status = "review") {
 
   const title = getValue("title");
 
+  const externalUrl = getValue("external_url") || null;
+  const description = getValue("description");
+  const summary = getValue("summary") || null;
   const payload = {
-    user_id: user.id,
+    author_id: user.id,
     type: getValue("type") || "call",
     status: normalizeStatus(status || "review"),
     title,
     slug: `${slugify(title)}-${Date.now()}`,
-    category: getValue("category") || null,
-    summary: getValue("summary") || null,
-    description: getValue("description"),
-    deadline: getValue("deadline") || null,
-    external_url: getValue("external_url") || null,
-    institution_name: getValue("institution_name") || null,
-    target_audience: getValue("target_audience") || null,
-    learning_outcomes: getValue("learning_outcomes") || null,
-    learning_format: getValue("learning_format") || null,
-    duration: getValue("duration") || null,
+    excerpt: summary,
+    summary,
+    body: description || null,
+    description: description || null,
     image_url: null,
-
-    start_date: null,
-    end_date: null,
-    event_time: null,
-    location: null,
-    ticket_price: null,
-    ticket_info: null,
-    video_url: null,
-    author_name: null,
-    photo_credit: null,
-    incident_location: null,
-    incident_date: null
+    external_url: externalUrl,
+    external_links: buildExternalLinks(externalUrl),
+    published_at: null,
+    category: getValue("category") || null,
+    deadline: getValue("deadline") || null
   };
 
   const image = getFile("image");
@@ -589,7 +509,7 @@ async function submitOpportunityForm(status = "review") {
     payload.image_url = image ? await uploadImage(image, "opportunities") : null;
 
     const { error } = await supabaseClient
-      .from("submissions")
+      .from("content_items")
       .insert([payload]);
 
     if (error) {
@@ -599,12 +519,12 @@ async function submitOpportunityForm(status = "review") {
 
     showMessage(
       "opportunity-message",
-      status === "draft" ? "Rascunho guardado." : "Oportunidade enviada para aprovação.",
+      status === "draft" ? "Rascunho guardado." : "Oportunidade guardada em revisão.",
       "success"
     );
   } catch (err) {
     console.error("OPPORTUNITY CATCH ERROR:", err);
-    showMessage("opportunity-message", err.message || "Erro ao submeter oportunidade.", "error");
+    showMessage("opportunity-message", err.message || "Erro ao guardar oportunidade.", "error");
   }
 }
 
@@ -626,28 +546,28 @@ function initOpportunityFormPage() {
   }
 }
 /* =====================================================
-MINHAS SUBMISSÕES
+MEUS CONTEÚDOS
 ===================================================== */
 
-async function loadMySubmissions() {
+async function loadMyContent() {
   const user = await requireAuth();
   if (!user) return;
 
-  const listEl = document.getElementById("my-submissions-list");
-  const messageElId = "my-submissions-message";
+  const listEl = document.getElementById("my-content-list");
+  const messageElId = "my-content-message";
 
   if (listEl) {
-    listEl.innerHTML = `<div class="empty-state">A carregar submissões...</div>`;
+    listEl.innerHTML = `<div class="empty-state">A carregar conteúdos...</div>`;
   }
 
   const { data, error } = await supabaseClient
-    .from("submissions")
+    .from("content_items")
     .select("*")
-    .eq("user_id", user.id)
+    .eq("author_id", user.id)
     .order("created_at", { ascending: false });
 
   if (error) {
-    showMessage(messageElId, error.message || "Erro ao carregar submissões.", "error");
+    showMessage(messageElId, error.message || "Erro ao carregar conteúdos.", "error");
     return;
   }
 
@@ -658,7 +578,7 @@ async function loadMySubmissions() {
   if (!data || data.length === 0) {
     listEl.innerHTML = `
       <div class="empty-state">
-        Ainda não submeteu nenhum conteúdo.
+        Ainda não criou nenhum conteúdo.
       </div>
     `;
     return;
@@ -687,9 +607,9 @@ async function loadMySubmissions() {
       : "Sem descrição disponível.";
 
     return `
-      <article class="submission-card">
-        <div class="submission-card-top">
-          <div class="submission-card-meta">
+      <article class="content-card">
+        <div class="content-card-top">
+          <div class="content-card-meta">
             <span class="admin-type-pill">${escapeHtml(getTypeLabel(item.type))}</span>
             <span class="admin-status-pill ${escapeHtml(item.status || "")}">
               ${escapeHtml(getStatusLabel(item.status))}
@@ -713,10 +633,10 @@ async function loadMySubmissions() {
 }
 
 /* =====================================================
-ADMIN — DADOS
+ADMIN — CONTENT_ITEMS DATA
 ===================================================== */
 
-async function loadAdminSubmissions() {
+async function loadAdminContentItems() {
   const { data, error } = await supabaseClient
     .from("content_items")
     .select("*")
@@ -724,19 +644,19 @@ async function loadAdminSubmissions() {
   return { data: (data || []).map(normalizeContentItem), error };
 }
 
-async function updateSubmissionStatus(submissionId, newStatus) {
+async function updateContentItemStatus(contentItemId, newStatus) {
   const mapped = normalizeStatus(newStatus);
   const updateData = { status: mapped, updated_at: new Date().toISOString() };
   if (mapped === "published") updateData.published_at = new Date().toISOString();
-  return await supabaseClient.from("content_items").update(updateData).eq("id", submissionId).select().single();
+  return await supabaseClient.from("content_items").update(updateData).eq("id", contentItemId).select().single();
 }
 
-async function updateSubmissionById(submissionId, payload) {
+async function updateContentItemById(contentItemId, payload) {
   const contentPayload = normalizeContentItemPayload(payload);
-  return await supabaseClient.from("content_items").update(contentPayload).eq("id", submissionId).select().single();
+  return await supabaseClient.from("content_items").update(contentPayload).eq("id", contentItemId).select().single();
 }
 
-async function createSubmissionByAdmin(payload) {
+async function createContentItemByAdmin(payload) {
   const contentPayload = normalizeContentItemPayload(payload);
   return await supabaseClient.from("content_items").insert([contentPayload]).select().single();
 }
@@ -750,45 +670,29 @@ async function submitNewsForm(status = "review") {
 
   const title = getValue("title");
 
+  const description = getValue("description");
   const payload = {
-    user_id: user.id,
+    author_id: user.id,
     type: "news",
     status: normalizeStatus(status || "review"),
     title,
     slug: `${slugify(title)}-${Date.now()}`,
-    category: getValue("category") || null,
-    description: getValue("description"),
-    author_name: getValue("author_name") || null,
-    photo_credit: getValue("photo_credit") || null,
-    incident_location: getValue("incident_location") || null,
-    incident_date: getValue("incident_date") || null,
+    excerpt: getValue("category") || null,
+    summary: getValue("category") || null,
+    body: description || null,
+    description: description || null,
     image_url: null,
-
-    summary: null,
-    start_date: null,
-    end_date: null,
-    event_time: null,
-    location: null,
-    ticket_price: null,
-    ticket_info: null,
-    video_url: null,
-    deadline: null,
     external_url: null,
-    institution_name: null,
-    learning_outcomes: null,
-    target_audience: null,
-    learning_format: null,
-    duration: null
+    external_links: [],
+    published_at: null,
+    category: getValue("category") || null
   };
-
   const image = getFile("image");
-  const galleryFiles = getFiles("gallery");
-
   try {
     payload.image_url = image ? await uploadImage(image, "news") : null;
 
     const { data, error } = await supabaseClient
-      .from("submissions")
+      .from("content_items")
       .insert([payload])
       .select()
       .single();
@@ -798,15 +702,11 @@ async function submitNewsForm(status = "review") {
       return;
     }
 
-    if (galleryFiles.length && data?.id) {
-      const galleryUrls = await uploadMultipleImages(galleryFiles, "news-gallery");
-      await saveSubmissionGallery(data.id, galleryUrls);
-    }
 
-    showMessage("news-message", "Notícia enviada para análise.", "success");
+    showMessage("news-message", "Notícia guardada em revisão.", "success");
   } catch (err) {
     console.error("NEWS CATCH ERROR:", err);
-    showMessage("news-message", err.message || "Erro ao submeter notícia.", "error");
+    showMessage("news-message", err.message || "Erro ao guardar notícia.", "error");
   }
 }
 
@@ -826,27 +726,27 @@ ADMIN — HELPERS
 
 function setAdminStats(data = []) {
   const statTotal = document.getElementById("stat-total");
-  const statPending = document.getElementById("stat-draft");
-  const statApproved = document.getElementById("stat-published");
-  const statRejected = document.getElementById("stat-review");
+  const statDraft = document.getElementById("stat-draft");
+  const statPublished = document.getElementById("stat-published");
+  const statReview = document.getElementById("stat-review");
   const statArchived = document.getElementById("stat-archived");
   const statNewsletter = document.getElementById("stat-newsletter");
 
-  const pendingCount = data.filter(item => normalizeStatus(item.status) === "draft").length;
-  const approvedCount = data.filter(item => normalizeStatus(item.status) === "published").length;
-  const rejectedCount = data.filter(item => normalizeStatus(item.status) === "review").length;
+  const draftCount = data.filter(item => normalizeStatus(item.status) === "draft").length;
+  const publishedCount = data.filter(item => normalizeStatus(item.status) === "published").length;
+  const reviewCount = data.filter(item => normalizeStatus(item.status) === "review").length;
   const archivedCount = data.filter(item => item.status === "archived").length;
 
   if (statTotal) statTotal.textContent = data.length;
-  if (statPending) statPending.textContent = pendingCount;
-  if (statApproved) statApproved.textContent = approvedCount;
-  if (statRejected) statRejected.textContent = rejectedCount;
+  if (statDraft) statDraft.textContent = draftCount;
+  if (statPublished) statPublished.textContent = publishedCount;
+  if (statReview) statReview.textContent = reviewCount;
   if (statArchived) statArchived.textContent = archivedCount;
   if (statNewsletter) statNewsletter.textContent = "n/d";
 }
 
 function sortAdminData(data = []) {
-  const statusOrder = { draft: 1, submitted: 2, review: 3, needs_revision: 4, approved: 5, rejected: 6, published: 7 };
+  const statusOrder = { draft: 1, review: 2, published: 3, archived: 4 };
 
   return [...data].sort((a, b) => {
     const aOrder = statusOrder[a.status] || 99;
@@ -860,9 +760,7 @@ function sortAdminData(data = []) {
 
 function applyAdminFilters(data = []) {
   const search = getValue("admin-search").toLowerCase();
-  const type = getValue("admin-filter-type");
   const status = getValue("admin-filter-status");
-  const producer = getValue("admin-filter-producer").toLowerCase();
 
   let filtered = [...data];
 
@@ -875,18 +773,8 @@ function applyAdminFilters(data = []) {
     );
   }
 
-  if (type) {
-    filtered = filtered.filter(item => item.type === type);
-  }
-
   if (status) {
     filtered = filtered.filter(item => item.status === status);
-  }
-  if (producer) {
-    filtered = filtered.filter(item =>
-      (item.profiles?.full_name || "").toLowerCase().includes(producer) ||
-      (item.profiles?.organization_name || "").toLowerCase().includes(producer)
-    );
   }
 
   return sortAdminData(filtered);
@@ -942,40 +830,15 @@ function buildAdminCard(item) {
       </div>
 
       <div class="admin-actions">
-        <button class="admin-btn admin-btn-approve" data-id="${item.id}" data-action="approved">Aprovar</button>
-        <button class="admin-btn admin-btn-approve" data-id="${item.id}" data-action="needs_revision">Pedir revisão</button>
-        <button class="admin-btn admin-btn-archive" data-id="${item.id}" data-action="rejected">Rejeitar</button>
+        <button class="admin-btn" data-id="${item.id}" data-action="draft">Rascunho</button>
+        <button class="admin-btn admin-btn-review" data-id="${item.id}" data-action="review">Em revisão</button>
         <button class="admin-btn admin-btn-approve" data-id="${item.id}" data-action="published">Publicar</button>
+        <button class="admin-btn admin-btn-archive" data-id="${item.id}" data-action="archived">Arquivar</button>
         <button class="admin-btn admin-btn-edit" data-id="${item.id}" data-action="edit">Editar</button>
       </div>
-
-      <div id="admin-gallery-${item.id}" class="admin-gallery-preview"></div>
     </article>
   `;
 }
-async function renderAdminGalleryPreviews(items = []) {
-  for (const item of items) {
-    const container = document.getElementById(`admin-gallery-${item.id}`);
-    if (!container) continue;
-
-    const gallery = await loadSubmissionGallery(item.id);
-
-    if (!gallery.length) {
-      container.innerHTML = "";
-      continue;
-    }
-
-    container.innerHTML = `
-      <div class="admin-gallery-title">Galeria (${gallery.length})</div>
-      <div class="admin-gallery-grid">
-        ${gallery.map(img => `
-          <img src="${escapeHtml(img.image_url)}" alt="Galeria" class="admin-gallery-thumb">
-        `).join("")}
-      </div>
-    `;
-  }
-}
-
 function fillAdminEditor(item) {
   const editor = getAdminEditorElement();
   const editId = document.getElementById("admin-edit-id");
@@ -1062,79 +925,41 @@ function resetAdminEditor() {
   toggleAdminTypeFields();
 }
 
-function getAdminFormData() {
-  const title = getValue("admin-content-title");
-  const slugValue = getValue("admin-content-slug");
-
-  return {
-    type: getValue("admin-content-type") || "news",
-    status: normalizeStatus(getValue("admin-content-status") || "draft"),
-    title: title,
-    slug: slugValue || `${slugify(title)}-${Date.now()}`,
-summary: getValue("admin-content-summary") || null,
-    description: getValue("admin-content-description"),
-    image_url: getValue("admin-content-image") || null,
-    external_url: getValue("admin-content-link") || null,
-    location: getValue("admin-content-location") || null,
-    start_date: getValue("admin-content-start-date") || null,
-    end_date: getValue("admin-content-end-date") || null,
-    deadline: getValue("admin-content-deadline") || null,
-    author_id: getValue("admin-content-author") || null,
-    featured: document.getElementById("admin-content-featured")?.checked || false
-  };
-}
-async function loadSubmissionGallery(submissionId) {
-  if (!submissionId) return [];
-
-  const { data, error } = await supabaseClient
-    .from("submission_images")
-    .select("*")
-    .eq("submission_id", submissionId)
-    .order("position", { ascending: true })
-    .order("created_at", { ascending: true });
-
-  if (error) {
-    console.error("GALLERY LOAD ERROR:", error);
-    return [];
-  }
-
-  return data || [];
-}
 /* =====================================================
 ADMIN — RENDER
 ===================================================== */
 
 
-let adminSubmissionsCache = [];
+let adminContentItemsCache = [];
 
 function bindAdminActionButtons() {
-  const listEl = document.getElementById("admin-submissions-list");
+  const listEl = document.getElementById("admin-content-list");
   if (!listEl) return;
 
   listEl.querySelectorAll(".admin-btn").forEach((button) => {
     button.addEventListener("click", async () => {
-      const submissionId = button.dataset.id;
+      const contentItemId = button.dataset.id;
       const action = button.dataset.action;
 
-      if (!submissionId || !action) return;
+      if (!contentItemId || !action) return;
 
       if (action === "edit") {
-        const item = adminSubmissionsCache.find(entry => entry.id === submissionId);
+        const item = adminContentItemsCache.find(entry => entry.id === contentItemId);
         if (item) fillAdminEditor(item);
         return;
       }
 
-      showMessage("admin-message", "A actualizar submissão...", "info");
+      showMessage("admin-message", "A actualizar conteúdo...", "info");
 
-      const { error } = await updateSubmissionStatus(submissionId, action);
+      const { error } = await updateContentItemStatus(contentItemId, action);
 
       if (error) {
         console.error("ADMIN UPDATE ERROR:", error);
-        showMessage("admin-message", error.message || "Erro ao actualizar submissão.", "error");
+        showMessage("admin-message", error.message || "Erro ao actualizar conteúdo.", "error");
         return;
       }
 
-      showMessage("admin-message", "Submissão actualizada com sucesso.", "success");
+      showMessage("admin-message", "Conteúdo actualizado com sucesso.", "success");
 
       setTimeout(() => {
         initAdminPage();
@@ -1144,7 +969,7 @@ function bindAdminActionButtons() {
 }
 
 function renderAdminList(data = []) {
-  const listEl = document.getElementById("admin-submissions-list");
+  const listEl = document.getElementById("admin-content-list");
   if (!listEl) return;
 
   if (!data || data.length === 0) {
@@ -1158,7 +983,6 @@ function renderAdminList(data = []) {
 
   listEl.innerHTML = data.map(buildAdminCard).join("");
   bindAdminActionButtons();
-  renderAdminGalleryPreviews(data);
 }
 
 
@@ -1223,6 +1047,7 @@ function getAdminFormDataByType(imageUrl = null) {
     description: body || null,
     image_url: imageUrl,
     external_url: getValue("admin-content-external-url") || null,
+    external_links: buildExternalLinks(getValue("admin-content-external-url") || null),
     tags: splitCsv(getValue("admin-content-tags")),
     related_items: splitCsv(getValue("admin-content-related")),
     seo_title: getValue("admin-content-seo-title") || null,
@@ -1257,7 +1082,6 @@ function getAdminFormDataByType(imageUrl = null) {
       category: getValue("admin-event-category") || getValue("admin-content-category") || null,
       location: getValue("admin-event-location") || null,
       event_date: eventDate || null,
-      start_date: eventDate ? `${eventDate}T00:00:00+02:00` : null,
       event_time: getValue("admin-event-time") || null,
       body: getValue("admin-event-description") || null,
       description: getValue("admin-event-description"),
@@ -1276,6 +1100,7 @@ function getAdminFormDataByType(imageUrl = null) {
       location: getValue("admin-opportunity-location") || null,
       deadline: getValue("admin-opportunity-deadline") || null,
       external_url: getValue("admin-opportunity-link") || getValue("admin-content-external-url") || null,
+      external_links: buildExternalLinks(getValue("admin-opportunity-link") || getValue("admin-content-external-url") || null),
       body: getValue("admin-opportunity-description") || null,
       description: getValue("admin-opportunity-description")
     };
@@ -1307,9 +1132,6 @@ async function saveAdminContent() {
 
   try {
     const imageUrl = await uploadAdminImageIfNeeded();
-    const galleryFiles = getFiles("admin-content-gallery-upload");
-    const galleryUrls = await uploadMultipleImages(galleryFiles, "gallery");
-
     const payload = getAdminFormDataByType(imageUrl);
     if (normalizeStatus(payload.status) === "published") {
       payload.published_at = new Date().toISOString();
@@ -1318,16 +1140,13 @@ async function saveAdminContent() {
     }
 
     if (editId) {
-      const { data, error } = await updateSubmissionById(editId, payload);
+      const { data, error } = await updateContentItemById(editId, payload);
 
       if (error) {
         showMessage("admin-message", error.message || "Erro ao actualizar conteúdo.", "error");
         return;
       }
 
-      if (galleryUrls.length) {
-        await saveSubmissionGallery(editId, galleryUrls);
-      }
 
       showMessage("admin-message", "Conteúdo actualizado com sucesso.", "success");
     } else {
@@ -1342,7 +1161,7 @@ async function saveAdminContent() {
       if (normalizeStatus(createPayload.status) === "published" && !createPayload.published_at) {
         createPayload.published_at = new Date().toISOString();
       }
-      const { data, error } = await createSubmissionByAdmin(createPayload);
+      const { data, error } = await createContentItemByAdmin(createPayload);
       
 
       if (error) {
@@ -1350,9 +1169,6 @@ async function saveAdminContent() {
         return;
       }
 
-      if (galleryUrls.length && data?.id) {
-        await saveSubmissionGallery(data.id, galleryUrls);
-      }
 
       showMessage("admin-message", "Conteúdo criado com sucesso.", "success");
     }
@@ -1389,7 +1205,7 @@ function initAdminEditor() {
 
   if (filterBtn) {
     filterBtn.addEventListener("click", () => {
-      renderAdminList(applyAdminFilters(adminSubmissionsCache));
+      renderAdminList(applyAdminFilters(adminContentItemsCache));
     });
   }
 
@@ -1539,21 +1355,21 @@ async function initAdminPage() {
   await initNewsletterManagement();
   await initMediaLibrary();
 
-  showMessage("admin-message", "A carregar submissões...", "info");
+  showMessage("admin-message", "A carregar conteúdos...", "info");
 
-  const { data, error } = await loadAdminSubmissions();
+  const { data, error } = await loadAdminContentItems();
 
   if (error) {
     console.error("ADMIN LOAD ERROR:", error);
-    showMessage("admin-message", error.message || "Erro ao carregar submissões.", "error");
+    showMessage("admin-message", error.message || "Erro ao carregar conteúdos.", "error");
     return;
   }
 
   clearMessage("admin-message");
 
-  adminSubmissionsCache = sortAdminData(data || []);
-  setAdminStats(adminSubmissionsCache);
-  renderAdminList(adminSubmissionsCache);
+  adminContentItemsCache = sortAdminData(data || []);
+  setAdminStats(adminContentItemsCache);
+  renderAdminList(adminContentItemsCache);
 }
 
 /* =====================================================
@@ -1566,8 +1382,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const eventForm = document.getElementById("event-form");
   const opportunityForm = document.getElementById("opportunity-form");
   const dashboardName = document.getElementById("dashboard-name");
-  const adminList = document.getElementById("admin-submissions-list");
-  const mySubmissionsList = document.getElementById("my-submissions-list");
+  const adminList = document.getElementById("admin-content-list");
+  const myContentList = document.getElementById("my-content-list");
    const newsForm = document.getElementById("news-form");
 
   if (signupForm) {
@@ -1594,8 +1410,8 @@ document.addEventListener("DOMContentLoaded", () => {
     initAdminPage();
   }
 
-  if (mySubmissionsList) {
-    loadMySubmissions();
+  if (myContentList) {
+    loadMyContent();
   }
   
  if (newsForm) {
