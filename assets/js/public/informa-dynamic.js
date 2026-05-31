@@ -6,6 +6,7 @@ const qs = (selector, root = document) => root.querySelector(selector);
 const qsa = (selector, root = document) => [...root.querySelectorAll(selector)];
 const safe = (value, fallback = '') => (value == null || value === '' ? fallback : value);
 const articleUrl = (item) => `jeni-informa-artigo.html?slug=${encodeURIComponent(item.slug)}`;
+const HERO_ROTATION_MS = 5000;
 const fmt = (iso) => {
   if (!iso) return 'Sem data';
   const date = new Date(iso);
@@ -44,6 +45,23 @@ function getHostnameLabel(url) {
   } catch (_error) {
     return url;
   }
+}
+
+function isWhatsAppLink(url) {
+  try {
+    const host = new URL(url).hostname.replace(/^www\./i, '').toLowerCase();
+    return host === 'wa.me' || host === 'whatsapp.com' || host.endsWith('.whatsapp.com');
+  } catch (_error) {
+    return false;
+  }
+}
+
+function sortByPublicationDate(items) {
+  return [...items].sort((a, b) => {
+    const dateA = new Date(a.published_at || a.created_at || 0).getTime() || 0;
+    const dateB = new Date(b.published_at || b.created_at || 0).getTime() || 0;
+    return dateB - dateA;
+  });
 }
 
 function uniqueValidLinks(links) {
@@ -184,11 +202,35 @@ function renderEmptyCard() {
   return `<article class="premium-card premium-empty"><span>JENI Informa</span><h3>${EMPTY_MESSAGE}</h3></article>`;
 }
 
+function buildShareUrl(channel, item) {
+  const articleHref = `${window.location.origin}/jeni-informa-artigo.html?slug=${encodeURIComponent(item.slug)}`;
+  const encodedUrl = encodeURIComponent(articleHref);
+  const encodedTitle = encodeURIComponent(item.title || 'JENI Informa');
+
+  if (channel === 'linkedin') return `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`;
+  if (channel === 'x') return `https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedTitle}`;
+  if (channel === 'email') return `mailto:?subject=${encodedTitle}&body=${encodedUrl}`;
+  return articleHref;
+}
+
+function bindShareButtons(item) {
+  qsa('[data-share]').forEach((button) => {
+    const shareUrl = buildShareUrl(button.dataset.share, item);
+    button.setAttribute('href', shareUrl);
+    if (button.dataset.share !== 'email') {
+      button.setAttribute('target', '_blank');
+      button.setAttribute('rel', 'noopener noreferrer');
+    }
+  });
+}
+
 function renderHomepage(items) {
   const leadWrap = qs('.informa-premium .lead-story');
   if (!leadWrap) return;
 
-  if (!items.length) {
+  const publishedItems = sortByPublicationDate(items);
+
+  if (!publishedItems.length) {
     leadWrap.innerHTML = `<article><p class="subtitle">${EMPTY_MESSAGE}</p></article>`;
     const editorialGrid = qs('.editorial-grid');
     if (editorialGrid) editorialGrid.innerHTML = renderEmptyCard();
@@ -201,28 +243,71 @@ function renderHomepage(items) {
     return;
   }
 
-  const lead = items.find((item) => item.featured) || items[0];
-  const leadUrl = articleUrl(lead);
-  const imageHtml = lead.cover_image ? `<a class="lead-story-image-link" href="${leadUrl}" aria-label="Abrir ${escapeHtml(lead.title)}"><img src="${escapeHtml(lead.cover_image)}" loading="lazy" alt="${escapeHtml(lead.title)}"></a>` : '';
-  const metaParts = [lead.author_name && `Por ${escapeHtml(lead.author_name)}`, escapeHtml(fmt(lead.published_at)), `${lead.read_minutes} min`].filter(Boolean);
-  leadWrap.innerHTML = `${imageHtml}<article>
-    <p class="kicker">${escapeHtml(lead.category.name)}</p>
-    <h1><a href="${leadUrl}">${escapeHtml(lead.title)}</a></h1><p class="subtitle">${escapeHtml(lead.excerpt)}</p>
-    <p class="meta">${metaParts.join(' · ')}</p>
-    <a class="jeni-btn-dark" href="${leadUrl}">Ler artigo</a></article>`;
+  const heroItems = publishedItems.filter((item) => item.cover_image);
+  if (!heroItems.length) {
+    leadWrap.innerHTML = `<article><p class="subtitle">Ainda não há conteúdos publicados com imagem para destacar.</p></article>`;
+  } else {
+    let activeHeroIndex = 0;
+    let rotationTimer;
+
+    const drawHero = () => {
+      const lead = heroItems[activeHeroIndex];
+      const leadUrl = articleUrl(lead);
+      const metaParts = [lead.author_name && `Por ${escapeHtml(lead.author_name)}`, escapeHtml(fmt(lead.published_at)), `${lead.read_minutes} min`].filter(Boolean);
+      leadWrap.innerHTML = `<a class="lead-story-image-link" href="${leadUrl}" aria-label="Abrir ${escapeHtml(lead.title)}"><img src="${escapeHtml(lead.cover_image)}" loading="${activeHeroIndex === 0 ? 'eager' : 'lazy'}" alt="${escapeHtml(lead.title)}"></a>
+        <article>
+          <p class="kicker">${escapeHtml(lead.category.name)}</p>
+          <h1><a href="${leadUrl}">${escapeHtml(lead.title)}</a></h1>
+          <p class="subtitle">${escapeHtml(lead.excerpt)}</p>
+          <p class="meta">${metaParts.join(' · ')}</p>
+          <a class="jeni-btn-dark" href="${leadUrl}">Ler artigo</a>
+        </article>
+        <div class="lead-story-controls" aria-label="Controlos do destaque">
+          <button type="button" class="lead-story-arrow" data-hero-action="prev" aria-label="Destaque anterior">‹</button>
+          <button type="button" class="lead-story-arrow" data-hero-action="next" aria-label="Próximo destaque">›</button>
+        </div>
+        <div class="lead-story-indicators" aria-label="Indicadores do destaque">${heroItems.map((_, index) => `<button type="button" class="lead-story-dot${index === activeHeroIndex ? ' active' : ''}" data-hero-index="${index}" aria-label="Abrir destaque ${index + 1}" aria-current="${index === activeHeroIndex ? 'true' : 'false'}"></button>`).join('')}</div>`;
+    };
+
+    const rotateHero = (nextIndex) => {
+      activeHeroIndex = (nextIndex + heroItems.length) % heroItems.length;
+      drawHero();
+    };
+
+    const startRotation = () => {
+      window.clearInterval(rotationTimer);
+      if (heroItems.length > 1) {
+        rotationTimer = window.setInterval(() => rotateHero(activeHeroIndex + 1), HERO_ROTATION_MS);
+      }
+    };
+
+    leadWrap.addEventListener('click', (event) => {
+      const target = event.target instanceof Element ? event.target : event.target.parentElement;
+      const action = target?.closest('[data-hero-action]');
+      const dot = target?.closest('[data-hero-index]');
+      if (!action && !dot) return;
+      event.preventDefault();
+      event.stopPropagation();
+      rotateHero(dot ? Number(dot.dataset.heroIndex) : activeHeroIndex + (action.dataset.heroAction === 'next' ? 1 : -1));
+      startRotation();
+    });
+
+    drawHero();
+    startRotation();
+  }
 
   const editorialGrid = qs('.editorial-grid');
   if (editorialGrid) {
-    editorialGrid.innerHTML = items.slice(0, 8).map((item) => `<a class="premium-card clickable-card" href="${articleUrl(item)}"><span>${escapeHtml(item.category.name)}</span><h3>${escapeHtml(item.title)}</h3><p>${escapeHtml(item.excerpt)}</p><strong>Ler artigo</strong></a>`).join('');
+    editorialGrid.innerHTML = publishedItems.slice(0, 8).map((item) => `<a class="premium-card clickable-card" href="${articleUrl(item)}"><span>${escapeHtml(item.category.name)}</span><h3>${escapeHtml(item.title)}</h3><p>${escapeHtml(item.excerpt)}</p><strong>Ler artigo</strong></a>`).join('');
   }
 
   const trending = qs('.trending ol');
-  if (trending) trending.innerHTML = items.slice(0, 4).map((item) => `<li><a href="${articleUrl(item)}">${escapeHtml(item.title)}</a></li>`).join('');
+  if (trending) trending.innerHTML = publishedItems.slice(0, 4).map((item) => `<li><a href="${articleUrl(item)}">${escapeHtml(item.title)}</a></li>`).join('');
 
   const highlights = qs('.highlight-list');
-  if (highlights) highlights.innerHTML = items.slice(1, 5).map((item) => `<a class="highlight-card clickable-card" href="${articleUrl(item)}"><strong>${escapeHtml(item.category.name)}</strong><p>${escapeHtml(item.excerpt)}</p></a>`).join('') || `<article><p>${EMPTY_MESSAGE}</p></article>`;
+  if (highlights) highlights.innerHTML = publishedItems.slice(1, 5).map((item) => `<a class="highlight-card clickable-card" href="${articleUrl(item)}"><strong>${escapeHtml(item.category.name)}</strong><p>${escapeHtml(item.excerpt)}</p></a>`).join('') || `<article><p>${EMPTY_MESSAGE}</p></article>`;
 
-  const categories = [...new Map(items.map((item) => [item.category.slug, item.category])).values()];
+  const categories = [...new Map(publishedItems.map((item) => [item.category.slug, item.category])).values()];
   const categoryStrip = qs('.category-strip');
   if (categoryStrip) categoryStrip.innerHTML = categories.map((category) => `<a href="jeni-informa-arquivo.html?cat=${encodeURIComponent(category.slug)}">${escapeHtml(category.name)}</a>`).join('');
 }
@@ -287,17 +372,27 @@ async function renderArticlePage(items) {
   qs('.subtitle').textContent = item.excerpt;
   qs('.meta').textContent = [item.author_name && `Por ${item.author_name}`, fmt(item.published_at), `${item.read_minutes} min de leitura`].filter(Boolean).join(' · ');
   qs('.article-body').innerHTML = `<p>${escapeHtml(item.body).replaceAll('\n', '</p><p>')}</p>`;
+  bindShareButtons(item);
 
   const externalLinks = qs('.external-links');
   const externalList = qs('.external-links ul');
   if (externalLinks && externalList) {
     externalLinks.hidden = item.external_links.length === 0;
-    externalList.innerHTML = item.external_links.map((link) => `<li><a href="${escapeHtml(link.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(link.label)}</a></li>`).join('');
+    externalList.innerHTML = item.external_links.map((link) => {
+      const isWhatsApp = isWhatsAppLink(link.url);
+      const ctaLabel = isWhatsApp ? 'Entrar no canal WhatsApp' : 'Abrir link externo';
+      const icon = isWhatsApp ? '💬' : '↗';
+      return `<li><a class="external-link-cta" href="${escapeHtml(link.url)}" target="_blank" rel="noopener noreferrer"><span class="external-link-icon" aria-hidden="true">${icon}</span><span><strong>${ctaLabel}</strong><small>${escapeHtml(link.label || getHostnameLabel(link.url))}</small></span></a></li>`;
+    }).join('');
   }
 
-  const related = items.filter((entry) => entry.id !== item.id).slice(0, 3);
-  qs('.related').hidden = related.length === 0;
-  qs('.related-grid').innerHTML = related.map((entry) => `<a href="jeni-informa-artigo.html?slug=${encodeURIComponent(entry.slug)}">${escapeHtml(entry.title)}</a>`).join('');
+  const related = sortByPublicationDate(items).filter((entry) => entry.id !== item.id).slice(0, 3);
+  const relatedSection = qs('.related');
+  const relatedGrid = qs('.related-grid');
+  if (relatedSection && relatedGrid) {
+    relatedSection.hidden = related.length === 0;
+    relatedGrid.innerHTML = related.map((entry) => `<a class="related-card" href="${articleUrl(entry)}"><span>${escapeHtml(entry.category.name)}</span><strong>${escapeHtml(entry.title)}</strong><small>${fmt(entry.published_at)} · ${entry.read_minutes} min</small></a>`).join('');
+  }
   host.dataset.state = 'ready';
 }
 
