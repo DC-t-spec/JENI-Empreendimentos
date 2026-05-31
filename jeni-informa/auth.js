@@ -148,12 +148,44 @@ function buildExternalLinks(primaryUrl, label = "Link externo") {
   return primaryUrl ? [{ url: primaryUrl, label }] : [];
 }
 
+const CONTENT_ITEM_COLUMNS = new Set([
+  "id",
+  "author_id",
+  "category",
+  "type",
+  "status",
+  "title",
+  "slug",
+  "excerpt",
+  "body",
+  "featured",
+  "seo_title",
+  "seo_description",
+  "published_at",
+  "created_at",
+  "updated_at",
+  "description",
+  "external_links",
+  "external_url",
+  "image_url",
+  "summary"
+]);
+
 function normalizeContentItemPayload(payload = {}) {
-  const normalized = { ...payload };
+  const normalized = {};
+
+  Object.entries(payload || {}).forEach(([key, value]) => {
+    if (CONTENT_ITEM_COLUMNS.has(key)) {
+      normalized[key] = value;
+    }
+  });
 
   if (!normalized.author_id) {
     delete normalized.author_id;
   }
+
+  delete normalized.id;
+  delete normalized.created_at;
 
   return normalized;
 }
@@ -409,7 +441,6 @@ async function submitEventForm(status = "review") {
   if (!user) return;
 
   const title = getValue("title");
-  const startDate = getValue("start_date");
 
   const description = getValue("description");
   const payload = {
@@ -426,13 +457,7 @@ async function submitEventForm(status = "review") {
     external_url: null,
     external_links: [],
     published_at: null,
-    category: getValue("category") || null,
-    location: getValue("location") || null,
-    event_date: startDate || null,
-    event_time: getValue("event_time") || null,
-    ticket_price: getValue("ticket_price") || null,
-    ticket_info: getValue("ticket_info") || null,
-    video_url: getValue("video_url") || null
+    category: getValue("category") || null
   };
 
   const image = getFile("image");
@@ -499,8 +524,7 @@ async function submitOpportunityForm(status = "review") {
     external_url: externalUrl,
     external_links: buildExternalLinks(externalUrl),
     published_at: null,
-    category: getValue("category") || null,
-    deadline: getValue("deadline") || null
+    category: getValue("category") || null
   };
 
   const image = getFile("image");
@@ -585,22 +609,8 @@ async function loadMyContent() {
   }
 
   listEl.innerHTML = data.map(item => {
-    let principalLabel = "Referência";
-    let principalDate = "—";
-
-    if (item.type === "event") {
-      principalLabel = "Data do evento";
-      principalDate = formatDateOnly(item.start_date);
-    } else if (item.type === "call" || item.type === "scholarship") {
-      principalLabel = "Prazo";
-      principalDate = formatDateOnly(item.deadline);
-    } else if (item.type === "news") {
-      principalLabel = "Data do ocorrido";
-      principalDate = formatDateOnly(item.incident_date);
-    } else if (item.type === "learning") {
-      principalLabel = "Início";
-      principalDate = formatDateOnly(item.start_date);
-    }
+    const principalLabel = "Publicado";
+    const principalDate = item.published_at ? formatDateTime(item.published_at) : "Ainda não publicado";
 
     const previewText = item.description
       ? `${item.description.slice(0, 180)}${item.description.length > 180 ? "..." : ""}`
@@ -623,7 +633,6 @@ async function loadMyContent() {
         <div class="admin-details">
           <p><strong>Categoria:</strong> ${escapeHtml(safeText(item.category, "Não definida"))}</p>
           <p><strong>${principalLabel}:</strong> ${escapeHtml(principalDate)}</p>
-          <p><strong>Local:</strong> ${escapeHtml(safeText(item.location || item.incident_location, "Não definido"))}</p>
           <p><strong>Criado em:</strong> ${escapeHtml(formatDateTime(item.created_at))}</p>
           <p><strong>Publicado em:</strong> ${escapeHtml(item.published_at ? formatDateTime(item.published_at) : "Ainda não publicado")}</p>
         </div>
@@ -768,8 +777,7 @@ function applyAdminFilters(data = []) {
     filtered = filtered.filter(item =>
       (item.title || "").toLowerCase().includes(search) ||
       (item.summary || "").toLowerCase().includes(search) ||
-      (item.description || "").toLowerCase().includes(search) ||
-      (item.location || "").toLowerCase().includes(search)
+      (item.description || "").toLowerCase().includes(search)
     );
   }
 
@@ -781,19 +789,8 @@ function applyAdminFilters(data = []) {
 }
 
 function buildAdminCard(item) {
-  const principalDate =
-    item.type === "event"
-      ? formatDateTime(item.start_date || item.event_date)
-      : (item.type === "call" || item.type === "scholarship")
-        ? safeText(item.deadline, "Sem prazo")
-        : "—";
-
-  const principalLabel =
-    item.type === "event"
-      ? "Data principal"
-      :(item.type === "call" || item.type === "scholarship")
-        ? "Prazo"
-        : "Referência";
+  const principalDate = item.published_at ? formatDateTime(item.published_at) : "Ainda não publicado";
+  const principalLabel = "Publicado";
 
   const coverImage = item.image_url
     ? `<div class="admin-card-cover">
@@ -824,7 +821,6 @@ function buildAdminCard(item) {
         <p><strong>Autor:</strong> ${escapeHtml(safeText(item.author_name || item.profiles?.display_name || item.profiles?.full_name || item.profiles?.organization_name, "Não identificado"))}</p>
         ${item.external_url ? `<p><strong>Link externo:</strong> <a href="${escapeHtml(item.external_url)}" target="_blank" rel="noopener noreferrer">Abrir link</a></p>` : ""}
         <p><strong>${principalLabel}:</strong> ${escapeHtml(principalDate)}</p>
-        <p><strong>Local:</strong> ${escapeHtml(safeText(item.location, "Não definido"))}</p>
         <p><strong>Criado em:</strong> ${escapeHtml(formatDateTime(item.created_at))}</p>
         <p><strong>Publicado em:</strong> ${escapeHtml(item.published_at ? formatDateTime(item.published_at) : "Ainda não publicado")}</p>
       </div>
@@ -877,36 +873,20 @@ function fillAdminEditor(item) {
 
   if (item.type === "event") {
     const categoryEl = document.getElementById("admin-event-category");
-    const locationEl = document.getElementById("admin-event-location");
-    const dateEl = document.getElementById("admin-event-date");
-    const timeEl = document.getElementById("admin-event-time");
-    const ticketPriceEl = document.getElementById("admin-event-ticket-price");
-    const ticketInfoEl = document.getElementById("admin-event-ticket-info");
     const descEl = document.getElementById("admin-event-description");
-    const videoEl = document.getElementById("admin-event-video-url");
 
     if (categoryEl) categoryEl.value = item.category || "";
-    if (locationEl) locationEl.value = item.location || "";
-    if (dateEl) dateEl.value = item.event_date || (item.start_date ? String(item.start_date).slice(0, 10) : "");
-    if (timeEl) timeEl.value = item.event_time || "";
-    if (ticketPriceEl) ticketPriceEl.value = item.ticket_price || "";
-    if (ticketInfoEl) ticketInfoEl.value = item.ticket_info || "";
-    if (descEl) descEl.value = item.description || "";
-    if (videoEl) videoEl.value = item.video_url || "";
+    if (descEl) descEl.value = item.description || item.body || "";
   }
 
   if ((item.type === "call" || item.type === "scholarship")) {
     const categoryEl = document.getElementById("admin-opportunity-category");
-    const locationEl = document.getElementById("admin-opportunity-location");
-    const deadlineEl = document.getElementById("admin-opportunity-deadline");
     const linkEl = document.getElementById("admin-opportunity-link");
     const descEl = document.getElementById("admin-opportunity-description");
 
     if (categoryEl) categoryEl.value = item.category || "";
-    if (locationEl) locationEl.value = item.location || "";
-    if (deadlineEl) deadlineEl.value = item.deadline ? String(item.deadline).slice(0, 10) : "";
-    if (linkEl) linkEl.value = item.external_url || item.external_link || "";
-    if (descEl) descEl.value = item.description || "";
+    if (linkEl) linkEl.value = item.external_url || "";
+    if (descEl) descEl.value = item.description || item.body || "";
   }
 
   if (editor) editor.classList.add("active");
@@ -1048,8 +1028,6 @@ function getAdminFormDataByType(imageUrl = null) {
     image_url: imageUrl,
     external_url: getValue("admin-content-external-url") || null,
     external_links: buildExternalLinks(getValue("admin-content-external-url") || null),
-    tags: splitCsv(getValue("admin-content-tags")),
-    related_items: splitCsv(getValue("admin-content-related")),
     seo_title: getValue("admin-content-seo-title") || null,
     seo_description: getValue("admin-content-seo-description") || null,
     featured: document.getElementById("admin-content-featured")?.checked || false,
@@ -1074,20 +1052,12 @@ function getAdminFormDataByType(imageUrl = null) {
 
   // EVENTO
   if (type === "event") {
-    const eventDate = getValue("admin-event-date");
-
     return {
       ...baseData,
       slug: `${slugify(title)}-${Date.now()}`,
       category: getValue("admin-event-category") || getValue("admin-content-category") || null,
-      location: getValue("admin-event-location") || null,
-      event_date: eventDate || null,
-      event_time: getValue("admin-event-time") || null,
       body: getValue("admin-event-description") || null,
-      description: getValue("admin-event-description"),
-      ticket_price: getValue("admin-event-ticket-price") || null,
-      ticket_info: getValue("admin-event-ticket-info") || null,
-      video_url: getValue("admin-event-video-url") || null
+      description: getValue("admin-event-description") || null
     };
   }
 
@@ -1097,8 +1067,6 @@ function getAdminFormDataByType(imageUrl = null) {
       ...baseData,
       slug: `${slugify(title)}-${Date.now()}`,
       category: getValue("admin-opportunity-category") || getValue("admin-content-category") || null,
-      location: getValue("admin-opportunity-location") || null,
-      deadline: getValue("admin-opportunity-deadline") || null,
       external_url: getValue("admin-opportunity-link") || getValue("admin-content-external-url") || null,
       external_links: buildExternalLinks(getValue("admin-opportunity-link") || getValue("admin-content-external-url") || null),
       body: getValue("admin-opportunity-description") || null,
@@ -1120,11 +1088,6 @@ async function saveAdminContent() {
 
   if (!title) {
     showMessage("admin-message", "Preencha o título do conteúdo.", "error");
-    return;
-  }
-
-  if (type === "event" && !getValue("admin-event-date")) {
-    showMessage("admin-message", "Evento precisa de data do evento.", "error");
     return;
   }
 

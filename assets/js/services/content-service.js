@@ -1,3 +1,45 @@
+const CONTENT_ITEM_COLUMNS = new Set([
+  'id',
+  'author_id',
+  'category',
+  'type',
+  'status',
+  'title',
+  'slug',
+  'excerpt',
+  'body',
+  'featured',
+  'seo_title',
+  'seo_description',
+  'published_at',
+  'created_at',
+  'updated_at',
+  'description',
+  'external_links',
+  'external_url',
+  'image_url',
+  'summary'
+]);
+
+function sanitizeContentItemPayload(payload = {}) {
+  const sanitized = {};
+
+  Object.entries(payload || {}).forEach(([key, value]) => {
+    if (CONTENT_ITEM_COLUMNS.has(key)) {
+      sanitized[key] = value;
+    }
+  });
+
+  if (!sanitized.author_id) {
+    delete sanitized.author_id;
+  }
+
+  delete sanitized.id;
+  delete sanitized.created_at;
+
+  return sanitized;
+}
+
 export function createContentService(client) {
   return {
     listContentItems: async () => client
@@ -7,13 +49,13 @@ export function createContentService(client) {
 
     createContentItem: async (payload) => client
       .from('content_items')
-      .insert([payload])
+      .insert([sanitizeContentItemPayload(payload)])
       .select()
       .single(),
 
     updateContentItem: async (id, payload) => client
       .from('content_items')
-      .update(payload)
+      .update(sanitizeContentItemPayload(payload))
       .eq('id', id)
       .select()
       .single(),
