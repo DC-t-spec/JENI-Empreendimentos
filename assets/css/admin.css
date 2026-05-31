@@ -40,7 +40,8 @@ body.dashboard-page { margin: 0; background: linear-gradient(145deg, #f7f4ef, #f
 .admin-actions-row { margin-top: 12px; display:flex; gap:8px; flex-wrap:wrap; }
 .jeni-btn,.producer-back-link,#logout-btn,.admin-btn { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; text-decoration:none; cursor:pointer; background: #fff; color: var(--ink); }
 .jeni-btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
-#logout-btn,.admin-btn-reject { color: var(--danger); border-color: color-mix(in srgb, var(--danger) 35%, white); }
+#logout-btn,.admin-btn-reject,.admin-btn-delete { color: var(--danger); border-color: color-mix(in srgb, var(--danger) 35%, white); }
+.admin-btn-delete { background: color-mix(in srgb, var(--danger) 8%, white); font-weight: 700; }
 .admin-content-list { margin-top: 16px; display: grid; gap: 12px; }
 .admin-card { border:1px solid var(--line); border-radius: 14px; padding:16px; background: #fff; }
 .admin-card-meta { display:flex; gap:8px; flex-wrap:wrap; }
