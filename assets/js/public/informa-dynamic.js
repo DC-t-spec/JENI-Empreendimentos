@@ -95,6 +95,109 @@ function parseStoredExternalLinks(rawValue) {
   }
 }
 
+
+function parseStoredObject(rawValue) {
+  if (rawValue && typeof rawValue === 'object' && !Array.isArray(rawValue)) return rawValue;
+  if (typeof rawValue !== 'string') return {};
+
+  try {
+    const parsed = JSON.parse(rawValue);
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
+  } catch (_error) {
+    return {};
+  }
+}
+
+function parseStoredGallery(rawValue) {
+  const parsed = Array.isArray(rawValue) ? rawValue : (() => {
+    if (typeof rawValue !== 'string') return [];
+    try {
+      const value = JSON.parse(rawValue);
+      return Array.isArray(value) ? value : [];
+    } catch (_error) {
+      return [];
+    }
+  })();
+
+  const seen = new Set();
+  return parsed.map((entry) => {
+    const url = typeof entry === 'string' ? entry : entry?.url;
+    const normalizedUrl = normalizeExternalUrl(url);
+    if (!normalizedUrl) return null;
+    return { url: normalizedUrl, alt: String(entry?.alt || '').trim() };
+  }).filter(Boolean).filter((entry) => {
+    const key = entry.url.toLowerCase();
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function renderDetailRow(label, value) {
+  if (!value) return '';
+  return `<div class="article-detail-row"><dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value)}</dd></div>`;
+}
+
+function renderDetailLink(label, url, buttonLabel) {
+  const normalizedUrl = normalizeExternalUrl(url);
+  if (!normalizedUrl) return '';
+  return `<div class="article-detail-row article-detail-action"><dt>${escapeHtml(label)}</dt><dd><a class="external-link-cta" href="${escapeHtml(normalizedUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(buttonLabel)}</a></dd></div>`;
+}
+
+function renderArticleSpecificFields(item) {
+  const metadata = item.metadata || {};
+  const rowsByType = {
+    news: [
+      renderDetailRow('Autor da notícia', metadata.news_author),
+      renderDetailRow('Créditos das fotos', metadata.photo_credits)
+    ],
+    event: [
+      renderDetailRow('Data', metadata.event_date ? fmt(metadata.event_date) : ''),
+      renderDetailRow('Hora', metadata.event_time),
+      renderDetailRow('Local', metadata.event_location),
+      renderDetailRow('Bilhete', metadata.ticket_info),
+      renderDetailRow('Organização/parceiro', metadata.organizer),
+      renderDetailLink('Inscrição/bilhete', metadata.registration_url, 'Inscrever / comprar bilhete')
+    ],
+    call: [
+      renderDetailRow('Prazo', metadata.deadline ? fmt(metadata.deadline) : ''),
+      renderDetailRow('Entidade promotora', metadata.promoter),
+      renderDetailRow('Público-alvo', metadata.target_audience),
+      renderDetailRow('Requisitos', metadata.requirements),
+      renderDetailRow('Benefícios', metadata.benefits),
+      renderDetailLink('Candidatura', metadata.application_url, 'Abrir candidatura'),
+      renderDetailLink('Anexo/documento', metadata.attachment_url, 'Abrir documento')
+    ],
+    scholarship: [
+      renderDetailRow('País/local', metadata.country_or_location),
+      renderDetailRow('Valor/benefício', metadata.amount_or_benefit),
+      renderDetailRow('Duração', metadata.duration),
+      renderDetailRow('Prazo', metadata.deadline ? fmt(metadata.deadline) : ''),
+      renderDetailRow('Elegibilidade', metadata.eligibility),
+      renderDetailRow('Documentos necessários', metadata.required_documents),
+      renderDetailLink('Candidatura', metadata.application_url, 'Abrir candidatura')
+    ],
+    learning: [
+      renderDetailRow('Tipo de serviço', metadata.service_type),
+      renderDetailRow('Preço', metadata.price_info),
+      renderDetailRow('Público-alvo', metadata.target_audience),
+      renderDetailRow('Benefícios', metadata.benefits),
+      renderDetailLink('Contacto/WhatsApp', metadata.contact_url, isWhatsAppLink(metadata.contact_url) ? 'Contactar no WhatsApp' : 'Contactar')
+    ]
+  };
+
+  const rows = (rowsByType[item.type] || []).filter(Boolean);
+  if (!rows.length) return '';
+
+  return `<section class="article-specific-fields"><h2>Informação essencial</h2><dl>${rows.join('')}</dl></section>`;
+}
+
+function renderArticleGallery(gallery = []) {
+  if (!gallery.length) return '';
+
+  return `<section class="article-gallery"><h2>Galeria</h2><div class="article-gallery-grid">${gallery.map((entry, index) => `<a href="${escapeHtml(entry.url)}" target="_blank" rel="noopener noreferrer"><img src="${escapeHtml(entry.url)}" loading="lazy" alt="${escapeHtml(entry.alt || `Imagem ${index + 1}`)}"></a>`).join('')}</div></section>`;
+}
+
 export function parseExternalLinks(item) {
   const rawLinks = parseStoredExternalLinks(item.external_links);
   const externalLinks = rawLinks.map((entry) => {
@@ -126,6 +229,8 @@ function normalizePublishedItem(item, index, catMap, authorMap) {
     category: { slug: categorySlug, name: categoryName },
     cover_image: item.image_url || null,
     external_links: parseExternalLinks(item),
+    metadata: parseStoredObject(item.metadata),
+    gallery: parseStoredGallery(item.gallery),
     read_minutes: Math.max(1, Math.round((body.split(/\s+/).filter(Boolean).length || 180) / 180)),
     position: index + 1
   };
@@ -372,6 +477,10 @@ async function renderArticlePage(items) {
   qs('.subtitle').textContent = item.excerpt;
   qs('.meta').textContent = [item.author_name && `Por ${item.author_name}`, fmt(item.published_at), `${item.read_minutes} min de leitura`].filter(Boolean).join(' · ');
   qs('.article-body').innerHTML = `<p>${escapeHtml(item.body).replaceAll('\n', '</p><p>')}</p>`;
+  const specificFields = qs('.article-specific-host');
+  if (specificFields) specificFields.innerHTML = renderArticleSpecificFields(item);
+  const galleryHost = qs('.article-gallery-host');
+  if (galleryHost) galleryHost.innerHTML = renderArticleGallery(item.gallery);
   bindShareButtons(item);
 
   const externalLinks = qs('.external-links');
