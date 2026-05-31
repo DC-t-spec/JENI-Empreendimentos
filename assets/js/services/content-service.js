@@ -31,8 +31,8 @@ export function createContentService(client) {
       : client.from('categories').select('id,name,slug'),
 
     listAuthors: async (ids = []) => ids.length
-      ? client.from('profiles').select('id,display_name').in('id', ids)
-      : client.from('profiles').select('id,display_name')
+      ? client.from('profiles').select('id,display_name,full_name').in('id', ids)
+      : client.from('profiles').select('id,display_name,full_name')
   };
 }
 window.JeniContentService = { createContentService };

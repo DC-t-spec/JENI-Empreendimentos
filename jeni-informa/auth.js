@@ -119,10 +119,11 @@ function getStatusLabel(status) {
   if (status === "approved") return "Aprovado";
   if (status === "rejected") return "Rejeitado";
   if (status === "published") return "Publicado";
+  if (status === "archived") return "Arquivado";
   return status || "Sem estado";
 }
 
-const EDITORIAL_STATUS = ["draft", "submitted", "review", "needs_revision", "approved", "rejected", "published"];
+const EDITORIAL_STATUS = ["draft", "submitted", "review", "needs_revision", "approved", "rejected", "published", "archived"];
 function normalizeStatus(status) {
   const map = { pending: "submitted", publish: "published" };
   const normalized = map[status] || status || "draft";
@@ -131,6 +132,25 @@ function normalizeStatus(status) {
 function normalizeItem(item) {
   if (!item) return item;
   return { ...item, status: normalizeStatus(item.status) };
+}
+
+function normalizeContentItem(item) {
+  if (!item) return item;
+  return {
+    ...item,
+    status: normalizeStatus(item.status),
+    summary: item.summary || item.excerpt || "",
+    description: item.description || item.body || "",
+    category: item.category || item.categories?.name || "",
+    profiles: item.profiles || item.author || null
+  };
+}
+
+function splitCsv(value) {
+  return (value || "")
+    .split(",")
+    .map((entry) => entry.trim())
+    .filter(Boolean);
 }
 
 /* =====================================================
@@ -678,33 +698,17 @@ ADMIN — DADOS
 
 async function loadAdminSubmissions() {
   const { data, error } = await supabaseClient
-    .from("submissions")
-    .select("*, profiles!submissions_user_id_fkey(full_name, organization_name)")
+    .from("content_items")
+    .select("*")
     .order("updated_at", { ascending: false });
-  return { data: (data || []).map(normalizeItem), error };
+  return { data: (data || []).map(normalizeContentItem), error };
 }
 
 async function updateSubmissionStatus(submissionId, newStatus) {
   const mapped = normalizeStatus(newStatus);
   const updateData = { status: mapped, updated_at: new Date().toISOString() };
   if (mapped === "published") updateData.published_at = new Date().toISOString();
-  const result = await supabaseClient.from("submissions").update(updateData).eq("id", submissionId).select().single();
-  if (result.error || mapped !== "published") return result;
-
-  const item = result.data;
-  const contentPayload = {
-    author_id: item.user_id,
-    type: item.type,
-    status: "published",
-    title: item.title,
-    slug: item.slug || `${slugify(item.title)}-${Date.now()}`,
-    excerpt: item.summary || null,
-    body: item.description || null,
-    featured: false,
-    published_at: updateData.published_at
-  };
-  await supabaseClient.from("content_items").upsert([contentPayload], { onConflict: "slug" });
-  return result;
+  return await supabaseClient.from("content_items").update(updateData).eq("id", submissionId).select().single();
 }
 
 async function updateSubmissionById(submissionId, payload) {
@@ -903,11 +907,12 @@ function buildAdminCard(item) {
 
       <h3>${escapeHtml(item.title || "Sem título")}</h3>
 
-      <p>${escapeHtml(item.summary || item.description || "Sem resumo disponível.")}</p>
+      <p>${escapeHtml(item.summary || item.description || "Resumo não informado.")}</p>
 
       <div class="admin-details">
         <p><strong>Categoria:</strong> ${escapeHtml(safeText(item.category, "Não definida"))}</p>
-        <p><strong>Produtor:</strong> ${escapeHtml(safeText(item.profiles?.full_name || item.profiles?.organization_name, "Não identificado"))}</p>
+        <p><strong>Autor:</strong> ${escapeHtml(safeText(item.author_name || item.profiles?.display_name || item.profiles?.full_name || item.profiles?.organization_name, "Não identificado"))}</p>
+        ${item.external_url ? `<p><strong>Link externo:</strong> <a href="${escapeHtml(item.external_url)}" target="_blank" rel="noopener noreferrer">Abrir link</a></p>` : ""}
         <p><strong>${principalLabel}:</strong> ${escapeHtml(principalDate)}</p>
         <p><strong>Local:</strong> ${escapeHtml(safeText(item.location, "Não definido"))}</p>
         <p><strong>Criado em:</strong> ${escapeHtml(formatDateTime(item.created_at))}</p>
@@ -960,15 +965,19 @@ function fillAdminEditor(item) {
   const typeEl = document.getElementById("admin-content-type");
   const statusEl = document.getElementById("admin-content-status");
   const titleEl = document.getElementById("admin-content-title");
+  const categoryEl = document.getElementById("admin-content-category");
   const summaryEl = document.getElementById("admin-content-summary");
   const imageEl = document.getElementById("admin-content-image");
+  const externalUrlEl = document.getElementById("admin-content-external-url");
   const featuredEl = document.getElementById("admin-content-featured");
 
   if (typeEl) typeEl.value = item.type || "news";
   if (statusEl) statusEl.value = normalizeStatus(item.status);
   if (titleEl) titleEl.value = item.title || "";
-  if (summaryEl) summaryEl.value = item.summary || "";
+  if (categoryEl) categoryEl.value = item.category || "";
+  if (summaryEl) summaryEl.value = item.summary || item.excerpt || "";
   if (imageEl) imageEl.value = item.image_url || "";
+  if (externalUrlEl) externalUrlEl.value = item.external_url || "";
   if (featuredEl) featuredEl.checked = !!item.featured;
 
   toggleAdminTypeFields();
@@ -978,7 +987,7 @@ function fillAdminEditor(item) {
     const descEl = document.getElementById("admin-news-description");
 
     if (slugEl) slugEl.value = item.slug || "";
-    if (descEl) descEl.value = item.description || item.content || "";
+    if (descEl) descEl.value = item.description || item.body || item.content || "";
   }
 
   if (item.type === "event") {
@@ -1040,7 +1049,7 @@ function getAdminFormData() {
     status: normalizeStatus(getValue("admin-content-status") || "draft"),
     title: title,
     slug: slugValue || `${slugify(title)}-${Date.now()}`,
-summary: getValue("admin-content-summary") || "Sem resumo",
+summary: getValue("admin-content-summary") || null,
     description: getValue("admin-content-description"),
     image_url: getValue("admin-content-image") || null,
     external_url: getValue("admin-content-link") || null,
@@ -1177,21 +1186,34 @@ function getAdminFormDataByType(imageUrl = null) {
   const type = getValue("admin-content-type") || "news";
   const title = getValue("admin-content-title");
 
+  const summary = getValue("admin-content-summary");
+  const body = getValue("admin-news-description");
+  const status = normalizeStatus(getValue("admin-content-status") || "draft");
+
   const baseData = {
     type,
-    status: normalizeStatus(getValue("admin-content-status") || "draft"),
+    status,
     title,
-    summary: getValue("admin-content-summary") || "Sem resumo",
+    category: getValue("admin-content-category") || null,
+    excerpt: summary || null,
+    body: body || null,
+    summary: summary || null,
+    description: body || null,
     image_url: imageUrl,
-    featured: document.getElementById("admin-content-featured")?.checked || false
+    external_url: getValue("admin-content-external-url") || null,
+    tags: splitCsv(getValue("admin-content-tags")),
+    related_items: splitCsv(getValue("admin-content-related")),
+    seo_title: getValue("admin-content-seo-title") || null,
+    seo_description: getValue("admin-content-seo-description") || null,
+    featured: document.getElementById("admin-content-featured")?.checked || false,
+    updated_at: new Date().toISOString()
   };
 
   // NOTÍCIA
   if (type === "news") {
     return {
       ...baseData,
-      slug: getValue("admin-news-slug") || `${slugify(title)}-${Date.now()}`,
-      description: getValue("admin-news-description")
+      slug: getValue("admin-news-slug") || `${slugify(title)}-${Date.now()}`
     };
   }
 
@@ -1199,8 +1221,7 @@ function getAdminFormDataByType(imageUrl = null) {
   if (type === "learning") {
     return {
       ...baseData,
-      slug: `${slugify(title)}-${Date.now()}`,
-      description: getValue("admin-news-description")
+      slug: `${slugify(title)}-${Date.now()}`
     };
   }
 
@@ -1211,11 +1232,12 @@ function getAdminFormDataByType(imageUrl = null) {
     return {
       ...baseData,
       slug: `${slugify(title)}-${Date.now()}`,
-      category: getValue("admin-event-category") || null,
+      category: getValue("admin-event-category") || getValue("admin-content-category") || null,
       location: getValue("admin-event-location") || null,
       event_date: eventDate || null,
       start_date: eventDate ? `${eventDate}T00:00:00+02:00` : null,
       event_time: getValue("admin-event-time") || null,
+      body: getValue("admin-event-description") || null,
       description: getValue("admin-event-description"),
       ticket_price: getValue("admin-event-ticket-price") || null,
       ticket_info: getValue("admin-event-ticket-info") || null,
@@ -1228,10 +1250,11 @@ function getAdminFormDataByType(imageUrl = null) {
     return {
       ...baseData,
       slug: `${slugify(title)}-${Date.now()}`,
-      category: getValue("admin-opportunity-category") || null,
+      category: getValue("admin-opportunity-category") || getValue("admin-content-category") || null,
       location: getValue("admin-opportunity-location") || null,
       deadline: getValue("admin-opportunity-deadline") || null,
-      external_url: getValue("admin-opportunity-link") || null,
+      external_url: getValue("admin-opportunity-link") || getValue("admin-content-external-url") || null,
+      body: getValue("admin-opportunity-description") || null,
       description: getValue("admin-opportunity-description")
     };
   }
@@ -1266,6 +1289,11 @@ async function saveAdminContent() {
     const galleryUrls = await uploadMultipleImages(galleryFiles, "gallery");
 
     const payload = getAdminFormDataByType(imageUrl);
+    if (normalizeStatus(payload.status) === "published") {
+      payload.published_at = new Date().toISOString();
+    } else {
+      payload.published_at = null;
+    }
 
     if (editId) {
       const { data, error } = await updateSubmissionById(editId, payload);
@@ -1286,13 +1314,13 @@ async function saveAdminContent() {
 
       const createPayload = {
         ...payload,
-        user_id: adminAccess.user.id
+        author_id: adminAccess.user.id
       };
 
-      if (normalizeStatus(createPayload.status) === "published") {
+      if (normalizeStatus(createPayload.status) === "published" && !createPayload.published_at) {
         createPayload.published_at = new Date().toISOString();
       }
-const { data, error } = await createSubmissionByAdmin(createPayload);
+      const { data, error } = await createSubmissionByAdmin(createPayload);
       
 
       if (error) {
@@ -1576,14 +1604,15 @@ function initPremiumEditorEnhancements() {
     const title = getValue("admin-content-title");
     const summary = getValue("admin-content-summary");
     const body = getValue("admin-news-description");
+    const externalUrl = getValue("admin-content-external-url");
     previewBox.style.display = "block";
-    previewBox.innerHTML = `<h3>${escapeHtml(title || "Sem título")}</h3><p>${escapeHtml(summary)}</p><hr><p>${escapeHtml(body.slice(0, 1200))}</p>`;
+    previewBox.innerHTML = `<h3>${escapeHtml(title || "Sem título")}</h3><p>${escapeHtml(summary)}</p><hr><p>${escapeHtml(body.slice(0, 1200))}</p>${externalUrl ? `<p><strong>Link externo:</strong> ${escapeHtml(externalUrl)}</p>` : ""}`;
   });
 
   setInterval(() => {
     const payload = {
-      title: getValue("admin-content-title"), summary: getValue("admin-content-summary"),
-      body: getValue("admin-news-description"), slug: getValue("admin-news-slug"),
+      title: getValue("admin-content-title"), category: getValue("admin-content-category"), summary: getValue("admin-content-summary"),
+      body: getValue("admin-news-description"), slug: getValue("admin-news-slug"), external_url: getValue("admin-content-external-url"),
       status: normalizeStatus(getValue("admin-content-status") || "draft")
     };
     localStorage.setItem("jeni_admin_autosave", JSON.stringify(payload));
@@ -1593,9 +1622,11 @@ function initPremiumEditorEnhancements() {
     const saved = JSON.parse(localStorage.getItem("jeni_admin_autosave") || "null");
     if (saved && !document.getElementById("admin-edit-id")?.value) {
       if (titleEl) titleEl.value = saved.title || "";
+      document.getElementById("admin-content-category").value = saved.category || "";
       document.getElementById("admin-content-summary").value = saved.summary || "";
       if (bodyEl) bodyEl.value = saved.body || "";
       if (slugEl) slugEl.value = saved.slug || "";
+      document.getElementById("admin-content-external-url").value = saved.external_url || "";
       document.getElementById("admin-content-status").value = normalizeStatus(saved.status);
       syncDerived();
     }
