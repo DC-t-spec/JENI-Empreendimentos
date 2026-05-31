@@ -41,13 +41,13 @@ body.dashboard-page { margin: 0; background: linear-gradient(145deg, #f7f4ef, #f
 .jeni-btn,.producer-back-link,#logout-btn,.admin-btn { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; text-decoration:none; cursor:pointer; background: #fff; color: var(--ink); }
 .jeni-btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
 #logout-btn,.admin-btn-reject { color: var(--danger); border-color: color-mix(in srgb, var(--danger) 35%, white); }
-.admin-submissions-list { margin-top: 16px; display: grid; gap: 12px; }
+.admin-content-list { margin-top: 16px; display: grid; gap: 12px; }
 .admin-card { border:1px solid var(--line); border-radius: 14px; padding:16px; background: #fff; }
 .admin-card-meta { display:flex; gap:8px; flex-wrap:wrap; }
 .admin-type-pill,.admin-status-pill { background:#f4eee4; border-radius:999px; padding:4px 10px; font-size:.74rem; }
-.admin-status-pill.approved { background:#e4f6ed; color: var(--success); }
-.admin-status-pill.pending { background:#fbf2df; color:#9b6a1d; }
-.admin-status-pill.rejected { background:#fbe8e8; color:var(--danger); }
+.admin-status-pill.draft { background:#fbf2df; color:#9b6a1d; }
+.admin-status-pill.review { background:#e7f0ff; color:#2457a6; }
+.admin-status-pill.published { background:#e4f6ed; color: var(--success); }
 .admin-status-pill.archived { background:#eff1f4; color:#536072; }
 .admin-details { display:grid; grid-template-columns: repeat(auto-fit,minmax(200px,1fr)); gap:6px 16px; color:var(--muted); font-size:.9rem; }
 .admin-actions { margin-top:10px; display:flex; gap:8px; flex-wrap:wrap; }

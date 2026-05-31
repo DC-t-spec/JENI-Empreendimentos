@@ -1,9 +1,22 @@
 export function createContentService(client) {
   return {
-    listMySubmissions: async (userId) => client.from('submissions').select('*').eq('user_id', userId).order('created_at', { ascending: false }),
-    createSubmission: async (payload) => client.from('submissions').insert([payload]).select().single(),
-    listAdminSubmissions: async () => client.from('submissions').select('*').order('status', { ascending: true }).order('created_at', { ascending: false }),
-    updateSubmission: async (id, payload) => client.from('submissions').update(payload).eq('id', id).select().single(),
+    listContentItems: async () => client
+      .from('content_items')
+      .select('*')
+      .order('updated_at', { ascending: false }),
+
+    createContentItem: async (payload) => client
+      .from('content_items')
+      .insert([payload])
+      .select()
+      .single(),
+
+    updateContentItem: async (id, payload) => client
+      .from('content_items')
+      .update(payload)
+      .eq('id', id)
+      .select()
+      .single(),
 
     listPublishedContent: async (limit = 40) => client
       .from('content_items')

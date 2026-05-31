@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Meus conteúdos | JENI Informa</title>
+  <link rel="stylesheet" href="auth.css" />
+</head>
+<body class="dashboard-page">
+  <header class="dashboard-header">
+    <div class="dashboard-header-wrap">
+      <div>
+        <h1>JENI Informa — Meus conteúdos</h1>
+      </div>
+
+      <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+        <a href="dashboard.html" class="producer-back-link">Voltar ao painel</a>
+        <a href="../jeni-informa.html" class="producer-back-link">JENI Informa</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="dashboard-main">
+    <section class="producer-hero-mini">
+      <h1>Meus conteúdos</h1>
+      <p>
+        Aqui pode acompanhar os conteúdos criados no fluxo oficial do
+        <strong>JENI Informa</strong>, agora centralizado em <strong>content_items</strong>.
+      </p>
+    </section>
+
+    <section class="dashboard-panel">
+      <h2>Histórico editorial</h2>
+      <p class="dashboard-note">
+        Os conteúdos passam pelos estados Rascunho, Em revisão, Publicado e Arquivado.
+      </p>
+
+      <div id="list-message" class="auth-message"></div>
+      <div id="content-list" class="content-list"></div>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../assets/js/services/supabase-client.js" type="module"></script>
+  <script src="../assets/js/services/auth-service.js" type="module"></script>
+  <script src="../assets/js/services/content-service.js" type="module"></script>
+  <script src="../assets/js/services/media-service.js" type="module"></script>
+  <script src="auth.js"></script>
+  <script>
+    function formatContentDate(dateString) {
+      if (!dateString) return "Sem data";
+      const date = new Date(dateString);
+      if (Number.isNaN(date.getTime())) return "Sem data";
+      return date.toLocaleDateString("pt-PT", {
+        day: "2-digit",
+        month: "long",
+        year: "numeric"
+      });
+    }
+
+    function getContentStatusLabel(status) {
+      const labels = {
+        draft: "Rascunho",
+        review: "Em revisão",
+        published: "Publicado",
+        archived: "Arquivado"
+      };
+      return labels[status] || "Rascunho";
+    }
+
+    function getTypeLabel(type) {
+      if (type === "news") return "Notícia";
+      if (type === "event") return "Evento";
+      if (type === "call") return "Chamada";
+      if (type === "scholarship") return "Bolsa";
+      if (type === "learning") return "Aprender";
+      return "Conteúdo";
+    }
+
+    async function loadContentItems() {
+      const user = await requireAuth();
+      if (!user) return;
+
+      showMessage("list-message", "A carregar conteúdos...", "info");
+
+      const { data, error } = await supabaseClient
+        .from("content_items")
+        .select("id,type,status,title,excerpt,summary,body,description,category,created_at,published_at")
+        .eq("author_id", user.id)
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        showMessage("list-message", "Não foi possível carregar os conteúdos.", "error");
+        console.error(error);
+        return;
+      }
+
+      clearMessage("list-message");
+
+      const container = document.getElementById("content-list");
+
+      if (!data || data.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            Ainda não tem conteúdos registados na sua conta.
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = data.map(item => {
+        const text = item.excerpt || item.summary || item.description || item.body || "Sem descrição disponível.";
+        const previewText = text.slice(0, 180) + (text.length > 180 ? "..." : "");
+
+        return `
+          <article class="content-card">
+            <div class="content-meta">
+              <span class="content-pill">${getTypeLabel(item.type)}</span>
+              <span class="content-status ${item.status || "draft"}">
+                ${getContentStatusLabel(item.status)}
+              </span>
+            </div>
+
+            <h3>${item.title || "Sem título"}</h3>
+            <p>${previewText}</p>
+
+            <div class="content-details">
+              <p><strong>Categoria:</strong> ${item.category || "Não definida"}</p>
+              <p><strong>Criado em:</strong> ${formatContentDate(item.created_at)}</p>
+              <p><strong>Publicado em:</strong> ${item.published_at ? formatContentDate(item.published_at) : "Ainda não publicado"}</p>
+            </div>
+          </article>
+        `;
+      }).join("");
+    }
+
+    loadContentItems();
+  </script>
+</body>
+</html>

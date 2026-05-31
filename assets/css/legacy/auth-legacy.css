@@ -421,13 +421,13 @@ body {
   background: var(--jeni-gold);
 }
 
-.submission-list {
+.content-list {
   display: grid;
   gap: 18px;
   margin-top: 22px;
 }
 
-.submission-card {
+.content-card {
   padding: 22px;
   border-radius: 16px;
   background: var(--jeni-surface-soft);
@@ -435,7 +435,7 @@ body {
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
 }
 
-.submission-meta {
+.content-meta {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
@@ -443,7 +443,7 @@ body {
   font-size: 0.9rem;
 }
 
-.submission-pill {
+.content-pill {
   display: inline-flex;
   align-items: center;
   padding: 6px 12px;
@@ -455,7 +455,7 @@ body {
   text-transform: capitalize;
 }
 
-.submission-status {
+.content-status {
   display: inline-flex;
   align-items: center;
   padding: 6px 12px;
@@ -464,40 +464,40 @@ body {
   font-weight: 700;
 }
 
-.submission-status.pending {
+.content-status.draft {
   background: rgba(200, 169, 107, 0.16);
   color: #8a6728;
 }
 
-.submission-status.approved {
+.content-status.published {
   background: rgba(10, 122, 47, 0.12);
   color: #0a7a2f;
 }
 
-.submission-status.rejected {
+.content-status.review {
   background: rgba(198, 40, 40, 0.12);
   color: #c62828;
 }
 
-.submission-card h3 {
+.content-card h3 {
   margin: 0 0 12px;
   color: var(--jeni-black);
   font-size: 1.15rem;
 }
 
-.submission-card p {
+.content-card p {
   margin: 0 0 10px;
   color: var(--jeni-text-soft);
   line-height: 1.6;
 }
 
-.submission-details {
+.content-details {
   margin-top: 14px;
   padding-top: 14px;
   border-top: 1px solid rgba(0, 0, 0, 0.08);
 }
 
-.submission-details p strong {
+.content-details p strong {
   color: var(--jeni-black);
 }
 
@@ -572,7 +572,7 @@ body {
   color: var(--jeni-black);
 }
 
-.admin-submissions-list {
+.admin-content-list {
   display: grid;
   gap: 18px;
   margin-top: 20px;
@@ -616,17 +616,17 @@ body {
   text-transform: capitalize;
 }
 
-.admin-status-pill.pending {
+.admin-status-pill.draft {
   background: rgba(200, 169, 107, 0.16);
   color: #8a6728;
 }
 
-.admin-status-pill.approved {
+.admin-status-pill.published {
   background: rgba(10, 122, 47, 0.12);
   color: #0a7a2f;
 }
 
-.admin-status-pill.rejected {
+.admin-status-pill.review {
   background: rgba(198, 40, 40, 0.12);
   color: #c62828;
 }
