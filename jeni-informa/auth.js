@@ -1584,9 +1584,13 @@ async function initAdminPage() {
 
   initAdminEditor();
   initPremiumEditorEnhancements();
-  await initHomepageControl();
+  if (window.JeniHomepageAdmin) {
+    await window.JeniHomepageAdmin.init({ client: supabaseClient, notify: showToast, message: showMessage });
+  } else {
+    await initHomepageControl();
+    await initMediaLibrary();
+  }
   await initNewsletterManagement();
-  await initMediaLibrary();
 
   showMessage("admin-message", "A carregar conteúdos...", "info");
 
