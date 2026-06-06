@@ -424,7 +424,8 @@ function renderSiteHomepageInforma(items) {
   if (!host) return;
 
   host.setAttribute('aria-busy', 'false');
-  const latestItems = sortByPublicationDate(items).slice(0, 4);
+  const articleCount = Math.max(1, Number(host.dataset.articleCount) || 4);
+  const latestItems = sortByPublicationDate(items).slice(0, articleCount);
   if (!latestItems.length) {
     host.innerHTML = `<article class="homepage-informa-status"><p>${EMPTY_MESSAGE}</p><a class="text-link" href="jeni-informa.html">Ver JENI Informa <span aria-hidden="true">→</span></a></article>`;
     return;
@@ -594,6 +595,10 @@ function bindNewsletter() {
 }
 
 (async function init() {
+  const homepage = qs('[data-homepage-sections]');
+  if (homepage?.getAttribute('aria-busy') === 'true') {
+    await new Promise((resolve) => document.addEventListener('jeni:homepage-ready', resolve, { once: true }));
+  }
   const data = await fetchPublishedContent();
   renderHomepage(data);
   renderSiteHomepageInforma(data);

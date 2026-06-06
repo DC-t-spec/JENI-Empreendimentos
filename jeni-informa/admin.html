@@ -164,14 +164,27 @@ https://..."></textarea></div>
             <div><dt>Status Published</dt><dd>Aparece no site público quando também estiver activo.</dd></div>
             <div><dt>Activo</dt><dd>Controla se a secção está disponível.</dd></div>
             <div><dt>Ordem</dt><dd>Controla a posição da secção na Home.</dd></div>
-            <div><dt>Conteúdo JSON</dt><dd>Guarda os dados da secção e continua disponível no modo avançado.</dd></div>
-            <div><dt>Partners</dt><dd>Controla os logotipos, nomes e links dos parceiros exibidos na Home.</dd></div>
+            <div><dt>JSON automático</dt><dd>O CMS gera e guarda o JSON sem edição manual.</dd></div>
+            <div><dt>Media Library</dt><dd>Escolha imagens do Storage em qualquer campo visual.</dd></div>
           </dl>
         </aside>
         <div id="homepage-sections-list" class="admin-content-list"><div class="admin-empty-state">A carregar secções da homepage...</div></div>
         <div id="homepage-message" class="auth-message" aria-live="polite"></div>
       </section>
-      <section class="dashboard-panel" id="media"><div class="section-head"><h3>Media Library</h3><p>Upload visual e gestão básica de metadata.</p></div><div class="admin-toolbar"><div class="admin-field grow"><label for="media-upload">Upload</label><input type="file" id="media-upload" accept="image/*" /></div><button type="button" id="media-upload-btn" class="jeni-btn jeni-btn-primary">Enviar</button></div><div id="media-message" class="auth-message"></div><div id="media-grid" class="quick-grid"><div class="admin-empty-state">A carregar biblioteca...</div></div></section>
+      <section class="dashboard-panel" id="media">
+        <div class="section-head"><h3>Media Library</h3><p>Biblioteca central de imagens guardadas no Supabase Storage.</p></div>
+        <div class="media-upload-panel">
+          <div class="admin-field grow"><label for="media-upload">Upload de imagens</label><input type="file" id="media-upload" accept="image/*" multiple /><small>PNG, JPG, WEBP, GIF ou SVG. Pode seleccionar vários ficheiros.</small></div>
+          <button type="button" id="media-upload-btn" class="jeni-btn jeni-btn-primary">Enviar para a biblioteca</button>
+        </div>
+        <div class="admin-toolbar media-toolbar">
+          <div class="admin-field grow"><label for="media-search">Pesquisar imagem</label><input type="search" id="media-search" placeholder="Pesquisar por nome..." /></div>
+          <div class="admin-field"><label for="media-sort">Ordenar por data</label><select id="media-sort"><option value="desc">Mais recentes</option><option value="asc">Mais antigas</option></select></div>
+          <strong id="media-total" class="media-total">0 imagens</strong>
+        </div>
+        <div id="media-message" class="auth-message" aria-live="polite"></div>
+        <div id="media-grid" class="media-library-grid"><div class="admin-empty-state">A carregar biblioteca...</div></div>
+      </section>
       <section class="dashboard-panel" id="newsletter"><div class="section-head"><h3>Newsletter Management</h3><p>Subscribers, métricas simples e exportação futura.</p></div><div class="admin-toolbar"><div class="admin-field grow"><label for="newsletter-search">Pesquisar</label><input type="text" id="newsletter-search" placeholder="email" /></div><button type="button" id="newsletter-search-btn" class="jeni-btn jeni-btn-secondary">Filtrar</button><button type="button" id="newsletter-export-btn" class="jeni-btn jeni-btn-outline">Export CSV</button></div><div id="newsletter-message" class="auth-message"></div><div id="newsletter-total" class="admin-empty-state">Total: 0</div><div id="newsletter-list" class="admin-content-list"></div></section>
     </main>
   </div>
@@ -181,6 +194,7 @@ https://..."></textarea></div>
   <script src="../assets/js/services/auth-service.js" type="module"></script>
   <script src="../assets/js/services/content-service.js" type="module"></script>
   <script src="../assets/js/services/media-service.js" type="module"></script>
+  <script src="../assets/js/admin/homepage-control.js"></script>
   <script src="auth.js"></script>
   <script>
     document.getElementById("admin-toggle-editor")?.addEventListener("click", () => {
