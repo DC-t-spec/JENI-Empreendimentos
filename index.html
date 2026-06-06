@@ -35,14 +35,14 @@
     </div>
   </header>
 
-  <main>
-    <section class="hero-cinematic" id="inicio">
+  <main class="homepage-sections" data-homepage-sections>
+    <section class="hero-cinematic" id="inicio" data-home-section="hero">
       <div class="hero-overlay"></div>
       <div class="container hero-cinematic-content" data-reveal="fade-up">
-        <p class="hero-kicker">JENI Empreendimentos · Maputo</p>
-        <h1>Estratégia, cultura e produção com presença institucional.</h1>
-        <p class="hero-lead">A JENI Empreendimentos integra consultoria, cultura, produção audiovisual, eventos, gestão de projectos e media para construir soluções formais, modernas e com impacto.</p>
-        <div class="hero-actions">
+        <p class="hero-kicker" data-home-field="kicker">JENI Empreendimentos · Maputo</p>
+        <h1 data-home-field="title">Estratégia, cultura e produção com presença institucional.</h1>
+        <p class="hero-lead" data-home-field="subtitle">A JENI Empreendimentos integra consultoria, cultura, produção audiovisual, eventos, gestão de projectos e media para construir soluções formais, modernas e com impacto.</p>
+        <div class="hero-actions" data-home-hero-actions>
           <a href="servicos.html" class="btn btn-gold">Conhecer Serviços</a>
           <a href="portfolio.html" class="btn btn-outline">Ver Portfólio</a>
           <a href="contacto.html" class="btn btn-clean">Falar com a JENI</a>
@@ -64,14 +64,14 @@
       </div>
     </section>
 
-    <section class="section section-soft" id="servicos">
+    <section class="section section-soft" id="servicos" data-home-section="categories">
       <div class="container">
         <div class="section-head center" data-reveal="fade-up">
           <span class="section-tag">Serviços</span>
-          <h2>Capacidades organizadas para diferentes frentes de actuação.</h2>
-          <p>Os serviços foram estruturados em blocos claros para facilitar leitura, decisão e contacto.</p>
+          <h2 data-section-title>Capacidades organizadas para diferentes frentes de actuação.</h2>
+          <p data-section-subtitle>Os serviços foram estruturados em blocos claros para facilitar leitura, decisão e contacto.</p>
         </div>
-        <div class="services-grid premium-services-grid">
+        <div class="services-grid premium-services-grid" data-home-categories>
           <article class="service-card"><i class="fa-solid fa-landmark"></i><h3>Consultoria cultural</h3><p>Estratégia, pesquisa e orientação para instituições, programas e iniciativas culturais.</p></article>
           <article class="service-card"><i class="fa-solid fa-diagram-project"></i><h3>Gestão de projectos</h3><p>Planeamento, coordenação e acompanhamento responsável de cada etapa de execução.</p></article>
           <article class="service-card"><i class="fa-solid fa-masks-theater"></i><h3>Produção e eventos</h3><p>Concepção e realização de experiências artísticas, comunitárias e institucionais.</p></article>
@@ -80,26 +80,38 @@
       </div>
     </section>
 
-    <section class="section" id="projectos">
+    <section class="section" id="projectos" data-home-section="highlights">
       <div class="container">
         <div class="section-head" data-reveal="fade-up">
           <span class="section-tag">Portfólio</span>
-          <h2>Destaques com identidade visual, execução e presença institucional.</h2>
+          <h2 data-section-title>Destaques com identidade visual, execução e presença institucional.</h2>
         </div>
-        <div class="portfolio-grid">
-          <article class="portfolio-card"><img src="foto1.jpg.jpeg" loading="lazy" alt="Evento cultural"><div><h3>Eventos institucionais</h3><p>Conferências, lançamentos, fóruns e experiências com direcção premium.</p></div></article>
-          <article class="portfolio-card"><img src="foto4.jpg.jpeg" loading="lazy" alt="Projecto comunitário"><div><h3>Projectos culturais</h3><p>Iniciativas de impacto social, valorização artística e ligação comunitária.</p></div></article>
-          <article class="portfolio-card"><img src="foto7.jpg.jpeg" loading="lazy" alt="Produção audiovisual"><div><h3>Audiovisual e branding</h3><p>Narrativas visuais para marcas, talentos, campanhas e instituições.</p></div></article>
+        <div class="portfolio-grid institutional-highlights" data-home-highlights>
+          <article class="portfolio-card portfolio-card-text"><span class="portfolio-index">01</span><div><h3>Eventos institucionais</h3><p>Conferências, lançamentos, fóruns e experiências com direcção premium.</p></div></article>
+          <article class="portfolio-card portfolio-card-text"><span class="portfolio-index">02</span><div><h3>Projectos culturais</h3><p>Iniciativas de impacto social, valorização artística e ligação comunitária.</p></div></article>
+          <article class="portfolio-card portfolio-card-text"><span class="portfolio-index">03</span><div><h3>Audiovisual e branding</h3><p>Narrativas visuais para marcas, talentos, campanhas e instituições.</p></div></article>
         </div>
       </div>
     </section>
 
-    <section class="section section-soft" id="jeni-informa">
+
+    <section class="section partners-section" id="parceiros" data-home-section="partners" hidden>
+      <div class="container">
+        <div class="section-head center" data-reveal="fade-up">
+          <span class="section-tag">Rede institucional</span>
+          <h2 data-partners-title>Parceiros</h2>
+          <p data-partners-subtitle>Instituições e marcas que caminham connosco na promoção da cultura, criatividade e desenvolvimento.</p>
+        </div>
+        <div class="partners-grid" data-partners-grid aria-live="polite"></div>
+      </div>
+    </section>
+
+    <section class="section section-soft" id="jeni-informa" data-home-section="newsletter">
       <div class="container">
         <div class="section-head informa-section-head" data-reveal="fade-up">
           <span class="section-tag">JENI Informa</span>
-          <h2>Informação, cultura e oportunidades.</h2>
-          <p>Os conteúdos mais recentes publicados pela equipa editorial da JENI.</p>
+          <h2 data-section-title>Informação, cultura e oportunidades.</h2>
+          <p data-section-subtitle>Os conteúdos mais recentes publicados pela equipa editorial da JENI.</p>
         </div>
         <div class="homepage-informa-grid" data-homepage-informa aria-live="polite" aria-busy="true">
           <article class="homepage-informa-status"><p>A carregar conteúdos publicados...</p></article>
@@ -110,11 +122,11 @@
       </div>
     </section>
 
-    <section class="section cta-final">
+    <section class="section cta-final" data-home-section="ctas">
       <div class="container cta-premium" data-reveal="fade-up">
-        <h2>Vamos transformar uma oportunidade em projecto estruturado?</h2>
-        <p>Entre em contacto para propostas, parcerias, consultoria, eventos, cultura ou produção criativa.</p>
-        <a href="contacto.html" class="btn btn-gold">Iniciar conversa estratégica</a>
+        <h2 data-cta-title>Vamos transformar uma oportunidade em projecto estruturado?</h2>
+        <p data-cta-subtitle>Entre em contacto para propostas, parcerias, consultoria, eventos, cultura ou produção criativa.</p>
+        <a href="contacto.html" class="btn btn-gold" data-cta-link>Iniciar conversa estratégica</a>
       </div>
     </section>
   </main>
@@ -129,6 +141,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="assets/js/services/supabase-client.js" type="module"></script>
   <script src="assets/js/public/private-access.js" type="module"></script>
+  <script src="assets/js/public/homepage-dynamic.js" type="module"></script>
   <script src="assets/js/public/informa-dynamic.js" type="module"></script>
 </body>
 </html>

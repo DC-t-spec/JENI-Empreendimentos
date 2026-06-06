@@ -1366,65 +1366,171 @@ async function initHomepageControl() {
   if (!wrap || wrap.dataset.bound) return;
   wrap.dataset.bound = "true";
 
-  const editable = ["hero", "ctas", "highlights", "partners", "portfolio"];
+  const sectionLabels = {
+    hero: ["Hero institucional", "Mensagem principal e botões no topo da Home."],
+    ctas: ["CTA de contacto", "Convite final para iniciar uma conversa com a JENI."],
+    highlights: ["Portfólio / destaques", "Projectos e áreas de trabalho em destaque."],
+    partners: ["Parceiros", "Logotipos, nomes e links da rede institucional."],
+    newsletter: ["JENI Informa", "Apresentação da área de conteúdos editoriais."],
+    categories: ["Serviços principais", "Categorias e capacidades apresentadas na Home."],
+    portfolio: ["Portfólio", "Conteúdo de portfólio mantido por compatibilidade."]
+  };
+
+  const partnerRow = (item = {}, index = 0) => `<div class="partner-editor-row" data-partner-row>
+    <div class="partner-editor-preview">${item.logo ? `<img src="${escapeHtml(item.logo)}" alt="" data-partner-preview-image />` : '<span data-partner-preview-empty>Logo</span>'}</div>
+    <div class="partner-editor-fields">
+      <div class="admin-field"><label>Nome do parceiro</label><input type="text" data-partner-name value="${escapeHtml(item.name || "")}" placeholder="Nome da instituição" /></div>
+      <div class="admin-field"><label>Logo / Imagem URL</label><input type="text" data-partner-logo value="${escapeHtml(item.logo || "")}" placeholder="https://... ou caminho local" /></div>
+      <div class="admin-field"><label>Link opcional</label><input type="url" data-partner-url value="${escapeHtml(item.url || "")}" placeholder="https://site-do-parceiro.com" /></div>
+    </div>
+    <button type="button" class="jeni-btn admin-btn-delete partner-remove" data-partner-remove aria-label="Remover parceiro ${index + 1}">Remover parceiro</button>
+  </div>`;
+
+  const previewMarkup = (section) => {
+    const payload = section.payload && typeof section.payload === "object" ? section.payload : {};
+    if (section.section_key === "partners") {
+      const items = Array.isArray(payload.items) ? payload.items : [];
+      return `<div class="homepage-card-preview partners-admin-preview">
+        <span class="preview-label">Preview</span>
+        <h4>${escapeHtml(payload.title || "Parceiros")}</h4>
+        <p>${escapeHtml(payload.subtitle || "Adicione parceiros para visualizar a grelha.")}</p>
+        <div>${items.slice(0, 6).filter((item) => item && typeof item === "object").map((item) => `<span>${item.logo ? `<img src="${escapeHtml(item.logo)}" alt="" />` : ""}<small>${escapeHtml(item.name || "Sem nome")}</small></span>`).join("") || '<em>A secção pública ficará oculta enquanto não houver parceiros válidos.</em>'}</div>
+      </div>`;
+    }
+    const summary = payload.title || payload.heading || payload.subtitle || payload.description || "Sem conteúdo de apresentação.";
+    return `<div class="homepage-card-preview"><span class="preview-label">Preview</span><p>${escapeHtml(String(summary))}</p></div>`;
+  };
+
+  const renderCard = (section) => {
+    const payload = section.payload && typeof section.payload === "object" ? section.payload : {};
+    const [label, description] = sectionLabels[section.section_key] || [section.section_key, "Secção configurável da Homepage."];
+    const isPartners = section.section_key === "partners";
+    const items = Array.isArray(payload.items) ? payload.items : [];
+    return `<article class="home-section-card" data-home-card="${section.id}" data-section-key="${escapeHtml(section.section_key)}">
+      <header class="home-section-card-header">
+        <div><span class="home-section-key">${escapeHtml(section.section_key)}</span><h4>${escapeHtml(label)}</h4><p>${escapeHtml(description)}</p></div>
+        <span class="home-status-badge ${section.status === "published" && section.is_enabled ? "live" : "draft"}">${section.status === "published" && section.is_enabled ? "Visível na Home" : "Não publicado"}</span>
+      </header>
+      <div class="home-section-grid">
+        <div class="admin-field"><label>Ordem</label><input data-home-order="${section.id}" type="number" min="0" step="1" value="${Number(section.display_order) || 0}" /></div>
+        <div class="admin-field"><label>Estado</label><select data-home-status="${section.id}"><option value="draft"${section.status === "draft" ? " selected" : ""}>Draft — não público</option><option value="published"${section.status === "published" ? " selected" : ""}>Published — público</option></select></div>
+        <div class="admin-field"><label>Disponibilidade</label><select data-home-enabled="${section.id}"><option value="true"${section.is_enabled ? " selected" : ""}>Activo</option><option value="false"${!section.is_enabled ? " selected" : ""}>Inactivo</option></select></div>
+      </div>
+      ${isPartners ? `<div class="partners-visual-editor">
+        <div class="partners-editor-heading"><div><h5>Parceiros apresentados na Home</h5><p>Preencha o nome e o logotipo. O link para o site é opcional.</p></div><button type="button" class="jeni-btn jeni-btn-secondary" data-partner-add>+ Adicionar parceiro</button></div>
+        <div class="admin-form-grid partners-heading-fields">
+          <div class="admin-field"><label>Título da secção</label><input type="text" data-partners-title value="${escapeHtml(payload.title || "Parceiros")}" /></div>
+          <div class="admin-field full"><label>Subtítulo</label><textarea rows="2" data-partners-subtitle>${escapeHtml(payload.subtitle || "Instituições e marcas que caminham connosco na promoção da cultura, criatividade e desenvolvimento.")}</textarea></div>
+        </div>
+        <div class="partners-editor-list" data-partners-list>${items.map(partnerRow).join("") || '<div class="partners-empty" data-partners-empty>Nenhum parceiro adicionado. A secção ficará oculta no site público.</div>'}</div>
+      </div>` : ""}
+      ${previewMarkup(section)}
+      <details class="advanced-json"><summary>Modo avançado · Conteúdo JSON</summary><div class="admin-field"><label>Conteúdo JSON</label><textarea data-home-payload="${section.id}" rows="9" spellcheck="false">${escapeHtml(JSON.stringify(payload, null, 2))}</textarea><small>Use apenas se precisar de editar campos avançados. JSON inválido não será guardado.</small></div></details>
+      <div class="admin-actions-row"><button type="button" class="jeni-btn jeni-btn-primary" data-home-save="${section.id}">Guardar secção</button></div>
+    </article>`;
+  };
+
   const load = async () => {
     wrap.innerHTML = '<div class="admin-skeleton"></div><div class="admin-skeleton"></div>';
     const { data, error } = await supabaseClient.from("homepage_sections").select("*").order("display_order", { ascending: true });
     if (error) {
+      wrap.innerHTML = '<div class="admin-empty-state">Não foi possível carregar as secções.</div>';
       showMessage("homepage-message", error.message, "error");
       return;
     }
     if (!data?.length) {
-      wrap.innerHTML = '<div class="admin-empty-state">Sem secções. Crie a primeira secção da homepage.</div>';
+      wrap.innerHTML = '<div class="admin-empty-state">Sem secções configuradas na tabela homepage_sections.</div>';
       return;
     }
-    wrap.innerHTML = data.map((section) => {
-      const payload = JSON.stringify(section.payload || {}, null, 2);
-      const isEditable = editable.includes(section.section_key);
-      return `<article class="home-section-card">
-        <div class="home-section-grid">
-          <div><strong>${escapeHtml(section.section_key)}</strong><p>Estado: ${escapeHtml(section.status || "draft")}</p></div>
-          <div><label>Ordem</label><input data-home-order="${section.id}" type="number" value="${section.display_order || 0}" /></div>
-          <div><label>Status</label><select data-home-status="${section.id}"><option value="draft"${section.status === "draft" ? " selected" : ""}>Draft</option><option value="published"${section.status === "published" ? " selected" : ""}>Published</option></select></div>
-          <div><label>Ativo</label><select data-home-enabled="${section.id}"><option value="true"${section.is_enabled ? " selected" : ""}>Ativo</option><option value="false"${!section.is_enabled ? " selected" : ""}>Desativado</option></select></div>
-        </div>
-        ${isEditable ? `<label>Conteúdo JSON</label><textarea data-home-payload="${section.id}" rows="7">${escapeHtml(payload)}</textarea>` : '<div class="preview-box">Secção bloqueada para edição direta nesta fase.</div>'}
-        <div class="preview-box"><strong>Preview:</strong> ${escapeHtml(JSON.stringify(section.payload || {})).slice(0, 300)}</div>
-        <div class="admin-actions-row"><button type="button" class="jeni-btn jeni-btn-secondary" data-home-save="${section.id}">Guardar</button></div>
-      </article>`;
-    }).join("");
+    wrap.innerHTML = data.map(renderCard).join("");
   };
 
+  const syncPartnersJson = (card) => {
+    const textarea = card.querySelector("[data-home-payload]");
+    if (!textarea || card.dataset.sectionKey !== "partners") return;
+    let existing = {};
+    try { existing = JSON.parse(textarea.value || "{}"); } catch {}
+    const items = [...card.querySelectorAll("[data-partner-row]")].map((row) => ({
+      name: row.querySelector("[data-partner-name]")?.value.trim() || "",
+      logo: row.querySelector("[data-partner-logo]")?.value.trim() || "",
+      url: row.querySelector("[data-partner-url]")?.value.trim() || ""
+    })).filter((item) => item.name || item.logo || item.url);
+    textarea.value = JSON.stringify({
+      ...existing,
+      title: card.querySelector("[data-partners-title]")?.value.trim() || "Parceiros",
+      subtitle: card.querySelector("[data-partners-subtitle]")?.value.trim() || "",
+      items
+    }, null, 2);
+  };
+
+  wrap.addEventListener("input", (event) => {
+    const card = event.target.closest("[data-home-card]");
+    if (!card || card.dataset.sectionKey !== "partners" || event.target.matches("[data-home-payload]")) return;
+    if (event.target.matches("[data-partner-logo]")) {
+      const preview = event.target.closest("[data-partner-row]")?.querySelector(".partner-editor-preview");
+      if (preview) preview.innerHTML = event.target.value.trim() ? `<img src="${escapeHtml(event.target.value.trim())}" alt="" data-partner-preview-image />` : '<span data-partner-preview-empty>Logo</span>';
+    }
+    syncPartnersJson(card);
+  });
+
   wrap.addEventListener("click", async (event) => {
+    const addButton = event.target.closest("[data-partner-add]");
+    if (addButton) {
+      const card = addButton.closest("[data-home-card]");
+      const list = card.querySelector("[data-partners-list]");
+      list.querySelector("[data-partners-empty]")?.remove();
+      list.insertAdjacentHTML("beforeend", partnerRow({}, list.querySelectorAll("[data-partner-row]").length));
+      list.lastElementChild?.querySelector("[data-partner-name]")?.focus();
+      syncPartnersJson(card);
+      return;
+    }
+
+    const removeButton = event.target.closest("[data-partner-remove]");
+    if (removeButton) {
+      const card = removeButton.closest("[data-home-card]");
+      const list = removeButton.closest("[data-partners-list]");
+      removeButton.closest("[data-partner-row]")?.remove();
+      if (!list.querySelector("[data-partner-row]")) list.innerHTML = '<div class="partners-empty" data-partners-empty>Nenhum parceiro adicionado. A secção ficará oculta no site público.</div>';
+      syncPartnersJson(card);
+      return;
+    }
+
     const button = event.target.closest("[data-home-save]");
     if (!button) return;
     const id = button.getAttribute("data-home-save");
-    const payloadEl = wrap.querySelector(`[data-home-payload="${id}"]`);
-    const orderEl = wrap.querySelector(`[data-home-order="${id}"]`);
-    const enabledEl = wrap.querySelector(`[data-home-enabled="${id}"]`);
-    const statusEl = wrap.querySelector(`[data-home-status="${id}"]`);
+    const card = button.closest("[data-home-card]");
+    const payloadEl = card.querySelector(`[data-home-payload="${id}"]`);
     let parsedPayload = {};
-    if (payloadEl) {
-      try { parsedPayload = JSON.parse(payloadEl.value || "{}"); }
-      catch { showToast("JSON inválido na secção.", "error"); return; }
+    try { parsedPayload = JSON.parse(payloadEl?.value || "{}"); }
+    catch { showToast("JSON inválido. Reveja o modo avançado antes de guardar.", "error"); return; }
+
+    if (card.dataset.sectionKey === "partners") {
+      const incomplete = (parsedPayload.items || []).find((item) => !item.name || !item.logo);
+      if (incomplete) { showToast("Cada parceiro precisa de nome e logotipo.", "error"); return; }
     }
+
+    button.disabled = true;
+    button.textContent = "A guardar...";
     const updatePayload = {
-      display_order: Number(orderEl?.value || 0),
-      is_enabled: enabledEl?.value === "true",
-      status: statusEl?.value || "draft",
+      payload: parsedPayload,
+      display_order: Number(card.querySelector(`[data-home-order="${id}"]`)?.value || 0),
+      is_enabled: card.querySelector(`[data-home-enabled="${id}"]`)?.value === "true",
+      status: card.querySelector(`[data-home-status="${id}"]`)?.value || "draft",
       updated_at: new Date().toISOString()
     };
-    if (payloadEl) updatePayload.payload = parsedPayload;
     const { error } = await supabaseClient.from("homepage_sections").update(updatePayload).eq("id", id);
     if (error) {
       showMessage("homepage-message", error.message, "error");
       showToast("Erro ao guardar secção.", "error");
+      button.disabled = false;
+      button.textContent = "Guardar secção";
       return;
     }
     showMessage("homepage-message", "Secção guardada com sucesso.", "success");
-    showToast("Secção atualizada.", "success");
+    showToast(updatePayload.status === "published" && updatePayload.is_enabled ? "Secção publicada na Home." : "Secção guardada sem publicação.", "success");
     await load();
   });
+
   await load();
 }
 
