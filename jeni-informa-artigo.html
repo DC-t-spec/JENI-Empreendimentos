@@ -10,20 +10,47 @@
   <meta property="og:url" content="jeni-informa-artigo.html">
   <link rel="stylesheet" href="style.css"><link rel="stylesheet" href="assets/css/informa.css">
 </head>
-<body class="informa-premium"><main class="article-premium container" data-article-root data-state="loading">
-  <div data-article-error hidden><p>Ainda não há conteúdos publicados.</p><a href="jeni-informa.html" class="jeni-btn-light">Voltar ao editorial</a></div>
+<body class="informa-premium article-page">
+<main class="article-premium" data-article-root data-state="loading">
+  <div class="article-state container" data-article-error hidden>
+    <p>Ainda não há conteúdos publicados.</p>
+    <a href="jeni-informa.html" class="jeni-btn-light">Voltar ao editorial</a>
+  </div>
+
   <div data-article-content hidden>
-  <img class="article-hero" loading="lazy" alt="">
-  <p class="kicker"></p>
-  <h1></h1>
-  <p class="subtitle"></p>
-  <p class="meta"></p>
-  <div class="article-specific-host"></div>
-  <article class="article-body"></article>
-  <div class="article-gallery-host"></div>
-  <section class="external-links" hidden><h3>Links relacionados</h3><ul></ul></section>
-  <section class="share-row"><span>Partilhar:</span><a class="share-button" href="#" data-share="linkedin">LinkedIn</a><a class="share-button" href="#" data-share="x">X</a><a class="share-button" href="#" data-share="email">Email</a></section>
-  <section class="related"><h3>Artigos Relacionados</h3><div class="related-grid"></div></section>
-  <a href="jeni-informa.html" class="informa-back-button"><strong>Voltar ao JENI Informa</strong><small>Ver todas as notícias e conteúdos publicados</small></a>
-</div>
-</main><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script type="module" src="assets/js/public/informa-dynamic.js"></script></body></html>
+    <header class="article-feature container">
+      <div class="article-feature-copy">
+        <p class="kicker"></p>
+        <h1></h1>
+        <p class="subtitle"></p>
+        <div class="meta" aria-label="Informações do artigo"></div>
+        <a class="article-primary-cta" href="#artigo-completo">Ler artigo completo <span aria-hidden="true">→</span></a>
+      </div>
+      <figure class="article-hero-frame">
+        <img class="article-hero" loading="eager" alt="">
+      </figure>
+    </header>
+
+    <section class="related container" aria-labelledby="related-title">
+      <div class="article-section-heading">
+        <p>Continue a explorar</p>
+        <h2 id="related-title">Outras notícias</h2>
+      </div>
+      <div class="related-grid"></div>
+    </section>
+
+    <div class="article-reading-wrap" id="artigo-completo">
+      <div class="article-reading-column">
+        <div class="article-specific-host"></div>
+        <article class="article-body"></article>
+        <div class="article-gallery-host"></div>
+        <section class="external-links" hidden><h3>Links relacionados</h3><ul></ul></section>
+        <section class="share-row"><span>Partilhar:</span><a class="share-button" href="#" data-share="linkedin">LinkedIn</a><a class="share-button" href="#" data-share="x">X</a><a class="share-button" href="#" data-share="email">Email</a></section>
+        <a href="jeni-informa.html" class="informa-back-button"><strong>Voltar ao JENI Informa</strong><small>Ver todas as notícias e conteúdos publicados</small></a>
+      </div>
+    </div>
+  </div>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script type="module" src="assets/js/public/informa-dynamic.js"></script>
+</body>
+</html>

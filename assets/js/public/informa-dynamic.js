@@ -434,6 +434,14 @@ function renderSiteHomepageInforma(items) {
   host.innerHTML = `<a class="lead-story clickable-card" href="${articleUrl(lead)}"><span class="category">${escapeHtml(lead.category.name)}</span><h3>${escapeHtml(lead.title)}</h3><p>${escapeHtml(lead.excerpt)}</p><strong>Ler artigo</strong></a>${cards}`;
 }
 
+function calendarIcon() {
+  return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3v3M17 3v3M4 9h16M5 5h14a1 1 0 0 1 1 1v14H4V6a1 1 0 0 1 1-1Z"/></svg>';
+}
+
+function clockIcon() {
+  return '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>';
+}
+
 async function renderArticlePage(items) {
   const host = qs('[data-article-root]');
   if (!host) return;
@@ -472,10 +480,14 @@ async function renderArticlePage(items) {
     }
   }
 
-  qs('.kicker').textContent = `${getTypeLabel(item.type)} · ${item.category.name}`;
+  qs('.kicker').textContent = item.category.name || 'JENI Informa';
   qs('h1').textContent = item.title;
   qs('.subtitle').textContent = item.excerpt;
-  qs('.meta').textContent = [item.author_name && `Por ${item.author_name}`, fmt(item.published_at), `${item.read_minutes} min de leitura`].filter(Boolean).join(' · ');
+  qs('.meta').innerHTML = [
+    item.author_name && `<span class="article-meta-item article-meta-author"><span class="article-meta-icon" aria-hidden="true">✦</span><span>Por ${escapeHtml(item.author_name)}</span></span>`,
+    `<span class="article-meta-item"><span class="article-meta-icon" aria-hidden="true">${calendarIcon()}</span><time>${escapeHtml(fmt(item.published_at))}</time></span>`,
+    `<span class="article-meta-item"><span class="article-meta-icon" aria-hidden="true">${clockIcon()}</span><span>${item.read_minutes} min de leitura</span></span>`
+  ].filter(Boolean).join('');
   qs('.article-body').innerHTML = `<p>${escapeHtml(item.body).replaceAll('\n', '</p><p>')}</p>`;
   const specificFields = qs('.article-specific-host');
   if (specificFields) specificFields.innerHTML = renderArticleSpecificFields(item);
@@ -495,12 +507,12 @@ async function renderArticlePage(items) {
     }).join('');
   }
 
-  const related = sortByPublicationDate(items).filter((entry) => entry.id !== item.id).slice(0, 3);
+  const related = sortByPublicationDate(items).filter((entry) => entry.id !== item.id).slice(0, 4);
   const relatedSection = qs('.related');
   const relatedGrid = qs('.related-grid');
   if (relatedSection && relatedGrid) {
     relatedSection.hidden = related.length === 0;
-    relatedGrid.innerHTML = related.map((entry) => `<a class="related-card" href="${articleUrl(entry)}"><span>${escapeHtml(entry.category.name)}</span><strong>${escapeHtml(entry.title)}</strong><small>${fmt(entry.published_at)} · ${entry.read_minutes} min</small></a>`).join('');
+    relatedGrid.innerHTML = related.map((entry) => `<a class="related-card" href="${articleUrl(entry)}">${entry.cover_image ? `<span class="related-card-image"><img src="${escapeHtml(entry.cover_image)}" loading="lazy" alt=""></span>` : '<span class="related-card-image related-card-placeholder" aria-hidden="true"><span>JENI</span></span>'}<span class="related-card-content"><span class="related-card-category">${escapeHtml(entry.category.name)}</span><strong>${escapeHtml(entry.title)}</strong><time>${escapeHtml(fmt(entry.published_at))}</time></span></a>`).join('');
   }
   host.dataset.state = 'ready';
 }
