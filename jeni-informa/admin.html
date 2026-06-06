@@ -155,7 +155,22 @@ https://..."></textarea></div>
         </form><div id="admin-preview" class="admin-empty-state" style="display:none;"></div>
       </section>
 
-      <section class="dashboard-panel" id="homepage"><div class="section-head"><h3>Homepage Control</h3><p>Gestão de hero, CTA, destaques, parceiros e secções.</p></div><div id="homepage-sections-list" class="admin-content-list"><div class="admin-empty-state">A carregar secções da homepage...</div></div><div id="homepage-message" class="auth-message"></div></section>
+      <section class="dashboard-panel" id="homepage">
+        <div class="section-head"><h3>Homepage Control</h3><p>Controle visual das secções públicas da Home, sem alterar código.</p></div>
+        <aside class="homepage-help" aria-labelledby="homepage-help-title">
+          <div><span class="homepage-help-icon" aria-hidden="true">?</span><div><h4 id="homepage-help-title">Como funciona a publicação</h4><p>Guarde alterações com segurança e publique apenas quando a secção estiver pronta.</p></div></div>
+          <dl>
+            <div><dt>Status Draft</dt><dd>Fica guardado, mas não aparece no site público.</dd></div>
+            <div><dt>Status Published</dt><dd>Aparece no site público quando também estiver activo.</dd></div>
+            <div><dt>Activo</dt><dd>Controla se a secção está disponível.</dd></div>
+            <div><dt>Ordem</dt><dd>Controla a posição da secção na Home.</dd></div>
+            <div><dt>Conteúdo JSON</dt><dd>Guarda os dados da secção e continua disponível no modo avançado.</dd></div>
+            <div><dt>Partners</dt><dd>Controla os logotipos, nomes e links dos parceiros exibidos na Home.</dd></div>
+          </dl>
+        </aside>
+        <div id="homepage-sections-list" class="admin-content-list"><div class="admin-empty-state">A carregar secções da homepage...</div></div>
+        <div id="homepage-message" class="auth-message" aria-live="polite"></div>
+      </section>
       <section class="dashboard-panel" id="media"><div class="section-head"><h3>Media Library</h3><p>Upload visual e gestão básica de metadata.</p></div><div class="admin-toolbar"><div class="admin-field grow"><label for="media-upload">Upload</label><input type="file" id="media-upload" accept="image/*" /></div><button type="button" id="media-upload-btn" class="jeni-btn jeni-btn-primary">Enviar</button></div><div id="media-message" class="auth-message"></div><div id="media-grid" class="quick-grid"><div class="admin-empty-state">A carregar biblioteca...</div></div></section>
       <section class="dashboard-panel" id="newsletter"><div class="section-head"><h3>Newsletter Management</h3><p>Subscribers, métricas simples e exportação futura.</p></div><div class="admin-toolbar"><div class="admin-field grow"><label for="newsletter-search">Pesquisar</label><input type="text" id="newsletter-search" placeholder="email" /></div><button type="button" id="newsletter-search-btn" class="jeni-btn jeni-btn-secondary">Filtrar</button><button type="button" id="newsletter-export-btn" class="jeni-btn jeni-btn-outline">Export CSV</button></div><div id="newsletter-message" class="auth-message"></div><div id="newsletter-total" class="admin-empty-state">Total: 0</div><div id="newsletter-list" class="admin-content-list"></div></section>
     </main>
