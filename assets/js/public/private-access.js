@@ -1,21 +1,19 @@
 const LONG_PRESS_MS = 950;
-const adminPath = "/jeni-informa/admin.html";
-const producerPath = "/jeni-informa/dashboard.html";
+const adminUrl = new URL("../../../jeni-informa/admin.html", import.meta.url).href;
+const producerUrl = new URL("../../../jeni-informa/dashboard.html", import.meta.url).href;
+const logoUrl = new URL("../../../logo-jeni.png", import.meta.url).href;
+const DOUBLE_CLICK_DELAY_MS = 300;
 
 const supabaseClient = window.JeniSupabase?.createSupabaseClient
   ? window.JeniSupabase.createSupabaseClient()
   : window.JENI_SUPABASE_CLIENT || null;
-
-function resolvePath(pathname) {
-  return `${window.location.origin}${pathname}`;
-}
 
 function createModal() {
   const modal = document.createElement("div");
   modal.className = "private-access-modal";
   modal.innerHTML = `
     <div class="private-access-card" role="dialog" aria-modal="true" aria-labelledby="private-access-title">
-      <img src="/logo-jeni.png" alt="JENI">
+      <img src="${logoUrl}" alt="JENI">
       <h3 id="private-access-title">Private Access</h3>
       <p>JENI Workspace</p>
       <form class="private-access-form" id="private-access-form">
@@ -45,11 +43,11 @@ async function fetchRole() {
 
 function redirectByRole(role) {
   if (role === "admin" || role === "editor") {
-    window.location.href = resolvePath(adminPath);
+    window.location.assign(adminUrl);
     return true;
   }
   if (role === "producer") {
-    window.location.href = resolvePath(producerPath);
+    window.location.assign(producerUrl);
     return true;
   }
   return false;
@@ -67,6 +65,8 @@ function initPrivateAccess() {
   const submitButton = modal.querySelector(".private-access-submit");
   const feedback = modal.querySelector("#private-access-feedback");
   let longPressTimer = null;
+  let longPressTriggered = false;
+  let clickTimer = null;
 
   const closeModal = () => modal.classList.remove("is-open");
   const openModal = async () => {
@@ -88,13 +88,32 @@ function initPrivateAccess() {
     if (event.key === "Escape") closeModal();
   });
 
+  trigger.addEventListener("click", (event) => {
+    if (event.detail === 0) return;
+    event.preventDefault();
+    if (longPressTriggered) {
+      longPressTriggered = false;
+      return;
+    }
+    window.clearTimeout(clickTimer);
+    clickTimer = window.setTimeout(() => {
+      window.location.assign(trigger.href);
+    }, DOUBLE_CLICK_DELAY_MS);
+  });
+
   trigger.addEventListener("dblclick", (event) => {
     event.preventDefault();
+    window.clearTimeout(clickTimer);
+    clickTimer = null;
     openModal();
   });
 
   const startLongPress = () => {
-    longPressTimer = window.setTimeout(() => openModal(), LONG_PRESS_MS);
+    longPressTriggered = false;
+    longPressTimer = window.setTimeout(() => {
+      longPressTriggered = true;
+      openModal();
+    }, LONG_PRESS_MS);
   };
   const stopLongPress = () => {
     if (longPressTimer) window.clearTimeout(longPressTimer);

@@ -5,7 +5,9 @@ const EMPTY_MESSAGE = 'Ainda não há conteúdos publicados.';
 const qs = (selector, root = document) => root.querySelector(selector);
 const qsa = (selector, root = document) => [...root.querySelectorAll(selector)];
 const safe = (value, fallback = '') => (value == null || value === '' ? fallback : value);
-const articleUrl = (item) => `jeni-informa-artigo.html?slug=${encodeURIComponent(item.slug)}`;
+const articleUrl = (item) => item.slug
+  ? `jeni-informa-artigo.html?slug=${encodeURIComponent(item.slug)}`
+  : `jeni-informa-artigo.html?id=${encodeURIComponent(item.id)}`;
 const HERO_ROTATION_MS = 5000;
 const fmt = (iso) => {
   if (!iso) return 'Sem data';
@@ -421,17 +423,29 @@ function renderSiteHomepageInforma(items) {
   const host = qs('[data-homepage-informa]');
   if (!host) return;
 
-  const dynamicTitle = qs('[data-homepage-informa-title]');
-  if (!items.length) {
-    if (dynamicTitle) dynamicTitle.textContent = 'JENI Informa';
-    host.innerHTML = `<article class="editorial-card"><p>${EMPTY_MESSAGE}</p><a href="jeni-informa.html">Ver JENI Informa</a></article>`;
+  host.setAttribute('aria-busy', 'false');
+  const latestItems = sortByPublicationDate(items).slice(0, 4);
+  if (!latestItems.length) {
+    host.innerHTML = `<article class="homepage-informa-status"><p>${EMPTY_MESSAGE}</p><a class="text-link" href="jeni-informa.html">Ver JENI Informa <span aria-hidden="true">→</span></a></article>`;
     return;
   }
 
-  const lead = items.find((item) => item.featured) || items[0];
-  if (dynamicTitle) dynamicTitle.innerHTML = `<a href="${articleUrl(lead)}">${escapeHtml(lead.title)}</a>`;
-  const cards = items.slice(1, 4).map((item) => `<a class="editorial-card clickable-card" href="${articleUrl(item)}"><span class="category">${escapeHtml(item.category.name)}</span><h4>${escapeHtml(item.title)}</h4><p>${escapeHtml(item.excerpt)}</p><strong>Ler artigo</strong></a>`).join('');
-  host.innerHTML = `<a class="lead-story clickable-card" href="${articleUrl(lead)}"><span class="category">${escapeHtml(lead.category.name)}</span><h3>${escapeHtml(lead.title)}</h3><p>${escapeHtml(lead.excerpt)}</p><strong>Ler artigo</strong></a>${cards}`;
+  host.innerHTML = latestItems.map((item) => {
+    const href = articleUrl(item);
+    const image = item.cover_image
+      ? `<img src="${escapeHtml(item.cover_image)}" loading="lazy" alt="${escapeHtml(item.title)}">`
+      : '<span class="homepage-informa-placeholder" aria-hidden="true"><span>JENI</span></span>';
+
+    return `<article class="homepage-informa-card">
+      <a class="homepage-informa-image" href="${href}" aria-label="Ler ${escapeHtml(item.title)}">${image}</a>
+      <div class="homepage-informa-content">
+        <div class="homepage-informa-meta"><span>${escapeHtml(item.category.name)}</span><time datetime="${escapeHtml(item.published_at || '')}">${escapeHtml(fmt(item.published_at))}</time></div>
+        <h3><a href="${href}">${escapeHtml(item.title)}</a></h3>
+        <p>${escapeHtml(item.excerpt)}</p>
+        <a class="text-link" href="${href}">Ler mais <span aria-hidden="true">→</span></a>
+      </div>
+    </article>`;
+  }).join('');
 }
 
 function calendarIcon() {
