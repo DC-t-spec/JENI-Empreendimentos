@@ -63,4 +63,9 @@
 .private-access-submit:disabled { opacity: 0.66; cursor: wait; }
 .private-access-feedback { min-height: 20px; margin: 4px 0 0; font-size: 0.92rem; color: rgba(245, 241, 232, 0.8); }
 .private-access-feedback.error { color: #f1b0b0; }
-.brand.private-access-trigger { -webkit-user-select: none; user-select: none; }
+.brand.private-access-trigger {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: manipulation;
+}

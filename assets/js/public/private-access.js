@@ -1,4 +1,4 @@
-const LONG_PRESS_MS = 950;
+const LONG_PRESS_MS = 2000;
 const adminUrl = new URL("../../../jeni-informa/admin.html", import.meta.url).href;
 const producerUrl = new URL("../../../jeni-informa/dashboard.html", import.meta.url).href;
 const logoUrl = new URL("../../../logo-jeni.png", import.meta.url).href;
@@ -66,6 +66,7 @@ function initPrivateAccess() {
   const feedback = modal.querySelector("#private-access-feedback");
   let longPressTimer = null;
   let longPressTriggered = false;
+  let activePressSource = null;
   let clickTimer = null;
 
   const closeModal = () => modal.classList.remove("is-open");
@@ -108,24 +109,43 @@ function initPrivateAccess() {
     openModal();
   });
 
-  const startLongPress = () => {
+  const getPressSource = (event) => event.type.startsWith("pointer") ? "pointer" : "touch";
+  const startLongPress = (event) => {
+    if (event.type.startsWith("pointer") && event.pointerType === "mouse") return;
+
+    const source = getPressSource(event);
+    if (activePressSource) return;
+
+    activePressSource = source;
     longPressTriggered = false;
+    window.clearTimeout(longPressTimer);
     longPressTimer = window.setTimeout(() => {
+      longPressTimer = null;
       longPressTriggered = true;
+      window.clearTimeout(clickTimer);
+      clickTimer = null;
       openModal();
     }, LONG_PRESS_MS);
   };
-  const stopLongPress = () => {
-    if (longPressTimer) window.clearTimeout(longPressTimer);
+  const stopLongPress = (event) => {
+    const source = getPressSource(event);
+    if (source !== activePressSource) return;
+
+    window.clearTimeout(longPressTimer);
     longPressTimer = null;
+    activePressSource = null;
   };
 
   trigger.addEventListener("touchstart", startLongPress, { passive: true });
   trigger.addEventListener("touchend", stopLongPress);
   trigger.addEventListener("touchcancel", stopLongPress);
-  trigger.addEventListener("mousedown", startLongPress);
-  trigger.addEventListener("mouseup", stopLongPress);
-  trigger.addEventListener("mouseleave", stopLongPress);
+  trigger.addEventListener("pointerdown", startLongPress);
+  trigger.addEventListener("pointerup", stopLongPress);
+  trigger.addEventListener("pointercancel", stopLongPress);
+  trigger.addEventListener("pointerleave", stopLongPress);
+  trigger.addEventListener("contextmenu", (event) => {
+    if (activePressSource) event.preventDefault();
+  });
 
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
