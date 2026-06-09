@@ -39,18 +39,44 @@ function renderPresentation(root, payload) {
   container.append(copy); const img = image(payload.image, payload.title); if (img) container.append(img); root.replaceChildren(container);
 }
 
+const itemsOf = (payload) => Array.isArray(payload.items) ? payload.items.filter((item) => item && typeof item === 'object') : [];
+const cardFor = (item, className) => {
+  const href = safeUrl(item.url);
+  const card = el(href ? 'a' : 'article', className);
+  if (href) {
+    card.href = href;
+    if (new URL(href, location.href).origin !== location.origin) { card.target = '_blank'; card.rel = 'noopener noreferrer'; }
+  }
+  return card;
+};
+const appendItemsOrMessage = (container, grid, count) => container.append(count ? grid : el('p', '', 'Conteúdo em actualização.'));
+
 function renderServices(root, payload) {
   const container = el('div', 'container'); container.append(sectionHead('Serviços', payload.title, payload.subtitle));
   const grid = el('div', 'services-grid premium-services-grid');
-  (payload.items || []).forEach((item) => { const card = el(item.url ? 'a' : 'article', 'service-card'); if (item.url) card.href = safeUrl(item.url); const iconImage = image(item.icon, ''); if (iconImage) { iconImage.className = 'service-icon-image'; card.append(iconImage); } else if (text(item.icon).startsWith('fa-')) { const icon = el('i', `fa-solid ${text(item.icon)}`); card.append(icon); } card.append(heading('h3', item.title), el('p', '', item.description)); grid.append(card); });
-  container.append(grid); root.replaceChildren(container);
+  const items = itemsOf(payload);
+  items.forEach((item) => { const card = cardFor(item, 'service-card'); if (text(item.icon).startsWith('fa-')) { card.append(el('i', `fa-solid ${text(item.icon)}`)); } else { const iconImage = image(item.icon, ''); if (iconImage) { iconImage.className = 'service-icon-image'; card.append(iconImage); } } card.append(heading('h3', item.title), el('p', '', item.description)); grid.append(card); });
+  appendItemsOrMessage(container, grid, items.length); root.replaceChildren(container);
 }
 
 function renderHighlights(root, payload) {
   const container = el('div', 'container'); container.append(sectionHead('Portfólio', payload.title, payload.subtitle));
   const grid = el('div', 'portfolio-grid institutional-highlights');
-  (payload.items || []).forEach((item) => { const card = el(item.url ? 'a' : 'article', 'portfolio-card'); if (item.url) card.href = safeUrl(item.url); const img = image(item.image, item.title); if (img) card.append(img); const copy = el('div'); copy.append(heading('h3', item.title), el('p', '', item.description)); card.append(copy); grid.append(card); });
-  container.append(grid); root.replaceChildren(container);
+  const items = itemsOf(payload);
+  items.forEach((item) => { const card = cardFor(item, 'portfolio-card'); const img = image(item.image, item.title); if (img) card.append(img); const copy = el('div'); copy.append(heading('h3', item.title), el('p', '', item.description)); card.append(copy); grid.append(card); });
+  appendItemsOrMessage(container, grid, items.length); root.replaceChildren(container);
+}
+
+function renderJeniProjects(root, payload) {
+  const container = el('div', 'container'); container.append(sectionHead('Projectos JENI', payload.title, payload.subtitle));
+  const grid = el('div', 'portfolio-grid institutional-highlights');
+  const items = itemsOf(payload);
+  items.forEach((item) => {
+    const card = cardFor(item, 'portfolio-card'); const img = image(item.image, item.title); if (img) card.append(img);
+    const copy = el('div'); const details = [text(item.year), text(item.status || item.state)].filter(Boolean).join(' · ');
+    copy.append(heading('h3', item.title)); if (details) copy.append(el('p', '', details)); copy.append(el('p', '', item.description)); card.append(copy); grid.append(card);
+  });
+  appendItemsOrMessage(container, grid, items.length); root.replaceChildren(container);
 }
 
 function renderPartners(root, payload) {
@@ -74,7 +100,7 @@ function renderCta(root, payload) {
   const container = el('div', 'container cta-premium'); if (payload.image) { const url = safeUrl(payload.image, true); if (url) container.style.backgroundImage = `linear-gradient(rgba(15,18,23,.9),rgba(15,18,23,.9)),url("${url.replaceAll('"','%22')}")`; } container.append(heading('h2', payload.title), el('p', '', payload.text)); const button = link(payload.button_label, payload.button_url, 'btn btn-gold'); if (button) container.append(button); root.replaceChildren(container);
 }
 
-const renderers = { hero: renderHero, presentation: renderPresentation, services: renderServices, highlights: renderHighlights, partners: renderPartners, informa: renderInforma, newsletter: renderNewsletter, cta: renderCta };
+const renderers = { hero: renderHero, presentation: renderPresentation, services: renderServices, highlights: renderHighlights, jeni_projects: renderJeniProjects, partners: renderPartners, informa: renderInforma, newsletter: renderNewsletter, cta: renderCta };
 
 async function bindNewsletter() {
   const form = document.getElementById('newsletterForm'); if (!form) return;
