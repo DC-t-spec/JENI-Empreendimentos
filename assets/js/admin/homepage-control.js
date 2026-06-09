@@ -16,10 +16,15 @@
     ], list: { key: 'items', add: 'Adicionar serviço', itemLabel: 'Serviço', fields: [
       ['icon', 'Ícone ou imagem', 'image'], ['title', 'Título', 'text'], ['description', 'Descrição', 'textarea'], ['url', 'Link opcional', 'url']
     ]}},
-    highlights: { label: 'Destaques / Portfólio', description: 'Projectos em destaque na Home.', preview: true, fields: [
+    highlights: { label: 'Destaques / Portfólio', description: 'Projectos em destaque na Home e no Portfólio.', preview: true, fields: [
       ['title', 'Título', 'text'], ['subtitle', 'Subtítulo', 'textarea']
     ], list: { key: 'items', add: 'Adicionar destaque', itemLabel: 'Destaque', fields: [
       ['image', 'Imagem', 'image'], ['title', 'Título', 'text'], ['description', 'Descrição', 'textarea'], ['url', 'Link opcional', 'url']
+    ]}},
+    jeni_projects: { label: 'Projectos JENI', description: 'Projectos concebidos e desenvolvidos pela JENI.', preview: true, fields: [
+      ['title', 'Título da secção', 'text'], ['subtitle', 'Subtítulo', 'textarea']
+    ], list: { key: 'items', add: 'Adicionar projecto', itemLabel: 'Projecto', fields: [
+      ['image', 'Imagem', 'image'], ['title', 'Nome / título', 'text'], ['year', 'Ano', 'text'], ['description', 'Descrição', 'textarea'], ['url', 'Link opcional', 'url'], ['status', 'Estado opcional', 'text']
     ]}},
     partners: { label: 'Parceiros', description: 'Rede institucional, logótipos e links.', preview: true, fields: [
       ['title', 'Título', 'text'], ['subtitle', 'Subtítulo', 'textarea']
@@ -80,7 +85,8 @@
     if (key === 'hero') return `<div class="cms-preview-hero" ${image}><small>Preview Hero</small><h3>${escapeHtml(payload.title || 'Título do Hero')}</h3><p>${escapeHtml(payload.subtitle || payload.text || 'Subtítulo e texto da secção')}</p><div>${payload.button_1_label ? `<span>${escapeHtml(payload.button_1_label)}</span>` : ''}${payload.button_2_label ? `<span>${escapeHtml(payload.button_2_label)}</span>` : ''}</div></div>`;
     const items = Array.isArray(payload.items) ? payload.items : [];
     if (key === 'partners') return `<div class="cms-preview-section"><small>Preview Parceiros</small><h3>${escapeHtml(payload.title || 'Parceiros')}</h3><div class="cms-preview-logos">${items.map((item) => `<span>${item.logo ? `<img src="${escapeHtml(item.logo)}" alt="" />` : ''}<b>${escapeHtml(item.name || 'Parceiro')}</b></span>`).join('') || '<em>Adicione parceiros</em>'}</div></div>`;
-    return `<div class="cms-preview-section"><small>Preview ${key === 'services' ? 'Serviços' : 'Portfólio'}</small><h3>${escapeHtml(payload.title || 'Título da secção')}</h3><p>${escapeHtml(payload.subtitle || '')}</p><div class="cms-preview-cards">${items.slice(0, 6).map((item) => `<span>${(item.image || item.icon) ? `<img src="${escapeHtml(item.image || item.icon)}" alt="" />` : ''}<b>${escapeHtml(item.title || 'Item')}</b><small>${escapeHtml(item.description || '')}</small></span>`).join('') || '<em>Adicione itens à lista</em>'}</div></div>`;
+    const previewLabel = { services: 'Serviços', highlights: 'Portfólio', jeni_projects: 'Projectos JENI' }[key] || 'Secção';
+    return `<div class="cms-preview-section"><small>Preview ${previewLabel}</small><h3>${escapeHtml(payload.title || 'Título da secção')}</h3><p>${escapeHtml(payload.subtitle || '')}</p><div class="cms-preview-cards">${items.slice(0, 6).map((item) => `<span>${(item.image || item.icon) ? `<img src="${escapeHtml(item.image || item.icon)}" alt="" />` : ''}<b>${escapeHtml(item.title || 'Item')}</b><small>${escapeHtml(item.description || '')}</small></span>`).join('') || '<em>Adicione itens à lista</em>'}</div></div>`;
   }
 
   function renderCard(section) {
@@ -90,7 +96,7 @@
     const payload = payloadOf(section);
     const live = section.status === 'published' && section.is_enabled;
     return `<article class="home-section-card cms-section-card" data-home-card="${section.id}" data-section-key="${key}">
-      <header class="home-section-card-header"><div><span class="home-section-key">${escapeHtml(key)}</span><h4>${escapeHtml(definition.label)}</h4><p>${escapeHtml(definition.description)}</p></div><span class="home-status-badge ${live ? 'live' : 'draft'}">${live ? 'Visível na Home' : 'Não publicado'}</span></header>
+      <header class="home-section-card-header"><div><span class="home-section-key">${escapeHtml(key)}</span><h4>${escapeHtml(definition.label)}</h4><p>${escapeHtml(definition.description)}</p></div><span class="home-status-badge ${live ? 'live' : 'draft'}">${live ? 'Visível no site' : 'Não publicado'}</span></header>
       <div class="home-section-grid"><div class="admin-field"><label>Ordem</label><input data-home-order type="number" min="0" value="${Number(section.display_order) || 0}" /></div><div class="admin-field"><label>Estado</label><select data-home-status><option value="draft"${section.status !== 'published' ? ' selected' : ''}>Draft — não público</option><option value="published"${section.status === 'published' ? ' selected' : ''}>Published — público</option></select></div><div class="admin-field"><label>Disponibilidade</label><select data-home-enabled><option value="true"${section.is_enabled ? ' selected' : ''}>Activo</option><option value="false"${!section.is_enabled ? ' selected' : ''}>Inactivo</option></select></div></div>
       <div class="admin-form-grid cms-section-fields">${definition.fields.map((field) => fieldMarkup(field, payload[field[0]] || '', `${section.id}-main`)).join('')}</div>
       ${definition.list ? `<section class="cms-list-editor"><div class="cms-list-heading"><div><h5>Lista dinâmica</h5><p>Adicione, remova e reordene itens sem editar JSON.</p></div><button type="button" class="jeni-btn jeni-btn-secondary" data-add-item>${definition.list.add}</button></div><div data-cms-list>${(payload.items || []).map((item, index) => listItemMarkup(definition.list, item, index, section.id)).join('')}</div></section>` : ''}
@@ -132,14 +138,14 @@
       const move = event.target.closest('[data-move-item]'); if (move) { const row = move.closest('[data-cms-list-item]'); const sibling = move.dataset.moveItem === 'up' ? row.previousElementSibling : row.nextElementSibling; if (sibling) sibling[move.dataset.moveItem === 'up' ? 'before' : 'after'](row); updateCard(card); return; }
       const save = event.target.closest('[data-save-section]'); if (!save) return;
       const payload = collectPayload(card);
-      const requiredItemFields = { services: ['title'], highlights: ['title', 'image'], partners: ['name', 'logo'] }[card.dataset.sectionKey];
+      const requiredItemFields = { services: ['title'], highlights: ['title', 'image'], jeni_projects: ['title', 'image'], partners: ['name', 'logo'] }[card.dataset.sectionKey];
       if (requiredItemFields && payload.items?.some((item) => requiredItemFields.some((key) => !item[key]))) { state.notify('Preencha os campos obrigatórios de todos os itens.', 'error'); return; }
       save.disabled = true; save.textContent = 'A guardar...';
       const update = { payload, display_order: Number(card.querySelector('[data-home-order]').value) || 0, status: card.querySelector('[data-home-status]').value, is_enabled: card.querySelector('[data-home-enabled]').value === 'true', updated_at: new Date().toISOString() };
       const { error } = await state.client.from('homepage_sections').update(update).eq('id', card.dataset.homeCard);
       save.disabled = false; save.textContent = 'Guardar secção';
       if (error) { state.message('homepage-message', error.message, 'error'); state.notify('Erro ao guardar a secção.', 'error'); return; }
-      state.message('homepage-message', 'Secção guardada. O JSON foi actualizado automaticamente.', 'success'); state.notify(update.status === 'published' && update.is_enabled ? 'Secção publicada na Home.' : 'Secção guardada sem publicação.', 'success');
+      state.message('homepage-message', 'Secção guardada. O JSON foi actualizado automaticamente.', 'success'); state.notify(update.status === 'published' && update.is_enabled ? 'Secção publicada no site.' : 'Secção guardada sem publicação.', 'success');
       await loadSections();
     });
   }
